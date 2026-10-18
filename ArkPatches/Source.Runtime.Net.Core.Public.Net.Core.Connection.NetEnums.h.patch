@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Runtime/Net/Core/Public/Net/Core/Connection/NetEnums.h b/Engine/Source/Runtime/Net/Core/Public/Net/Core/Connection/NetEnums.h
+--- a/Engine/Source/Runtime/Net/Core/Public/Net/Core/Connection/NetEnums.h
++++ b/Engine/Source/Runtime/Net/Core/Public/Net/Core/Connection/NetEnums.h
+@@ -44,7 +44,12 @@ namespace ENetworkFailure
+ 		/** NetGuid mismatch */
+ 		NetGuidMismatch,
+ 		/** Network checksum mismatch */
+-		NetChecksumMismatch
++		NetChecksumMismatch,
++		TotalConversionIDMismatch = 11, // [ARK],
++		ModMisMatch = 12, // [ARK],
++		ModDLCNotInstalled = 13, // [ARK],
++		BuildIdMismatch = 14, // [ARK],
++		InvalidServerPassword = 15, // [ARK]
+ 	};
+ }
+ 

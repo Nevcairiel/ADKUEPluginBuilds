@@ -1,0 +1,47 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h
+@@ -421,6 +421,7 @@ public:
+ 
+ 	/** After a critical error, perform any mission-critical cleanup, such as restoring the video mode or releasing hardware resources. */
+ 	virtual void ShutdownAfterError() {}
++	virtual void PostInterpChange(FProperty*) {} // [ARK]
+ 
+ #if WITH_EDITOR
+ 	/** 
+@@ -700,6 +701,7 @@ public:
+ 
+ #if WITH_EDITOR
+ 	virtual void MoveDataToSparseClassDataStruct() const {}
++	virtual bool MoveTexturesToJITTextures() { return false; } // [ARK]
+ 	virtual bool ConformSparseClassDataStruct(UScriptStruct* SourceSparseClassDataStruct, void* SourceSparseClassData) const { return false; }
+ #endif
+ 
+@@ -709,6 +711,7 @@ public:
+ 	 * By default this will follow its Outer chain, but it should be overridden if that will not work.
+ 	 */
+ 	COREUOBJECT_API virtual class UWorld* GetWorld() const;
++	virtual bool HasWorld() const; // [ARK]
+ 
+ 	/** Internal function used by UEngine::GetWorldFromContextObject() */
+ 	COREUOBJECT_API class UWorld* GetWorldChecked(bool& bSupported) const;
+@@ -1090,6 +1093,7 @@ public:
+ 	 *         the rules. Returns NotValidated if no rules are set for this object.
+ 	 */
+ 	COREUOBJECT_API virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const;
++	virtual bool AllowSubobjectInstancing() { return true; } // [ARK]
+ #endif // WITH_EDITOR
+ 
+ 	/*----------------------------------------------------------
+@@ -1836,6 +1840,11 @@ public:
+ 	{
+ 		return uint64(int64(INDEX_NONE));
+ 	}
++	virtual bool Primal_AllowInstancingOfSubobjects(FName) const { return true; } // [ARK]
++	virtual bool Primal_IsActor() const { return false; } // [ARK]
++	virtual bool Primal_IsComponent() const { return false; } // [ARK]
++	virtual bool IsMarkedForSeamlessTravel() const { return false; } // [ARK]
++	virtual bool IsInOrOwnedBy(const UObject*) const; // [ARK]
+ };
+ 
+ struct FObjectNetPushIdHelper

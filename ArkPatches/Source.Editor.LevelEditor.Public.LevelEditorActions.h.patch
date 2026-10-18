@@ -1,0 +1,43 @@
+diff --git a/Engine/Source/Editor/LevelEditor/Public/LevelEditorActions.h b/Engine/Source/Editor/LevelEditor/Public/LevelEditorActions.h
+--- a/Engine/Source/Editor/LevelEditor/Public/LevelEditorActions.h
++++ b/Engine/Source/Editor/LevelEditor/Public/LevelEditorActions.h
+@@ -135,6 +135,12 @@ public:
+ 
+ 	/** Opens the associated asset(s) in the property matrix */
+ 	TSharedPtr< FUICommandInfo > OpenSelectionInPropertyMatrix;
++	TSharedPtr<FUICommandInfo> EditPickedMaterial; // [ARK]
++	TSharedPtr<FUICommandInfo> EditAsset0; // [ARK]
++	TSharedPtr<FUICommandInfo> EditAsset1; // [ARK]
++	TSharedPtr<FUICommandInfo> EditAsset2; // [ARK]
++	TSharedPtr<FUICommandInfo> EditAsset3; // [ARK]
++	TSharedPtr<FUICommandInfo> EditAsset4; // [ARK]
+ 
+ 	/** Moves the camera to the current mouse position */
+ 	TSharedPtr< FUICommandInfo > GoHere;
+@@ -354,6 +360,7 @@ public:
+ 	 */
+ 	/** Shows all actors */
+ 	TSharedPtr< FUICommandInfo > ShowAll;
++	TSharedPtr<FUICommandInfo> SelectActivePostProcessVolumes; // [ARK]
+ 
+ 	/** Shows only selected actors */
+ 	TSharedPtr< FUICommandInfo > ShowSelectedOnly;
+@@ -439,6 +446,7 @@ public:
+ 
+ 	/** Selects all actors using the same material(s) as the current selection */
+ 	TSharedPtr< FUICommandInfo > SelectAllWithSameMaterial;
++	TSharedPtr<FUICommandInfo> SelectAllActorsControlledByMatinee; // [ARK]
+ 
+ 	/** Selects all emitters using the same particle system as the current selection */
+ 	TSharedPtr< FUICommandInfo > SelectMatchingEmitter;
+@@ -700,6 +708,10 @@ public:
+ 	TSharedPtr<FUICommandInfo> InvertMiddleMousePan;
+ 	TSharedPtr<FUICommandInfo> InvertOrbitYAxis;
+ 	TSharedPtr<FUICommandInfo> InvertRightMouseDollyYAxis;
++	TSharedPtr<FUICommandInfo> GeometryCollectionSelectAllGeometry; // [ARK]
++	TSharedPtr<FUICommandInfo> GeometryCollectionSelectNone; // [ARK]
++	TSharedPtr<FUICommandInfo> GeometryCollectionSelectInverseGeometry; // [ARK]
++	TSharedPtr<FUICommandInfo> MergeVolumes; // [ARK]
+ };
+ 
+ /**

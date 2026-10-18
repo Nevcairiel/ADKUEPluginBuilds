@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Fonts/SlateFontInfo.h b/Engine/Source/Runtime/SlateCore/Public/Fonts/SlateFontInfo.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Fonts/SlateFontInfo.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Fonts/SlateFontInfo.h
+@@ -207,6 +207,8 @@ private:
+ 	/** The hinting algorithm to use with the font */
+ 	UPROPERTY()
+ 	EFontHinting Hinting_DEPRECATED;
++	float FontDrawScalar_DEPRECATED; // [ARK]
++	bool EnableOutlineAndGlowInShader_DEPRECATED; // [ARK]
+ #endif
+ 
+ public:

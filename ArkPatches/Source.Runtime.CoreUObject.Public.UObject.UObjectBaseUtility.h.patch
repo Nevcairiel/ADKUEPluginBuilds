@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h
+@@ -524,7 +524,7 @@ public:
+ 	 *
+ 	 * @return false if the request to mark the package dirty was suppressed by the editor and true otherwise.
+ 	 */
+-	COREUOBJECT_API bool MarkPackageDirty() const;
++	COREUOBJECT_API bool MarkPackageDirty(bool bPrimalForcePackageDirty = false) const;	// ARK: added parameter (default from devkit call sites)
+ 
+ 	/**
+ 	 * Determines whether this object is a template object by checking flags on the object and the outer chain.

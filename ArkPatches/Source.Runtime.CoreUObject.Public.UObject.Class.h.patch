@@ -1,0 +1,63 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h
+@@ -557,6 +557,7 @@ public:
+ 	/** Array of object references embedded in script code and referenced by FProperties. Mirrored for easy access by realtime garbage collection code */
+ 	UPROPERTY(SkipSerialization)
+ 	TArray<TObjectPtr<UObject>> ScriptAndPropertyObjectReferences;
++	bool Primal_bForceExposeToBlueprints; // [ARK]
+ 
+ 	typedef TArray<TPair<TFieldPath<FField>, int32>> FUnresolvedScriptPropertiesArray;
+ 	/** Contains a list of script properties that couldn't be resolved at load time */
+@@ -769,6 +770,7 @@ public:
+ 
+ 	/** Look up a property by an alternate name if it was not found in the first search, this is overridden for user structs */
+ 	virtual FProperty* CustomFindProperty(const FName InName) const { return nullptr; };
++	virtual void Primal_TrySerializeAsSparseClassData(uint8*, FArchive&, FPropertyTag&, FStructuredArchiveRecord&); // [ARK]
+ 
+ 	/** Serialize an expression to an archive. Returns expression token */
+ 	COREUOBJECT_API virtual EExprToken SerializeExpr(int32& iCode, FArchive& Ar);
+@@ -3931,6 +3933,15 @@ protected:
+ private:
+ 	/** When using partials they are allocated in front of UObject, and then this value will be negative. Note that PropertiesSize includes the negative part too */
+ 	int32 PropertiesStartOffset = 0;
++public:
++	uint32 bIsGameClass : 1; // [ARK]
++private:
++public:
++	uint32 bCheckedForLocalize : 1; // [ARK]
++private:
++public:
++	uint32 bHasLocalized : 1; // [ARK]
++private:
+ 
+ 	friend void UE::CoreUObject::Private::ConstructUClassPartials(UClass&);
+ public:
+@@ -4053,6 +4064,7 @@ protected:
+ 
+ 	/** This is where we store the data that is only changed per class instead of per instance */
+ 	void* SparseClassData;
++	void* SparseClassDataBackup; // [ARK]
+ 
+ 	/** The struct used to store sparse class data. */
+ 	TObjectPtr<UScriptStruct> SparseClassDataStruct;
+@@ -4154,6 +4166,9 @@ public:
+ 
+ 	/** Linked list of partials extending this class */
+ 	UE::CoreUObject::Private::FPartialClass* Partials = nullptr;
++protected:
++	TUniquePtr<FPrimalPropertyBag,TDefaultDelete<FPrimalPropertyBag>> LiveTunableContainerPtr; // [ARK]
++public:
+ 
+ public:
+ 	// Constructors
+@@ -4903,7 +4918,9 @@ protected:
+ 	 * Internal helper method for GetReinstancedClassPathName(). Subclasses can choose to override the default
+ 	 * implementation to return a valid class path for recompiled class objects based on how reinstancing is handled.
+ 	 */
++public: // [ARK] was protected
+ 	virtual FTopLevelAssetPath GetReinstancedClassPathName_Impl() const { return nullptr; }
++protected:
+ #endif
+ };
+ 

@@ -1,0 +1,45 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/SceneTypes.h b/Engine/Source/Runtime/Engine/Public/SceneTypes.h
+--- a/Engine/Source/Runtime/Engine/Public/SceneTypes.h
++++ b/Engine/Source/Runtime/Engine/Public/SceneTypes.h
+@@ -166,24 +166,25 @@ enum EMaterialProperty : int
+ 	MP_CustomData1 UMETA(Hidden),
+ 	MP_AmbientOcclusion UMETA(DisplayName = "Ambient Occlusion"),
+ 	MP_Refraction UMETA(DisplayName = "Refraction"),
+-	MP_CustomizedUVs0 UMETA(Hidden),
+-	MP_CustomizedUVs1 UMETA(Hidden),
+-	MP_CustomizedUVs2 UMETA(Hidden),
+-	MP_CustomizedUVs3 UMETA(Hidden),
+-	MP_CustomizedUVs4 UMETA(Hidden),
+-	MP_CustomizedUVs5 UMETA(Hidden),
+-	MP_CustomizedUVs6 UMETA(Hidden),
+-	MP_CustomizedUVs7 UMETA(Hidden),
+-	MP_PixelDepthOffset UMETA(Hidden),
+-	MP_ShadingModel UMETA(Hidden),
+-	MP_FrontMaterial UMETA(DisplayName = "Front Material"),
+-	MP_SurfaceThickness UMETA(Hidden),
+-	MP_Displacement UMETA(Hidden),
++	MP_ToonOutlineWidth = 20, // [ARK]
++	MP_CustomizedUVs0 = 21 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs1 = 22 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs2 = 23 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs3 = 24 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs4 = 25 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs5 = 26 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs6 = 27 /* [ARK] */ UMETA(Hidden),
++	MP_CustomizedUVs7 = 28 /* [ARK] */ UMETA(Hidden),
++	MP_PixelDepthOffset = 29 /* [ARK] */ UMETA(Hidden),
++	MP_ShadingModel = 30 /* [ARK] */ UMETA(Hidden),
++	MP_FrontMaterial = 31 /* [ARK] */ UMETA(DisplayName = "Front Material"),
++	MP_SurfaceThickness = 0x20 /* [ARK] */ UMETA(Hidden),
++	MP_Displacement = 33 /* [ARK] */ UMETA(Hidden),
+ 
+ 	//^^^ New material properties go above here ^^^^
+-	MP_MaterialAttributes,
+-	MP_CustomOutput UMETA(Hidden),
+-	MP_MAX UMETA(DisplayName = "None"),
++	MP_MaterialAttributes = 34 /* [ARK] */,
++	MP_CustomOutput = 35 /* [ARK] */ UMETA(Hidden),
++	MP_MAX = 36 /* [ARK] */ UMETA(DisplayName = "None"),
+ 
+ 	// Aliases
+ 	MP_LastCustomizedUVs = MP_CustomizedUVs7,

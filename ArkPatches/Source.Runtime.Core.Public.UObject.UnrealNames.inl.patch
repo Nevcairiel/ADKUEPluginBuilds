@@ -1,0 +1,27 @@
+diff --git a/Engine/Source/Runtime/Core/Public/UObject/UnrealNames.inl b/Engine/Source/Runtime/Core/Public/UObject/UnrealNames.inl
+--- a/Engine/Source/Runtime/Core/Public/UObject/UnrealNames.inl
++++ b/Engine/Source/Runtime/Core/Public/UObject/UnrealNames.inl
+@@ -212,9 +212,10 @@ REGISTER_NAME(258, Gzip)
+ REGISTER_NAME(259, LZ4)
+ REGISTER_NAME(260, Mobile)
+ REGISTER_NAME(261, Oodle)
+-REGISTER_NAME(262, TrashedPackage)
+-REGISTER_NAME(263, MetaData)
+-REGISTER_NAME(264, AutoRTFMUnusedPackage)
++REGISTER_NAME(262, BattlEye) // [ARK]
++REGISTER_NAME(263, TrashedPackage) // [ARK] was 262
++REGISTER_NAME(264, MetaData) // [ARK] was 263
++REGISTER_NAME(265, AutoRTFMUnusedPackage) // [ARK] was 264
+ 
+ // Online
+ REGISTER_NAME(280,DGram)
+@@ -290,6 +291,9 @@ REGISTER_NAME(700,Filename)
+ REGISTER_NAME(701,Lerp)
+ REGISTER_NAME(702,Root)
+ 
++// [ARK] additional hardcoded name (EName::BlueprintDouble = 1000, MaxHardcodedNameIndex = 1001 in the devkit)
++REGISTER_NAME(1000,BlueprintDouble)
++
+ // Restore any macros suppressed at the top of this file.
+ UE_POP_MACRO("TRUE")
+ UE_POP_MACRO("FALSE")

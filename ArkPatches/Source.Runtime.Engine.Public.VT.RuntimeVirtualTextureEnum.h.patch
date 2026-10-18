@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/VT/RuntimeVirtualTextureEnum.h b/Engine/Source/Runtime/Engine/Public/VT/RuntimeVirtualTextureEnum.h
+--- a/Engine/Source/Runtime/Engine/Public/VT/RuntimeVirtualTextureEnum.h
++++ b/Engine/Source/Runtime/Engine/Public/VT/RuntimeVirtualTextureEnum.h
+@@ -47,7 +47,7 @@ enum class ERuntimeVirtualTextureMaterialType : uint8
+ 	Count UMETA(Hidden),
+ };
+ 
+-namespace RuntimeVirtualTexture { enum { MaterialType_NumBits = 3 }; }
++namespace RuntimeVirtualTexture { enum { MaterialType_NumBits = 4 /* [ARK] 3 in vanilla UE */ }; }
+ static_assert((uint32)ERuntimeVirtualTextureMaterialType::Count <= (1 << (uint32)RuntimeVirtualTexture::MaterialType_NumBits), "NumBits is too small");
+ 
+ ENUM_RANGE_BY_COUNT(ERuntimeVirtualTextureMaterialType, ERuntimeVirtualTextureMaterialType::Count);

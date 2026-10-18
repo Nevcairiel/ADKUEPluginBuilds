@@ -1,0 +1,30 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SMenuAnchor.h b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SMenuAnchor.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SMenuAnchor.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SMenuAnchor.h
+@@ -39,6 +39,7 @@ class SMenuAnchor : public SPanel, public IMenuHost
+ public:
+ 	SLATE_BEGIN_ARGS( SMenuAnchor )
+ 		: _Content()
++		, _IgnoreClicksOutside(false) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _Padding(FMargin(0.f))
+ 		, _MenuContent( SNew(STextBlock) .Text( NSLOCTEXT("SMenuAnchor", "NoMenuContent", "No Menu Content Assigned; use .MenuContent") ) )
+ 		, _OnGetMenuContent()
+@@ -79,6 +80,7 @@ public:
+ 
+ 		/** True to apply the InWidgetStyle of the menu anchor when painting the popup, false to always paint the popup with full opacity and no tint. */
+ 		SLATE_ARGUMENT(bool, ApplyWidgetStyleToMenu)
++		SLATE_ARGUMENT(bool, IgnoreClicksOutside) // [ARK]
+ 
+ 	SLATE_END_ARGS()
+ 
+@@ -262,4 +264,10 @@ protected:
+ private:
+ 	/** How should the popup be placed relative to the anchor. */
+ 	TSlateAttribute<EMenuPlacement> PlacementAttribute;
++public:
++	FVector2D Padding; // [ARK]
++private:
++public:
++	bool IgnoreClicksOutside; // [ARK]
++private:
+ };

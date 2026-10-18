@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphSchema.h b/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphSchema.h
+--- a/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphSchema.h
++++ b/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphSchema.h
+@@ -1084,6 +1084,8 @@ class UEdGraphSchema : public UObject
+ 	 
+ 	/** Copies pin links from one pin to another without breaking the original links */
+ 	ENGINE_API virtual FPinConnectionResponse CopyPinLinks(UEdGraphPin& CopyFromPin, UEdGraphPin& CopyToPin, bool bIsIntermediateCopy = false) const;
++	// [ARK] declared after the 3-argument overload: MSVC places overloaded virtuals in reverse declaration order
++	virtual void CopyPinLinks(UEdGraphPin&, bool) const; // [ARK]
+ 
+ 	/** Is self pin type? */
+ 	virtual bool IsSelfPin(const UEdGraphPin& Pin) const   {return false;}
+@@ -1418,6 +1420,8 @@ class UEdGraphSchema : public UObject
+ 	 * @return	true if the pin types and directions are compatible.
+ 	 */
+ 	virtual bool ArePinsCompatible(const UEdGraphPin* PinA, const UEdGraphPin* PinB, const UClass* CallingContext = nullptr, bool bIgnoreArray = false) const { return true; }
++	virtual void CutPinLinks(UEdGraphPin&, bool) const; // [ARK]
++	virtual void PastePinLinks(UEdGraphPin&, bool) const; // [ARK]
+ 
+ 	/**
+ 	 * Returns true if the types are schema Equivalent. 

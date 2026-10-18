@@ -1,0 +1,169 @@
+# Types whose ARK ABI changes are intentionally NOT reproduced in the SDK headers.
+#
+# These are gameplay / rendering types of the Engine, RenderCore and RHI modules. ARK changed several of them
+# deeply (new ARK base classes UPrimalActor, UPrimalActorComponent, UPrimalWorld, APrimalController,
+# FPrimalViewportClient; renamed members used by inline engine code), which cannot be reconstructed from the
+# PDBs alone. BlueprintAssist only handles them as opaque pointers (casts, StaticClass(), null checks).
+#
+# This is verified mechanically by Build\Tools\Test-LayoutIndependence.ps1: the plugin is compiled a second time
+# with a probe data member and a probe virtual function injected at the start of every class listed here, and
+# the generated machine code of all object files must be identical. Any dependency of the plugin's code on the
+# layout or vtable of these types would change the code.
+#
+# One type name per line (as printed by PdbLayout), '#' starts a comment.
+
+# --- gameplay framework
+AActor
+AController
+APlayerController
+APlayerCameraManager
+UPlayer
+ULocalPlayer
+UGameInstance
+UGameViewportClient
+UPendingNetGame
+UWorld
+ULevel
+ULevelStreaming
+FActorSpawnParameters
+FWorldCachedViewInfo
+FActorLastRenderTime
+FUpdateLevelVisibilityLevelInfo
+FWorldTileLayer
+INavAgentInterface
+FInputKeyEventArgs
+FMinimalViewInfo
+
+# --- components, ticking, collision, physics
+UActorComponent
+USceneComponent
+UPrimitiveComponent
+UMeshComponent
+USkinnedMeshComponent
+USkeletalMeshComponent
+UChildActorComponent
+EMoveComponentFlags
+FTickFunction
+FTickFunction::FInternalData
+FActorTickFunction
+FActorComponentTickFunction
+FHitResult
+FCollisionQueryParams
+FCollisionResponseContainer
+FCustomChannelSetup
+ECollisionChannel
+FBodyInstance
+FScopedMovementUpdate
+
+# --- animation
+UAnimInstance
+UAnimNotify
+FAnimNotifyEvent
+FAnimUpdateRateParameters
+FFIRFilterTimeBased
+
+# --- rendering, materials, meshes, textures
+FPostProcessSettings
+FEngineShowFlags
+UMaterial
+UMaterialEditorOnlyData
+UMaterialInterface
+FMaterial
+FMaterialCompilationOutput
+FMaterialExternalTextureParameterInfo
+FMaterialShaderParametersBase
+FTextureSamplingInfo
+EMaterialShadingModel
+UTexture
+UStaticMesh
+FStaticMeshSourceModel
+UStreamableRenderAsset
+FMeshBuildSettings
+FMeshUVChannelInfo
+FPrimitiveSceneInfoData
+FGPUSkinPassThroughFactoryLooseParameters
+FParticlePerfStats
+FShaderMapResource
+UE::RHI::GPUProfiler::FGPUStat
+FRHIGlobals
+
+# --- sound
+USoundCue
+USoundWave
+
+# --- not ABI relevant for the plugin
+# viewport clients get an additional ARK base FPrimalViewportClient; the plugin does not use viewport clients
+FViewportClient
+# RHI command templates are named after a source line number string; rendering only
+FRHICommandDispatchComputeShaderBundle
+FRHICommandDispatchGraphicsShaderBundle
+# thread-local cleanup helper inside a header template: every DLL instantiates its own private copy
+TBlockAllocationCache<65536,FAlignedAllocator>::FTLSCleanup
+# consequences of excluded types: containers sized by FHitResult / FOverlapInfo, and the UHT-generated
+# replication index enums of the excluded actor classes
+TSizedInlineAllocator<2,32,TSizedDefaultAllocator<32> >::ForElementType<FHitResult>
+TSizedInlineAllocator<3,32,TSizedDefaultAllocator<32> >::ForElementType<FOverlapInfo>
+AActor::ENetFields_Private
+AController::ENetFields_Private
+APlayerController::ENetFields_Private
+
+# Added for GitSourceControl: types that only reach its compile through the UnrealEd shared PCH
+# (SharedPch.h). The plugin does not use them; verified by Test-LayoutIndependence.ps1 GitSourceControl.
+# The enums are network / debug-view constants (MAX_PACKET_*, MaxSequenceHistoryLength, DVSM_*) that the plugin
+# sources do not reference.
+<unnamed-enum-MAX_PACKET_HEADER_BITS>
+<unnamed-enum-MAX_PACKET_RELIABLE_SEQUENCE_HEADER_BITS>
+AAudioVolume::ENetFields_Private
+APawn
+APawn::ENetFields_Private
+APostProcessVolume
+AVolume
+AWorldSettings
+AWorldSettings::ENetFields_Private
+Chaos::FPhysicsSolverBase
+EDebugViewShaderMode
+FActiveForceFeedbackEffect
+FAnimMontageInstance
+FBlendParameter
+FCameraShakeBaseStartParams
+FCameraShakePatternUpdateParams
+FEditorViewportClient
+FFinalPostProcessSettings
+FInstancedViewUniformShaderParameters
+FMaterialInstanceBasePropertyOverrides
+FMeshBatch
+FNetPacketNotify
+FNetPacketNotify::<unnamed-enum-MaxSequenceHistoryLength>
+FNetPacketNotify::<unnamed-enum-SequenceNumberBits>
+FNetPacketNotify::FNotificationHeader
+FNetPacketNotify::FSentAckData
+FOutBunch
+FPostProcessVolumeProperties
+FPrimitiveSceneProxy
+FPrimitiveUniformShaderParameters
+FPrimitiveViewRelevance
+FRayTracingGeometry
+FSceneInterface
+FSceneViewStateInterface
+FSkeletalMeshLODInfo
+FSlateUser
+FStaticMeshLODResources
+FStaticMeshRenderData
+FViewUniformShaderParameters
+IInterface_PostProcessVolume
+TSparseArray<TSparseSetElement<TTuple<FName,FUpdateLevelVisibilityLevelInfo> >,TSparseArrayAllocator<TSizedDefaultAllocator<32>,FDefaultBitArrayAllocator> >
+UAnimBlueprintGeneratedClass
+UAnimMontage
+UCameraShakeBase
+UChannel
+UDamageType
+UMaterialInstance
+UNetConnection
+UNetDriver
+UPhysicalMaterial
+UReplicationConnectionDriver
+UReplicationDriver
+USkeletalMesh
+USkeleton
+USkinnedAsset
+UStaticMeshComponent

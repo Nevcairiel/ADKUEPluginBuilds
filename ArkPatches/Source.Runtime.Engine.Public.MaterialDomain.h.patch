@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/MaterialDomain.h b/Engine/Source/Runtime/Engine/Public/MaterialDomain.h
+--- a/Engine/Source/Runtime/Engine/Public/MaterialDomain.h
++++ b/Engine/Source/Runtime/Engine/Public/MaterialDomain.h
+@@ -25,6 +25,7 @@ enum EMaterialDomain : int
+ 	MD_UI UMETA(DisplayName = "User Interface"),
+ 	/** The material will be used for runtime virtual texture (Deprecated). */
+ 	MD_RuntimeVirtualTexture UMETA(Hidden),
++	MD_Compute UMETA(Hidden), // [ARK]
+ 
+ 	MD_MAX
+ };

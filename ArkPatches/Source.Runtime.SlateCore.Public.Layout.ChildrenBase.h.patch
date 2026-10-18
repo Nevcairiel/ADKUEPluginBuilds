@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Layout/ChildrenBase.h b/Engine/Source/Runtime/SlateCore/Public/Layout/ChildrenBase.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Layout/ChildrenBase.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Layout/ChildrenBase.h
+@@ -50,6 +50,7 @@ public:
+ 	virtual int32 Num() const = 0;
+ 	/** @return pointer to the Widget at the specified Index. */
+ 	virtual TSharedRef<SWidget> GetChildAt( int32 Index ) = 0;
++	virtual bool IsChildValid(int) const { return true; } // [ARK]
+ 	/** @return const pointer to the Widget at the specified Index. */
+ 	virtual TSharedRef<const SWidget> GetChildAt( int32 Index ) const = 0;
+ 

@@ -1,0 +1,131 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SScrollBox.h b/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SScrollBox.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SScrollBox.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SScrollBox.h
+@@ -154,6 +154,7 @@ public:
+ 
+ 	SLATE_BEGIN_ARGS(SScrollBox)
+ 		: _Style( &FAppStyle::Get().GetWidgetStyle<FScrollBoxStyle>("ScrollBox") )
++		, _NumPreviewWidgets(0), _NumWidgetsBeforeWrapping(0), _WidgetSize(FVector2D::ZeroVector), _WidgetPadding(FVector2D::ZeroVector), _WidgetHorizontalAlignment(HAlign_Left), _WidgetVerticalAlignment(VAlign_Top), _UseWidgetPaddingAsMargin(false), _WidgetMargin(FMargin(0.f)) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _ScrollBarStyle( &FAppStyle::Get().GetWidgetStyle<FScrollBarStyle>("ScrollBar") )
+ 		, _ExternalScrollbar()
+ 		, _Orientation(Orient_Vertical)
+@@ -257,10 +258,19 @@ public:
+ 
+ 		/** If enabled, content in the underlying panel will be allowed to shrink with the overall size of the ScrollBox instead of always taking up maximum space */
+ 		SLATE_ARGUMENT(bool, AllowContentToShrink);
++		SLATE_ARGUMENT(int, NumPreviewWidgets) // [ARK]
++		SLATE_ARGUMENT(int, NumWidgetsBeforeWrapping) // [ARK]
++		SLATE_ARGUMENT(FVector2D, WidgetSize) // [ARK]
++		SLATE_ARGUMENT(FVector2D, WidgetPadding) // [ARK]
++		SLATE_ARGUMENT(EHorizontalAlignment, WidgetHorizontalAlignment) // [ARK]
++		SLATE_ARGUMENT(EVerticalAlignment, WidgetVerticalAlignment) // [ARK]
++		SLATE_ARGUMENT(bool, UseWidgetPaddingAsMargin) // [ARK]
++		SLATE_ARGUMENT(FMargin, WidgetMargin) // [ARK]
+ 
+ 	SLATE_END_ARGS()
+ 
+ 	SLATE_API SScrollBox();
++	virtual float GetClampedDesiredScrollOffset(); // [ARK]
+ 	SLATE_API virtual ~SScrollBox();
+ 
+ 	/** @return a new slot. Slots contain children for SScrollBox */
+@@ -632,9 +642,68 @@ protected:
+ 
+ 	/** Whether content in the underlying panel will be allowed to shrink with the overall size of the ScrollBox instead of always taking up maximum space */
+ 	bool bAllowContentToShrink = false;
++public:
++	// [ARK] used by SScrollPanel render ordering
++	struct SortStruct
++	{
++		int32 UnsortedIndex;
++		const FSlot* Slot;
++	};
++public:
++	TArray<float> WidgetOffsets; // [ARK]
++protected:
++public:
++	FVector2D WidgetSize; // [ARK]
++protected:
++public:
++	FMargin WidgetMargin; // [ARK]
++protected:
++public:
++	FVector2D WidgetPadding; // [ARK]
++protected:
++public:
++	int NumWidgetsBeforeWrapping; // [ARK]
++protected:
++public:
++	int NumPreviewWidgets; // [ARK]
++protected:
++public:
++	EHorizontalAlignment WidgetHorizontalAlignment; // [ARK]
++protected:
++public:
++	EVerticalAlignment WidgetVerticalAlignment; // [ARK]
++protected:
++public:
++	bool UseWidgetPaddingAsMargin; // [ARK]
++protected:
++public:
++	bool (*SortRenderOrderSlotsDelegate)(const SScrollBox::SortStruct&, const SScrollBox::SortStruct&); // [ARK]
++protected:
+ };
+ 
+ 
++// [ARK] children of SScrollPanel that are currently visible (layout from ShooterGameEditor-Slate.pdb, 48 bytes)
++class FVisibleChildren : public FChildren
++{
++public:
++	FVisibleChildren(SWidget* InOwner, TPanelChildren<SScrollBox::FSlot>& InChildren);
++	virtual int32 Num() const override;
++	virtual TSharedRef<SWidget> GetChildAt(int32 Index) override;
++	virtual TSharedRef<const SWidget> GetChildAt(int32 Index) const override;
++	virtual const FSlotBase& GetSlotAt(int32 ChildIndex) const override;
++	virtual FWidgetRef GetChildRefAt(int32 Index) override;
++	virtual FConstWidgetRef GetChildRefAt(int32 Index) const override;
++	void AddChild(int32 Index);
++	void RemoveChild(int32 Index);
++	void Empty();
++	void Update(int32 InOffset, int32 InCount);
++	int32 GetOffset() const;
++private:
++	TPanelChildren<SScrollBox::FSlot>& Children;
++	int32 Offset;
++	int32 Count;
++};
++
+ template <>
+ struct TWidgetTypeTraits<class SScrollPanel>
+ {
+@@ -664,6 +733,7 @@ public:
+ 
+ 	SScrollPanel()
+ 	: Children(this)
++	, VisibleChildren(this, Children) // [ARK]
+ 	{
+ 	}
+ 
+@@ -697,6 +767,7 @@ public:
+ 
+ 	float PhysicalOffset;
+ 	TPanelChildren<SScrollBox::FSlot> Children;
++	FVisibleChildren VisibleChildren; // [ARK]
+ 
+ protected:
+ 	// Begin SWidget overrides.
+@@ -710,4 +781,14 @@ private:
+ 	bool FrontPadScrolling;
+ 	bool bAllowContentToShrink;
+ 	mutable FVector2D ArrangedSize;
++	int NumWidgetsBeforeWrapping; // [ARK]
++	FVector2D WidgetSize; // [ARK]
++	FVector2D WidgetPadding; // [ARK]
++	EHorizontalAlignment WidgetHorizontalAlignment; // [ARK]
++	EVerticalAlignment WidgetVerticalAlignment; // [ARK]
++	bool UseWidgetPaddingAsMargin; // [ARK]
++	FMargin WidgetMargin; // [ARK]
++	TArray<SScrollBox::SortStruct> RenderOrderedChildren; // [ARK]
++	TArray<float> WidgetOffsets; // [ARK]
++	bool (*RenderOrderSortCallback)(const SScrollBox::SortStruct&, const SScrollBox::SortStruct&); // [ARK]
+ };

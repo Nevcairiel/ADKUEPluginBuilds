@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Editor/BlueprintGraph/Public/BlueprintEditorSettings.h b/Engine/Source/Editor/BlueprintGraph/Public/BlueprintEditorSettings.h
+--- a/Engine/Source/Editor/BlueprintGraph/Public/BlueprintEditorSettings.h
++++ b/Engine/Source/Editor/BlueprintGraph/Public/BlueprintEditorSettings.h
+@@ -349,6 +349,7 @@ class UBlueprintEditorSettings : public UDeveloperSettings
+ 	 */
+ 	UPROPERTY(EditAnywhere, config, Category=Play, meta=(AllowAbstract, ShowObjectRootClass))
+ 	TArray<TSoftClassPtr<UObject>> BaseClassesToDisallowRecompilingDuringPlayInEditor;
++	bool bAlwaysPopulatePropertyDebugViewTreeFully; // [ARK]
+ 
+ 	/** Get allowed functions permissions list */
+ 	FPathPermissionList& GetFunctionPermissions() { return FunctionPermissions; }

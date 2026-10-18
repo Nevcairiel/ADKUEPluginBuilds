@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Developer/AssetTools/Public/IAssetTools.h b/Engine/Source/Developer/AssetTools/Public/IAssetTools.h
+--- a/Engine/Source/Developer/AssetTools/Public/IAssetTools.h
++++ b/Engine/Source/Developer/AssetTools/Public/IAssetTools.h
+@@ -257,6 +257,9 @@ struct FMigrationOptions
+ 	/** Destination for assets that don't have a corresponding content folder. If left empty those assets are not migrated. (Not used by the new migration)*/
+ 	UPROPERTY(BlueprintReadWrite, Category = MigrationOptions)
+ 	FString OrphanFolder;
++	bool bMigratePluginContentOnly; // [ARK]
++	TArray<FString> PluginNamesToExclude; // [ARK]
++	bool bAllowUnsavedAssets; // [ARK]
+ 
+ 	FMigrationOptions()
+ 		: bPrompt(false)

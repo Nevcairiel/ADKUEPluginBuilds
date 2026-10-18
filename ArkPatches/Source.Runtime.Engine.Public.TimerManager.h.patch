@@ -1,0 +1,56 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/TimerManager.h b/Engine/Source/Runtime/Engine/Public/TimerManager.h
+--- a/Engine/Source/Runtime/Engine/Public/TimerManager.h
++++ b/Engine/Source/Runtime/Engine/Public/TimerManager.h
+@@ -245,31 +245,33 @@ public:
+ 	 * @param inObj					Object to call the timer function on.
+ 	 * @param inTimerMethod			Method to call when timer fires.
+ 	 */
++	// [ARK] All SetTimerForNextTick overloads take an additional 'bool bDoLoop' (default false, see
++	// FInputBindingEditorModule in ShooterGameEditor-InputBindingEditor.dll which passes 0 for vanilla call sites).
+ 	template< class UserClass >
+-	inline FTimerHandle SetTimerForNextTick(UserClass* inObj, typename FTimerDelegate::TMethodPtr< UserClass > inTimerMethod)
++	inline FTimerHandle SetTimerForNextTick(UserClass* inObj, typename FTimerDelegate::TMethodPtr< UserClass > inTimerMethod, bool bDoLoop = false)
+ 	{
+-		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(FTimerDelegate::CreateUObject(inObj, inTimerMethod)));
++		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(FTimerDelegate::CreateUObject(inObj, inTimerMethod)), bDoLoop);
+ 	}
+ 	template< class UserClass >
+-	inline FTimerHandle SetTimerForNextTick(UserClass* inObj, typename FTimerDelegate::TConstMethodPtr< UserClass > inTimerMethod)
++	inline FTimerHandle SetTimerForNextTick(UserClass* inObj, typename FTimerDelegate::TConstMethodPtr< UserClass > inTimerMethod, bool bDoLoop = false)
+ 	{
+-		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(FTimerDelegate::CreateUObject(inObj, inTimerMethod)));
++		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(FTimerDelegate::CreateUObject(inObj, inTimerMethod)), bDoLoop);
+ 	}
+ 
+ 	/** Version that takes any generic delegate. */
+-	inline FTimerHandle SetTimerForNextTick(FTimerDelegate const& InDelegate)
++	inline FTimerHandle SetTimerForNextTick(FTimerDelegate const& InDelegate, bool bDoLoop = false)
+ 	{
+-		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(InDelegate));
++		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(InDelegate), bDoLoop);
+ 	}
+ 	/** Version that takes a dynamic delegate (e.g. for UFunctions). */
+-	inline FTimerHandle SetTimerForNextTick(FTimerDynamicDelegate const& InDynDelegate)
++	inline FTimerHandle SetTimerForNextTick(FTimerDynamicDelegate const& InDynDelegate, bool bDoLoop = false)
+ 	{
+-		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(InDynDelegate));
++		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(InDynDelegate), bDoLoop);
+ 	}
+ 	/** Version that takes a TFunction */
+-	inline FTimerHandle SetTimerForNextTick(TFunction<void(void)>&& Callback)
++	inline FTimerHandle SetTimerForNextTick(TFunction<void(void)>&& Callback, bool bDoLoop = false)
+ 	{
+-		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(MoveTemp(Callback)));
++		return InternalSetTimerForNextTick(FTimerUnifiedDelegate(MoveTemp(Callback)), bDoLoop);
+ 	}
+ 
+ 	/**
+@@ -501,7 +503,7 @@ protected:
+ private:
+ 	ENGINE_API void InternalSetTimer( FTimerHandle& InOutHandle, FTimerUnifiedDelegate&& InDelegate, float InRate, bool bInLoop, float InFirstDelay );
+ 	ENGINE_API void InternalSetTimer( FTimerHandle& InOutHandle, FTimerUnifiedDelegate&& InDelegate, float InRate, const FTimerManagerTimerParameters& InTimerParameters );
+-	ENGINE_API FTimerHandle InternalSetTimerForNextTick( FTimerUnifiedDelegate&& InDelegate );
++	ENGINE_API FTimerHandle InternalSetTimerForNextTick( FTimerUnifiedDelegate&& InDelegate, bool bDoLoop ); // [ARK]
+ 	ENGINE_API void InternalClearTimer( FTimerHandle InDelegate );
+ 	ENGINE_API void InternalClearAllTimers( void const* Object );
+ 	ENGINE_API float InternalGetTimerRate( FTimerData const* const TimerData ) const;

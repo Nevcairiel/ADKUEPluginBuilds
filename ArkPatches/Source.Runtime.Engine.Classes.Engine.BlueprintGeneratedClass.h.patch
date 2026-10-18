@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h b/Engine/Source/Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/BlueprintGeneratedClass.h
+@@ -462,6 +462,9 @@ private:
+ 	 */
+ 	UPROPERTY()
+ 	uint8 bIsInternalClass:1;
++public:
++	uint8 bIsDataOnlyBlueprint : 1; // [ARK]
++private:
+ #endif
+ 	
+ public:

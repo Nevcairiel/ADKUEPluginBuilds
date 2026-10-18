@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Framework/Text/TextLayout.h b/Engine/Source/Runtime/Slate/Public/Framework/Text/TextLayout.h
+--- a/Engine/Source/Runtime/Slate/Public/Framework/Text/TextLayout.h
++++ b/Engine/Source/Runtime/Slate/Public/Framework/Text/TextLayout.h
+@@ -760,6 +760,7 @@ protected:
+ 
+ 	/** Unicode BiDi text detection */
+ 	TUniquePtr<TextBiDi::ITextBiDi> TextBiDiDetection;
++	bool CenterVertically; // [ARK]
+ 
+ 	int32 CachedLayoutGeneration = 0;
+ 

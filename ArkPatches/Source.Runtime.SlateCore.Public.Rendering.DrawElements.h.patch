@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Rendering/DrawElements.h b/Engine/Source/Runtime/SlateCore/Public/Rendering/DrawElements.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Rendering/DrawElements.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Rendering/DrawElements.h
+@@ -344,6 +344,7 @@ public:
+ 		const FGeometry AllottedGeometry;
+ 		const FWidgetStyle WidgetStyle;
+ 		const bool bParentEnabled;
++		float bIsSpecialZOrder; // [ARK]
+ 	};
+ 
+ 	SLATECORE_API void QueueDeferredPainting(const FDeferredPaint& InDeferredPaint);

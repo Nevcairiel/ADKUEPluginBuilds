@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/MaterialValueType.h b/Engine/Source/Runtime/Engine/Public/MaterialValueType.h
+--- a/Engine/Source/Runtime/Engine/Public/MaterialValueType.h
++++ b/Engine/Source/Runtime/Engine/Public/MaterialValueType.h
+@@ -78,13 +78,14 @@ enum EMaterialValueType : uint64
+ 
+ 	/** An internal type */
+ 	MCT_Unexposed             = 1ull << 36,
++	MCT_AuxSceneTexture       = 1ull << 37, // [ARK]
+ 
+ 	/** Reserved range for licensee modifications, any bits in the (inclusive) range is free for modifications */
+ 	MCT_LicenseeReservedBegin     = 1ull << 48,
+ 	MCT_LicenseeReservedEnd       = 1ull << 63,
+ 
+ 	/** MCT_SparseVolumeTexture is intentionally not (yet) included here because it differs a lot from the other texture types and may not be supported/appropriate for all MCT_Texture use cases. */
+-	MCT_Texture = MCT_Texture2D | MCT_TextureCube | MCT_Texture2DArray | MCT_TextureCubeArray | MCT_VolumeTexture | MCT_TextureExternal | MCT_TextureVirtual | MCT_TextureMeshPaint | MCT_TextureMaterialCache,
++	MCT_Texture = MCT_Texture2D | MCT_TextureCube | MCT_Texture2DArray | MCT_TextureCubeArray | MCT_VolumeTexture | MCT_TextureExternal | MCT_TextureVirtual | MCT_TextureMeshPaint | MCT_TextureMaterialCache | MCT_AuxSceneTexture /* [ARK] */,
+ 
+ 	MCT_Float   = MCT_Float1 | MCT_Float2 | MCT_Float3 | MCT_Float4,
+ 	MCT_UInt    = MCT_UInt1 | MCT_UInt2 | MCT_UInt3 | MCT_UInt4,

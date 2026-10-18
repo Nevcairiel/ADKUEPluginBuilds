@@ -1,0 +1,23 @@
+diff --git a/Engine/Source/Editor/LevelEditor/Public/LevelEditor.h b/Engine/Source/Editor/LevelEditor/Public/LevelEditor.h
+--- a/Engine/Source/Editor/LevelEditor/Public/LevelEditor.h
++++ b/Engine/Source/Editor/LevelEditor/Public/LevelEditor.h
+@@ -280,6 +280,9 @@ public:
+ 	/** Called when an edit command is executed on components in the world */
+ 	DECLARE_EVENT(FLevelEditorModule, FComponentsEditedEvent);
+ 	virtual FComponentsEditedEvent& OnComponentsEdited() { return ComponentsEditedEvent; }
++	/** [ARK] Called when the material selection changes */
++	DECLARE_EVENT_TwoParams(FLevelEditorModule, FMaterialSelectionChangedEvent, UMaterialInterface*, bool);
++	virtual FLevelEditorModule::FMaterialSelectionChangedEvent& OnMaterialSelectionChanged(); // [ARK]
+ 
+ 	/** Delegates to be called to extend the level viewport menus */
+ 	DECLARE_DELEGATE_RetVal_OneParam( TSharedRef<FExtender>, FLevelEditorMenuExtender, const TSharedRef<FUICommandList>);
+@@ -456,6 +459,9 @@ private:
+ 	/** Browse to active level in content browser */
+ 	void OnBrowseLevelInContentBrowser();
+ 
++private:
++public:
++	FLevelEditorModule::FMaterialSelectionChangedEvent MaterialSelectionChangedEvent; // [ARK]
+ private:
+ 	TSharedPtr<FExtensibilityManager> MenuExtensibilityManager;
+ 	TSharedPtr<FExtensibilityManager> ToolBarExtensibilityManager;

@@ -1,0 +1,73 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Widgets/SWidget.h b/Engine/Source/Runtime/SlateCore/Public/Widgets/SWidget.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Widgets/SWidget.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Widgets/SWidget.h
+@@ -34,6 +34,7 @@
+ #include "Widgets/Accessibility/SlateWidgetAccessibleTypes.h"
+ #include "WidgetPixelSnapping.h"
+ #include "Types/SlateAttributeMetaData.h"
++#include "Animation/CurveSequence.h" // [ARK] SWidget::BorderIntroAnimation / BorderPulseAnimation
+ 
+ class FActiveTimerHandle;
+ class FArrangedChildren;
+@@ -1005,6 +1006,8 @@ public:
+ 	{
+ 		return false;
+ 	}
++	virtual bool IsObjectWidget() const { return false; } // [ARK]
++	virtual UWidget* GetObjectWidget() { return nullptr; } // [ARK]
+ 
+ 	/** @return The tool tip associated with this widget; Invalid reference if there is not one */
+ 	SLATECORE_API virtual TSharedPtr<IToolTip> GetToolTip();
+@@ -1778,6 +1781,15 @@ private:
+ 	 * @param ArrangedChildren    The array to which to add the WidgetGeometries that represent the arranged children.
+ 	 */
+ 	virtual void OnArrangeChildren(const FGeometry& AllottedGeometry, FArrangedChildren& ArrangedChildren) const = 0;
++public:
++	virtual bool CanBeHighlighted() const; // [ARK]
++private:
++public:
++	virtual void SetHighlightState(bool, FLinearColor); // [ARK]
++private:
++public:
++	virtual void DoBorderHighlighting(FSlateWindowElementList&, int, const FGeometry&, FLinearColor) const; // [ARK]
++private:
+ 
+ 	SLATECORE_API void Prepass_Internal(float LayoutScaleMultiplier);
+ 
+@@ -2059,6 +2071,36 @@ private:
+ #if STATS || ENABLE_STATNAMEDEVENTS
+ 	/** Stat id of this object, 0 if nobody asked for it yet */
+ 	mutable TStatId				StatID;
++public:
++	void* UserData; // [ARK]
++private:
++public:
++	TWeakObjectPtr<UWidget> UWidgetPointer; // [ARK]
++private:
++public:
++	FCurveSequence BorderIntroAnimation; // [ARK]
++private:
++public:
++	FCurveSequence BorderPulseAnimation; // [ARK]
++private:
++public:
++	TAttribute<bool> IsHighlightable; // [ARK]
++private:
++public:
++	TAttribute<bool> UseWindowClippingForHighlight; // [ARK]
++private:
++public:
++	bool IsHighlighted; // [ARK]
++private:
++public:
++	FLinearColor HighlightTint; // [ARK]
++private:
++public:
++	bool bMuted; // [ARK]
++private:
++public:
++	bool bUseHoverSound; // [ARK]
++private:
+ #endif
+ 
+ #if ENABLE_STATNAMEDEVENTS

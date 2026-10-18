@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Layout/Clipping.h b/Engine/Source/Runtime/SlateCore/Public/Layout/Clipping.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Layout/Clipping.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Layout/Clipping.h
+@@ -50,7 +50,8 @@ enum class EWidgetClipping : uint8
+ 	 * was added to dynamically adjust the clipping if needed.  The reason not every panel is set to OnDemand, 
+ 	 * is because not every panel returns a Desired Size that matches what it plans to render at.
+ 	 */
+-	OnDemand UMETA(DisplayName = "On Demand (Advanced)")
++	OnDemand UMETA(DisplayName = "On Demand (Advanced)"),
++	ClipNever, // [ARK]
+ };
+ 
+ 

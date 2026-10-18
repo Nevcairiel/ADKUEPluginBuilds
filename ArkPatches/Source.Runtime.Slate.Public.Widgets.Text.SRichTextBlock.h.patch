@@ -1,0 +1,27 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Text/SRichTextBlock.h b/Engine/Source/Runtime/Slate/Public/Widgets/Text/SRichTextBlock.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Text/SRichTextBlock.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Text/SRichTextBlock.h
+@@ -37,6 +37,7 @@ public:
+ 
+ 	SLATE_BEGIN_ARGS( SRichTextBlock )
+ 		: _Text()
++		, _CenterVertically(false) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _HighlightText()
+ 		, _WrapTextAt( 0.0f )
+ 		, _AutoWrapText(false)
+@@ -117,6 +118,7 @@ public:
+ 
+ 		/** Determines what happens to text that is clipped and doesn't fit within the clip rect for this widget */
+ 		SLATE_ARGUMENT(TOptional<ETextOverflowPolicy>, OverflowPolicy)
++		SLATE_ARGUMENT(bool, CenterVertically) // [ARK]
+ 
+ 		/** Minimum width that this text block should be */
+ 		SLATE_ATTRIBUTE(float, MinDesiredWidth)
+@@ -290,6 +292,7 @@ private:
+ 
+ 	/** The amount to scale each lines height by. */
+ 	TAttribute< ETextJustify::Type > Justification; 
++	TAttribute<bool> CenterVertically; // [ARK]
+ 
+ 	/** How the text should be aligned with the margin. */
+ 	TAttribute< float > LineHeightPercentage;

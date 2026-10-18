@@ -1,0 +1,36 @@
+diff --git a/Engine/Source/Editor/UnrealEd/Classes/Editor/EditorEngine.h b/Engine/Source/Editor/UnrealEd/Classes/Editor/EditorEngine.h
+--- a/Engine/Source/Editor/UnrealEd/Classes/Editor/EditorEngine.h
++++ b/Engine/Source/Editor/UnrealEd/Classes/Editor/EditorEngine.h
+@@ -1812,6 +1812,8 @@ public:
+ 	 * Cancels the current cook by the book in editor
+ 	 */
+ 	virtual void CancelCookByTheBookInEditor() { }
++	virtual void LogCookError(const FString&); // [ARK]
++	virtual void DumpCookErrorsLog(); // [ARK]
+ 
+ 	/** Request a play session (Play in Editor, Play in New Process, Launcher) with the configured parameters. See FRequestPlaySessionParams for more details. */
+ 	UNREALED_API void RequestPlaySession(const FRequestPlaySessionParams& InParams);
+@@ -2587,6 +2589,7 @@ private:
+ 	FOnMakeAssetReferenceFixer OnMakeAssetReferenceFixerDelegate;
+ 	FOnCreateLevelEditorDragDropHandler OnCreateLevelEditorDragDropHandlerDelegate;
+ 	FOnFilterCopiedActors OnFilterCopiedActorsDelegate;
++	FOutputDevice* CookErrors; // [ARK]
+ 
+ public:
+ 
+@@ -2941,6 +2944,7 @@ private:
+ 
+ 	/** Broadcasts to allow selection of unloaded actors */
+ 	FSelectUnloadedActorsEvent SelectUnloadedActorsEvent;
++	TDelegate<bool(AMatineeActor *)> ShouldOpenMatineeCallback; // [ARK]
+ 
+ 	/** Reference to owner of the current popup */
+ 	TWeakPtr<class SWindow> PopupWindow;
+@@ -3175,6 +3179,7 @@ protected:
+ 										  need different net modes for subsequent instances.
+ 	*/
+ 	UNREALED_API virtual void CreateNewPlayInEditorInstance(FRequestPlaySessionParams &InRequestParams, const bool bInDedicatedInstance, const EPlayNetMode InNetMode);
++	virtual void OnOpenMatinee(); // [ARK]
+ 
+ 
+ 	/** Asks the player to save dirty maps, if this fails it will return false. */

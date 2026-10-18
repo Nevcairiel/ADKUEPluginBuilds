@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Views/SListView.h b/Engine/Source/Runtime/Slate/Public/Widgets/Views/SListView.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Views/SListView.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Views/SListView.h
+@@ -2530,6 +2530,7 @@ protected:
+ 		OnTouchEnd.ExecuteIfBound();
+ 	}
+ 
++public: // [ARK] ScrollBy is public in the devkit
+ 	virtual float ScrollBy( const FGeometry& MyGeometry, float ScrollByAmountInSlateUnits, EAllowOverscroll InAllowOverscroll ) override
+ 	{
+ 		auto DoubleFractional = [](double Value) -> double
+@@ -2682,6 +2683,7 @@ protected:
+ 
+ 		return 0;
+ 	}
++protected:
+ 
+ protected:
+ 

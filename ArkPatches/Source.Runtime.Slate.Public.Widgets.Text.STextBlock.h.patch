@@ -1,0 +1,31 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Text/STextBlock.h b/Engine/Source/Runtime/Slate/Public/Widgets/Text/STextBlock.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Text/STextBlock.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Text/STextBlock.h
+@@ -51,6 +51,7 @@ public:
+ 
+ 	SLATE_BEGIN_ARGS( STextBlock )
+ 		: _Text()
++		, _CenterVertically(false), _DisableInternalClipping(false), _NoDisabledEffect(false) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _TextStyle( &FCoreStyle::Get().GetWidgetStyle<FTextBlockStyle>( "NormalText" ) )
+ 		, _Font()
+ 		, _StrikeBrush()
+@@ -149,6 +150,9 @@ public:
+ 
+ 		/** Determines what happens to text that is clipped and doesn't fit within the clip rect for this widget */
+ 		SLATE_ARGUMENT(TOptional<ETextOverflowPolicy>, OverflowPolicy)
++		SLATE_ARGUMENT(bool, CenterVertically) // [ARK]
++		SLATE_ARGUMENT(bool, DisableInternalClipping) // [ARK]
++		SLATE_ARGUMENT(bool, NoDisabledEffect) // [ARK]
+ 
+ 		/**
+ 		 * If this is enabled, text shaping, wrapping, justification are disabled in favor of much faster text layout and measurement.
+@@ -374,6 +378,9 @@ private:
+ 
+ 	/** The amount to scale each lines height by. */
+ 	TSlateAttribute<ETextJustify::Type> Justification;
++	TAttribute<bool> CenterVertically; // [ARK]
++	TAttribute<bool> DisableInternalClipping; // [ARK]
++	TAttribute<bool> NoDisabledEffect; // [ARK]
+ 
+ 	/** How the text should be aligned with the margin. */
+ 	TSlateAttribute<float> LineHeightPercentage;

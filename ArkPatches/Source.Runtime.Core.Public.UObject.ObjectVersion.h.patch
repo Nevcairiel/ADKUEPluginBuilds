@@ -1,0 +1,26 @@
+diff --git a/Engine/Source/Runtime/Core/Public/UObject/ObjectVersion.h b/Engine/Source/Runtime/Core/Public/UObject/ObjectVersion.h
+--- a/Engine/Source/Runtime/Core/Public/UObject/ObjectVersion.h
++++ b/Engine/Source/Runtime/Core/Public/UObject/ObjectVersion.h
+@@ -747,8 +747,21 @@ enum EUnrealEngineObjectUE4Version
+ enum EUnrealEngineObjectLicenseeUEVersion
+ {
+ 	VER_LIC_NONE = 0,
++	VER_LIC_FOLIAGE_NAME_TABLE = 1, // [ARK]
++	VER_LIC_MATERIAL_SURFACE_LEVEL = 2, // [ARK]
++	VER_LIC_BULK_SM_INSTANCES_UPDATE = 3, // [ARK]
++	VER_LIC_COOKED_SHADERMAP_EXTRAPATH = 4, // [ARK]
++	VER_LIC_FOLIAGE_OCTREE = 5, // [ARK]
++	VER_LIC_SKYLIGHT_MULT = 6, // [ARK]
++	VER_LIC_POSTPROCESS_STENCIL = 7, // [ARK]
++	VER_LIC_DECAL_CREATIONTIME = 8, // [ARK]
++	VER_LIC_FONT_UPDATE = 9, // [ARK]
++	VER_LIC_ORIGIN_VALIDATION = 10, // [ARK]
++	VER_LIC_PRIMAL2 = 11, // [ARK]
++	VER_LIC_FLOATACCURACY_INSTANCES = 12, // [ARK]
++	VER_LIC_ASA_54 = 13, // [ARK]
+ 	// - this needs to be the last line (see note below)
+-	VER_LIC_AUTOMATIC_VERSION_PLUS_ONE,
++	VER_LIC_AUTOMATIC_VERSION_PLUS_ONE = 14 /* [ARK] */,
+ 	VER_LIC_AUTOMATIC_VERSION = VER_LIC_AUTOMATIC_VERSION_PLUS_ONE - 1
+ };
+ 

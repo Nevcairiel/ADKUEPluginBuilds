@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Text/ISlateEditableTextWidget.h b/Engine/Source/Runtime/Slate/Public/Widgets/Text/ISlateEditableTextWidget.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Text/ISlateEditableTextWidget.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Text/ISlateEditableTextWidget.h
+@@ -59,6 +59,7 @@ enum class EVirtualKeyboardTrigger : uint8
+ 	OnFocusByPointer,
+ 	/** Display the virtual keyboard when the widget gains keyboard focus by any means. */
+ 	OnAllFocusEvents,
++	OnJustDontUseIt, // [ARK]
+ };
+ 
+ UENUM(BlueprintType)

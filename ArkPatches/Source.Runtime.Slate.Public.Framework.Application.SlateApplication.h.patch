@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateApplication.h b/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateApplication.h
+--- a/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateApplication.h
++++ b/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateApplication.h
+@@ -2356,5 +2356,8 @@ private:
+ 	 * Called when an editor window dpi scale is changed
+ 	 */
+ 	FOnWindowDPIScaleChanged OnWindowDPIScaleChangedEvent;
++public:
++	UE::FWindowsRecursiveMutex PrimalMoviePlaybackCriticalSection; // [ARK]
++private:
+ #endif // WITH_EDITOR
+ };

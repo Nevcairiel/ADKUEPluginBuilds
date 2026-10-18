@@ -1,0 +1,82 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/Engine.h b/Engine/Source/Runtime/Engine/Classes/Engine/Engine.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/Engine.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/Engine.h
+@@ -1309,6 +1309,7 @@ public:
+ 	/** The colors used for streaming deficit debug view modes (green=fully streamed, red=high deficit). */
+ 	UPROPERTY(globalconfig)
+ 	TArray<FLinearColor> StreamingDeficitColors;
++	TArray<FLinearColor> GrassSliceColorationColors; // [ARK]
+ 
+ 	/** The visualization color when sk mesh not using skin cache. */
+ 	UPROPERTY(globalconfig)
+@@ -2604,6 +2605,7 @@ public:
+ 
+ 	/** Whether the application should avoid rendering anything to give GPU resources to other applications */
+ 	virtual bool IsRenderingSuspended() const { return false; }
++	virtual FString GetSeamlessTransitionMapPath(); // [ARK]
+ 
+ 	/** Update FApp::Timecode. */
+ 	ENGINE_API void UpdateTimecode();
+@@ -3826,6 +3828,40 @@ public:
+ 	virtual int32 EndTransaction() { return INDEX_NONE; }
+ 	virtual bool CanTransact() { return false; }
+ 	virtual void CancelTransaction(int32 Index) { }
++	virtual bool LoadGameMods(const TArray<FModInfo>&, bool); // [ARK]
++	virtual void PostLoadedMods(); // [ARK]
++	virtual bool UseHighQualityVFX(); // [ARK]
++	virtual FString GetCurrentModPath() const; // [ARK]
++	virtual bool HasModInstalled(uint64); // [ARK]
++	virtual FString GetLastModDownloadText() const; // [ARK]
++	virtual void ShowLoadingScreenUI(); // [ARK]
++	virtual void OnRedirectToURLReceived(const FString&, const FString&, const FString&); // [ARK]
++	virtual UClass* GetPendingNetGameClass(); // [ARK]
++	virtual bool CheckModInstallationStatus(FWorldContext&); // [ARK]
++	virtual void PreLoadNetGameMap(); // [ARK]
++	virtual void GuardedHTTPGetRequest(const FString&, const TMap<FString,FString>&, UObject*); // [ARK]
++	virtual void GuardedHTTPPostRequest(const FString&, const TMap<FString,FString>&, const FString&, UObject*); // [ARK]
++	virtual int64 GuardedHTTPRequest(const FBlueprintHTTPRequestData&, UObject*); // [ARK]
++	virtual void GuardedHTTPGetResponse(TSharedPtr<IHttpRequest>, TSharedPtr<IHttpResponse>, bool, UObject*); // [ARK]
++	virtual void GuardedHTTPPostResponse(TSharedPtr<IHttpRequest>, TSharedPtr<IHttpResponse>, bool, UObject*); // [ARK]
++	virtual void GuardedHTTPResponse(TSharedPtr<IHttpRequest>, TSharedPtr<IHttpResponse>, bool, UObject*, int64, FString); // [ARK]
++	virtual bool IsNetBlockedMod(const FString&, FString&); // [ARK]
++	virtual void SetNetBlockedMods(TArray<int64>); // [ARK]
++	virtual int64 GuardedCreateWebSocket(const FString&, const FString&, const TMap<FString,FString>&, const bool&, UObject*); // [ARK]
++	virtual void GuardedWebSocketConnect(const int64&, UObject*); // [ARK]
++	virtual void GuardedWebSocketClose(const int64&, UObject*); // [ARK]
++	virtual void GuardedWebSocketSendMessage(const int64&, const FString&, UObject*); // [ARK]
++	virtual bool GuardedWebSocketIsConnected(const int64&, UObject*); // [ARK]
++	virtual void OnGuardedWebSocketConnected(int64); // [ARK]
++	virtual void OnGuardedWebSocketConnectionError(const FString&, int64); // [ARK]
++	virtual void OnGuardedWebSocketConnectionClosed(int, const FString&, bool, int64); // [ARK]
++	virtual void OnGuardedWebSocketMessageReceived(const FString&, int64); // [ARK]
++	virtual void OnGuardedWebSocketMessageSent(const FString&, int64); // [ARK]
++	virtual void CloseAllGuardedWebSockets(); // [ARK]
++	virtual bool Primal_IsServerUnderMemoryPressure() const; // [ARK]
++	virtual int64 GetLastLoadedCosmeticModID(bool) const; // [ARK]
++	virtual void SetSparseDataOverrideClass(UClass*); // [ARK]
++	virtual void CheckForLoadingScreenOverrides(FURL); // [ARK]
+ #endif
+ 
+ public:
+@@ -4096,6 +4132,21 @@ private:
+ #endif
+ 
+ 	FDelegateHandle HandleScreenshotCapturedDelegateHandle;
++public:
++	FString LastModDownloadText; // [ARK]
++private:
++public:
++	float NetworkStressTestClientMode_MinFPS; // [ARK]
++private:
++public:
++	float NetworkStressTestClientMode_MaxFPS; // [ARK]
++private:
++public:
++	UClass* SparseDataOverrideClass; // [ARK]
++private:
++public:
++	TMap<FString,FString> PrimalMoviePathRemappings; // [ARK]
++private:
+ 
+ public:
+ 	/** Set priority and affinity on game thread either from ini file or from FPlatformAffinity::GetGameThreadPriority()*/

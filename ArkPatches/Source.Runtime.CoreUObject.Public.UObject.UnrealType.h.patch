@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h
+@@ -181,6 +181,7 @@ class FProperty : public FField
+ public:
+ 	EPropertyFlags	PropertyFlags;
+ 	uint16			RepIndex;
++	bool Primal_bForceExposeToBlueprints; // [ARK]
+ 
+ private:
+ 	TEnumAsByte<ELifetimeCondition> BlueprintReplicationCondition;

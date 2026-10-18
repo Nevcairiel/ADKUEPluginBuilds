@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/MeshUVChannelInfo.h b/Engine/Source/Runtime/Engine/Public/MeshUVChannelInfo.h
+--- a/Engine/Source/Runtime/Engine/Public/MeshUVChannelInfo.h
++++ b/Engine/Source/Runtime/Engine/Public/MeshUVChannelInfo.h
+@@ -5,7 +5,7 @@
+ #include "MeshUVChannelInfo.generated.h"
+ 
+ // Constants.
+-enum { MAX_TEXCOORDS = 4 };
++enum { MAX_TEXCOORDS = 6 }; // [ARK] 4 in vanilla UE
+ 
+ /** The world size for each texcoord mapping. Used by the texture streaming. */
+ USTRUCT(BlueprintType)

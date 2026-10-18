@@ -1,0 +1,29 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SEditableTextBox.h b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SEditableTextBox.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SEditableTextBox.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SEditableTextBox.h
+@@ -39,6 +39,7 @@ public:
+ 
+ 	SLATE_BEGIN_ARGS( SEditableTextBox )
+ 		: _Style(&FCoreStyle::Get().GetWidgetStyle< FEditableTextBoxStyle >("NormalEditableTextBox"))
++		, _bShouldHandleEscape(true) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _Text()
+ 		, _HintText()
+ 		, _SearchText()
+@@ -191,6 +192,7 @@ public:
+ 
+ 		/** Called when all font faces for the text have finished loading asynchronously */
+ 		SLATE_EVENT(FSimpleDelegate, OnAllFontFacesFinishLoading)
++		SLATE_ATTRIBUTE(bool, bShouldHandleEscape) // [ARK]
+ 	SLATE_END_ARGS()
+ 
+ 	SLATE_API SEditableTextBox();
+@@ -453,6 +455,9 @@ protected:
+ 	/** Callback when the user's cursor position and/or selection has changed. */
+ 	SLATE_API void OnEditableTextCursorMovedWithSelection(const FTextLocation& InLocation, const FTextSelection& TextSelection);
+ 
++public:
++	TAttribute<bool> bShouldHandleEscape; // [ARK]
++protected:
+ 	const FEditableTextBoxStyle* Style;
+ 
+ 	/** Box widget that adds padding around the editable text */

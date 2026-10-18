@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphNode.h b/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphNode.h
+--- a/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphNode.h
++++ b/Engine/Source/Runtime/Engine/Classes/EdGraph/EdGraphNode.h
+@@ -404,6 +404,7 @@ public:
+ 	/** GUID to uniquely identify this node, to facilitate diffing versions of this graph */
+ 	UPROPERTY()
+ 	FGuid NodeGuid;
++	uint8 bIsSparseData : 1; // [ARK]
+ 
+ public:
+ 	/** Is the node actually enabled */

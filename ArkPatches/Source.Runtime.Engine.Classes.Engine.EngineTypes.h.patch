@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h b/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h
+@@ -69,6 +69,7 @@ enum class EAttachmentRule : uint8
+ 
+ 	/** Snaps transform to the attach point */
+ 	SnapToTarget,
++	KeepWorldLegacy, // [ARK]
+ };
+ 
+ /** Rules for attaching components */

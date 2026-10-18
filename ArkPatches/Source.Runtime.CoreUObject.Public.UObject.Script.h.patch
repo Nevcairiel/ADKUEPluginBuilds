@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/Script.h
+@@ -138,6 +138,7 @@ enum EFunctionFlags : uint32
+ 	FUNC_RequiredAPI		= 0x00000002,	// Indicates this function is DLL exported/imported.
+ 	FUNC_BlueprintAuthorityOnly= 0x00000004,   // Function will only run if the object has network authority
+ 	FUNC_BlueprintCosmetic	= 0x00000008,   // Function is cosmetic in nature and should not be invoked on dedicated servers
++	FUNC_PrimalDoesNotReduceDormantActorReplication = 0x10, // [ARK]
+ 	// FUNC_				= 0x00000010,   // unused.
+ 	// FUNC_				= 0x00000020,   // unused.
+ 	FUNC_Net				= 0x00000040,   // Function is network-replicated.
+@@ -303,6 +304,7 @@ enum EExprToken : uint8
+ 	EX_ArrayGetByRef		= 0x6B,
+ 	EX_ClassSparseDataVariable = 0x6C, // Sparse data variable
+ 	EX_FieldPathConst		= 0x6D,
++	EX_StringLocConst		= 0x6E, // [ARK]
+ 	//						= 0x6E,
+ 	//						= 0x6F,
+ 	EX_AutoRtfmTransact     = 0x70, // AutoRTFM: run following code in a transaction

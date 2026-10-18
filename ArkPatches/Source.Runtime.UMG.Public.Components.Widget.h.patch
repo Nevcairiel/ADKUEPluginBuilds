@@ -1,0 +1,102 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/Widget.h b/Engine/Source/Runtime/UMG/Public/Components/Widget.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/Widget.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/Widget.h
+@@ -1188,6 +1188,15 @@ protected:
+ #if WITH_ACCESSIBILITY
+ 	/** Gets the widget that accessibility properties should synchronize to. */
+ 	UMG_API virtual TSharedPtr<SWidget> GetAccessibleWidget() const;
++public:
++	virtual bool UseCustomToolTip(bool) const; // [ARK]
++protected:
++public:
++	virtual bool AllowDragging(); // [ARK]
++protected:
++public:
++	virtual TSubclassOf<UUserWidget> GetCustomToolTipBlueprintOverride(); // [ARK]
++protected:
+ #endif
+ 
+ protected:
+@@ -1250,4 +1259,82 @@ private:
+ 	PROPERTY_BINDING_IMPLEMENTATION(FText, AccessibleText);
+ 	PROPERTY_BINDING_IMPLEMENTATION(FText, AccessibleSummaryText);
+ #endif
++public:
++bool bUseCustomTooltip; // [ARK]
++private:
++public:
++TEnumAsByte<EAlignHorizontalUI::Type> CustomToolTipHorizontalAlignment; // [ARK]
++private:
++public:
++TEnumAsByte<EAlignVerticalUI::Type> CustomToolTipVerticalAlignment; // [ARK]
++private:
++public:
++TEnumAsByte<EOrientation> CustomToolTipOrientation; // [ARK]
++private:
++public:
++float GamepadSelectClosestDistanceMultiplier; // [ARK]
++private:
++public:
++bool bDisableAxisOrientedSweepTestOnMe; // [ARK]
++private:
++public:
++TSubclassOf<UUserWidget> CustomToolTipBlueprintOverride; // [ARK]
++private:
++public:
++FVector2D CustomToolTipPadding; // [ARK]
++private:
++public:
++FText CustomToolTipString; // [ARK]
++private:
++public:
++TWeakObjectPtr<UWidget> PrimalUIPointer; // [ARK]
++private:
++public:
++bool HandleVisibilityWithInput; // [ARK]
++private:
++public:
++ESlateVisibility VisibilityGamepadInput; // [ARK]
++private:
++public:
++ESlateVisibility VisibilityKBMInput; // [ARK]
++private:
++public:
++bool Highlightable; // [ARK]
++private:
++public:
++bool bDontRenderHighlight; // [ARK]
++private:
++public:
++bool bUseWindowClippingForHighlight; // [ARK]
++private:
++public:
++bool bPrimalSetupSpecialAdjacents; // [ARK]
++private:
++public:
++FString CustomData; // [ARK]
++private:
++public:
++FName AdjacentUpName; // [ARK]
++private:
++public:
++FName AdjacentDownName; // [ARK]
++private:
++public:
++FName AdjacentRightName; // [ARK]
++private:
++public:
++FName AdjacentLeftName; // [ARK]
++private:
++public:
++TWeakObjectPtr<UWidget> AdjacentUp; // [ARK]
++private:
++public:
++TWeakObjectPtr<UWidget> AdjacentDown; // [ARK]
++private:
++public:
++TWeakObjectPtr<UWidget> AdjacentRight; // [ARK]
++private:
++public:
++TWeakObjectPtr<UWidget> AdjacentLeft; // [ARK]
++private:
+ };

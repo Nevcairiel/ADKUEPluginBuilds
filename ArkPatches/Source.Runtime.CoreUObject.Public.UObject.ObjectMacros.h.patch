@@ -1,0 +1,33 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectMacros.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectMacros.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectMacros.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/ObjectMacros.h
+@@ -453,6 +453,7 @@ enum EPropertyFlags : uint64
+ 	CPF_InstancedReference				= 0x0000000000080000,	///< Property is a component references.
+ 	CPF_ExperimentalExternalObjects		= 0x0000000000100000,	///< Property saves objects in separate files, breaks hard links and reload them based on discovery.
+ 	CPF_DuplicateTransient				= 0x0000000000200000,	///< Property should always be reset to the default value during any type of duplication (copy/paste, binary duplication, etc.)
++	CPF_Primal_CDOOnlyData = 0x400000, // [ARK]
+ 	//CPF_								= 0x0000000000400000,	///< 
+ 	//CPF_    							= 0x0000000000800000,	///< 
+ 	CPF_SaveGame						= 0x0000000001000000,	///< Property should be serialized for save games, this is only checked for game-specific archives with ArIsSaveGame
+@@ -487,12 +488,15 @@ enum EPropertyFlags : uint64
+ 	CPF_NativeAccessSpecifierProtected	= 0x0020000000000000,	///< Protected native access specifier
+ 	CPF_NativeAccessSpecifierPrivate	= 0x0040000000000000,	///< Private native access specifier
+ 	CPF_SkipSerialization				= 0x0080000000000000,	///< Property shouldn't be serialized, can still be exported to text
+-	CPF_TObjectPtr						= 0x0100000000000000,	///< Property is a TObjectPtr<T> instead of a USomething*. Need to differentiate between TObjectclassOf and TObjectPtr
+-	CPF_ExperimentalOverridableLogic	= 0x0200000000000000,	///< ****Experimental*** Property will use different logic to serialize knowing what changes are done against its default use the overridable information provided by the overridable manager on the object
+-	CPF_ExperimentalAlwaysOverriden		= 0x0400000000000000,	///< ****Experimental*** Property should never inherit from the parent when using overridable serialization
+-	CPF_ExperimentalNeverOverriden		= 0x0800000000000000,	///< ****Experimental*** Property should never be overridden when using overridable serialization
+-	CPF_AllowSelfReference				= 0x1000000000000000,	///< Enables the instancing graph self referencing logic, delegates and verse function are already using this
+-	CPF_ForcePostConstructLink			= 0x2000000000000000,	///< Use to force native UCLASS properties to be included in the PostConstructLink chain in a derived Blueprint class, regardless of whether it differs from the native class constructor-initialized value
++	CPF_ForcedNoLocalization = 0x100000000000000, // [ARK]
++	CPF_LiveTunable = 0x200000000000000, // [ARK]
++	CPF_SaveData = 0x400000000000000, // [ARK]
++	CPF_TObjectPtr						= 0x800000000000000 /* [ARK] */,	///< Property is a TObjectPtr<T> instead of a USomething*. Need to differentiate between TObjectclassOf and TObjectPtr
++	CPF_ExperimentalOverridableLogic	= 0x1000000000000000 /* [ARK] */,	///< ****Experimental*** Property will use different logic to serialize knowing what changes are done against its default use the overridable information provided by the overridable manager on the object
++	CPF_ExperimentalAlwaysOverriden		= 0x2000000000000000 /* [ARK] */,	///< ****Experimental*** Property should never inherit from the parent when using overridable serialization
++	CPF_ExperimentalNeverOverriden		= 0x4000000000000000 /* [ARK] */,	///< ****Experimental*** Property should never be overridden when using overridable serialization
++	CPF_AllowSelfReference				= 0x8000000000000000 /* [ARK] */,	///< Enables the instancing graph self referencing logic, delegates and verse function are already using this
++	CPF_ForcePostConstructLink			= 0x800000 /* [ARK] */,	///< Use to force native UCLASS properties to be included in the PostConstructLink chain in a derived Blueprint class, regardless of whether it differs from the native class constructor-initialized value
+ 
+ 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ 	// DO NOT ADD composite flags to EPropertyFlags. Debugger visualizations have trouble displaying composite flag values as text.

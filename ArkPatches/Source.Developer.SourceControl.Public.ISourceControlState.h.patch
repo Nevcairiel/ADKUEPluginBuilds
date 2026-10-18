@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Developer/SourceControl/Public/ISourceControlState.h b/Engine/Source/Developer/SourceControl/Public/ISourceControlState.h
+--- a/Engine/Source/Developer/SourceControl/Public/ISourceControlState.h
++++ b/Engine/Source/Developer/SourceControl/Public/ISourceControlState.h
+@@ -6,6 +6,7 @@
+ 
+ #if SOURCE_CONTROL_WITH_SLATE
+ #include "Textures/SlateIcon.h"
++#include <stdexcept> // [ARK] std::runtime_error in IsOurLock / IsOtherLock
+ #endif //SOURCE_CONTROL_WITH_SLATE
+ 
+ class ISourceControlRevision;
+@@ -249,6 +250,8 @@ public:
+ 		}
+ 		return StatusText;
+ 	}
++	virtual bool IsOurLock() const { throw std::runtime_error("The source control provider currently being used has not implemented the ISourceControlState::IsOurLock() method!"); } // [ARK]
++	virtual bool IsOtherLock() const { throw std::runtime_error("The source control provider currently being used has not implemented the ISourceControlState::IsOtherLock() method!"); } // [ARK]
+ };
+ 
+ inline FSourceControlChangelistPtr ISourceControlState::GetCheckInIdentifier() const

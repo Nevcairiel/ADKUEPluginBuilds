@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Core/Public/Serialization/Archive.h b/Engine/Source/Runtime/Core/Public/Serialization/Archive.h
+--- a/Engine/Source/Runtime/Core/Public/Serialization/Archive.h
++++ b/Engine/Source/Runtime/Core/Public/Serialization/Archive.h
+@@ -952,6 +952,8 @@ public:
+ 
+ 	/** Set TRUE to stop arrays from being cleared  before they're loaded. Instead, array data will be merged */
+ 	uint8 ArPreserveArrayElements : 1;
++	uint8 ArIsSeamlessTravelData : 1; // [ARK]
++	bool ArIsSaveData; // [ARK]
+ 
+ 	/** Whether we are currently serializing defaults. > 0 means yes, <= 0 means no. */
+ 	int32 ArSerializingDefaults;
+@@ -2356,6 +2358,8 @@ public:
+ 	/** Called whilst cooking to provide file region hints to the cooker. */
+ 	virtual void PushFileRegionType(EFileRegionType Type) { }
+ 	virtual void PopFileRegionType() { }
++	virtual bool ShouldSkipSerializingObject(UObject*) const { return false; } // [ARK]
++	virtual bool UsingSaveOverride() { return false; } // [ARK]
+ 
+ private:
+ 	/** Holds the pointer to the property that is currently being serialized */

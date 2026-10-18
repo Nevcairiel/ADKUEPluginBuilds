@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Core/Public/HAL/IConsoleManager.h b/Engine/Source/Runtime/Core/Public/HAL/IConsoleManager.h
+--- a/Engine/Source/Runtime/Core/Public/HAL/IConsoleManager.h
++++ b/Engine/Source/Runtime/Core/Public/HAL/IConsoleManager.h
+@@ -185,6 +185,7 @@ enum EConsoleVariableFlags
+ 	ECVF_SetByTemp =                0x0F000000,
+ 	// Highest priority used via editor UI or or game/editor interactive console
+ 	ECVF_SetByConsole =				0x10000000,
++	ECVF_SetByServerConfig = 285212672, // [ARK]
+ 
+ 
+ 	// ------------------------------------------------
+@@ -685,6 +686,9 @@ public:
+ 	 * We also don't call for the SetOnChangedCallback() call as this is up to the caller.
+ 	 **/
+ 	virtual void SetOnChangedCallback(const FConsoleVariableDelegate& Callback) = 0;
++	virtual void SetOnFoundConsoleVariableCallback(const TDelegate<void(IConsoleVariable *)>&) = 0; // [ARK]
++	virtual void ClearOnFoundConsoleVariableCallback() = 0; // [ARK]
++	virtual void OnFoundConsoleVariable() = 0; // [ARK]
+ 
+ 	/**
+ 	 * Remove the callback function set to this console variable.

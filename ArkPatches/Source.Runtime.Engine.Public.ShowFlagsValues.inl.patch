@@ -1,0 +1,33 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/ShowFlagsValues.inl b/Engine/Source/Runtime/Engine/Public/ShowFlagsValues.inl
+--- a/Engine/Source/Runtime/Engine/Public/ShowFlagsValues.inl
++++ b/Engine/Source/Runtime/Engine/Public/ShowFlagsValues.inl
+@@ -94,6 +94,8 @@ SHOWFLAG_ALWAYS_ACCESSIBLE(PointLights, SFG_LightTypes, NSLOCTEXT("UnrealEd", "P
+ SHOWFLAG_ALWAYS_ACCESSIBLE(SpotLights, SFG_LightTypes, NSLOCTEXT("UnrealEd", "SpotLightsSF", "Spot Lights"))
+ /** Allows to disable lighting from Rect Lights, for now SHOWFLAG_ALWAYS_ACCESSIBLE because it's exposed in SceneCapture */
+ SHOWFLAG_ALWAYS_ACCESSIBLE(RectLights, SFG_LightTypes, NSLOCTEXT("UnrealEd", "RectLightsSF", "Rect Lights"))
++/** [ARK] */
++SHOWFLAG_ALWAYS_ACCESSIBLE(InheritedLights, SFG_LightTypes, NSLOCTEXT("UnrealEd", "InheritedLightsSF", "Inherited Lights"))
+ /** Color correction after tone mapping */
+ SHOWFLAG_FIXED_IN_SHIPPING(1, ColorGrading, SFG_PostProcess, NSLOCTEXT("UnrealEd", "ColorGradingSF", "Color Grading"))
+ /** Whether to show the color grading visualization displays. */
+@@ -419,6 +421,9 @@ SHOWFLAG_ALWAYS_ACCESSIBLE(DisableOcclusionQueries, SFG_Hidden, NSLOCTEXT("Unrea
+ // RHI_RAYTRACING begin
+ SHOWFLAG_ALWAYS_ACCESSIBLE(PathTracing, SFG_Hidden, NSLOCTEXT("UnrealEd", "PathTracing", "Path tracing"))
+ SHOWFLAG_FIXED_IN_SHIPPING(0, RayTracingDebug, SFG_Hidden, NSLOCTEXT("UnrealEd", "RayTracingDebug", "Ray tracing debug"))
++/** [ARK] */
++SHOWFLAG_FIXED_IN_SHIPPING(0, VisualizeBVHComplexity, SFG_Hidden, NSLOCTEXT("UnrealEd", "VisualizeBVHComplexity", "BVH Complexity"))
++SHOWFLAG_FIXED_IN_SHIPPING(0, VisualizeBVHOverlap, SFG_Hidden, NSLOCTEXT("UnrealEd", "VisualizeBVHOverlap", "BVH Overlap"))
+ // RHI_RAYTRACING end
+ 
+ /** Enable the SkyAtmosphere visualization to be drawn on screen */
+@@ -516,5 +521,10 @@ SHOWFLAG_FIXED_IN_SHIPPING(0, Zebra, SFG_Hidden, NSLOCTEXT("UnrealEd", "Zebra",
+ SHOWFLAG_FIXED_IN_SHIPPING(0, FrontBackFace, SFG_Hidden, NSLOCTEXT("UnrealEd", "FrontBackFace", "Front/Back Face"))
+ SHOWFLAG_FIXED_IN_SHIPPING(0, RandomColor, SFG_Hidden, NSLOCTEXT("UnrealEd", "RandomColor", "RandomColor"))
+ 
++/** [ARK] */
++SHOWFLAG_ALWAYS_ACCESSIBLE(ToonOutline, SFG_Hidden, NSLOCTEXT("UnrealEd", "ToonOutline", "Toon Outline"))
++SHOWFLAG_ALWAYS_ACCESSIBLE(GrassSliceColoration, SFG_Hidden, NSLOCTEXT("UnrealEd", "GrassSliceColoration", "Grass Slice Coloration"))
++SHOWFLAG_ALWAYS_ACCESSIBLE(ShadowBoost, SFG_Hidden, NSLOCTEXT("UnrealEd", "ShadowBoost", "Shadow Boost"))
++
+ #undef SHOWFLAG_ALWAYS_ACCESSIBLE
+ #undef SHOWFLAG_FIXED_IN_SHIPPING

@@ -1,0 +1,26 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h b/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
+@@ -204,5 +204,22 @@ private:
+ 	TWeakPtr<FActiveTimerHandle> ActiveTimerHandle;
+ 
+ 	bool bNeedsMarqueeTimerUpdate;
++	float CurrentTickRate; // [ARK]
++	float MinimumTickRate; // [ARK]
++public:
++	bool bInterpolatePercent; // [ARK]
++private:
++public:
++	float CurrentPercent; // [ARK]
++private:
++public:
++	float InterpolatePercentSpeed; // [ARK]
++private:
++public:
++	int PercentInterpolationKeyCurrent; // [ARK]
++private:
++public:
++	int PercentInterpolationKey; // [ARK]
++private:
+ };
+ 

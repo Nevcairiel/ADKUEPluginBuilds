@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h b/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
+@@ -188,4 +188,16 @@ protected:
+ protected:
+ 	/** Can this panel allow for multiple children? */
+ 	bool bCanHaveMultipleChildren;
++public:
++	bool ClipChildren; // [ARK]
++protected:
++public:
++	bool UseScaledRenderClipForHUDChildren; // [ARK]
++protected:
++public:
++	bool bCanNavigateToDifferentPanel; // [ARK]
++protected:
++public:
++	bool bHighlightInsteadOfChild; // [ARK]
++protected:
+ };

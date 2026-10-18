@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SkinnedMeshComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/SkinnedMeshComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/SkinnedMeshComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/SkinnedMeshComponent.h
+@@ -95,6 +95,7 @@ enum EPhysBodyOp : int
+ UENUM(BlueprintType)
+ enum class EVisibilityBasedAnimTickOption : uint8
+ {
++	LocalControlTickPoseAndRefreshBones, // [ARK]
+ 	/** Always Tick and Refresh BoneTransforms whether rendered or not. */
+ 	AlwaysTickPoseAndRefreshBones,
+ 	/** Always Tick, but Refresh BoneTransforms only when rendered. */

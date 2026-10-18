@@ -1,0 +1,11 @@
+diff --git a/Engine/Plugins/Runtime/RigVM/Source/RigVM/Public/RigVMCore/RigVM.h b/Engine/Plugins/Runtime/RigVM/Source/RigVM/Public/RigVMCore/RigVM.h
+--- a/Engine/Plugins/Runtime/RigVM/Source/RigVM/Public/RigVMCore/RigVM.h
++++ b/Engine/Plugins/Runtime/RigVM/Source/RigVM/Public/RigVMCore/RigVM.h
+@@ -1061,6 +1061,7 @@ protected:
+ 
+ 	FTransactionallySafeCriticalSection ResolveFunctionsMutex;
+ 	mutable FTransactionallySafeCriticalSection CreateLocalizedRegistryMutex;
++	UE::FWindowsRecursiveMutex MemoryCacheMutex; // [ARK]
+ 
+ 	friend class URigVMCompiler;
+ 	friend struct FRigVMCompilerWorkData;

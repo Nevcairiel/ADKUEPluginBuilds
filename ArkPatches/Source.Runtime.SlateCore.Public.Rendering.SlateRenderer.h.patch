@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Rendering/SlateRenderer.h b/Engine/Source/Runtime/SlateCore/Public/Rendering/SlateRenderer.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Rendering/SlateRenderer.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Rendering/SlateRenderer.h
+@@ -493,6 +493,7 @@ public:
+ 	 * that will be stored into the TArray of FColors.
+ 	 */
+ 	virtual void PrepareToTakeHDRScreenshot(const FIntRect& Rect, TArray<FLinearColor>* OutColorData, SWindow* InScreenshotWindow) {}
++	virtual void PrepareToTakeScreenshotWithoutFlushing(const UE::Math::TIntRect<int>&, TArray<uint8>*, SWindow*); // [ARK]
+ 
+ 	/**
+ 	 * Create an updatable texture that can receive new data dynamically

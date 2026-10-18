@@ -1,0 +1,24 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNet.h b/Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNet.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNet.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/UObject/CoreNet.h
+@@ -193,9 +193,12 @@ class UPackageMap : public UObject
+ public:
+ 
+ 	virtual bool		WriteObject( FArchive & Ar, UObject* InOuter, FNetworkGUID NetGUID, FString ObjName ) { return false; }
++	virtual bool SerializeObject(FArchive&, UClass*, UObject*&, FNetworkGUID*, bool); // [ARK]
+ 
+ 	// @todo document
++#if 0 // [ARK] removed
+ 	virtual bool		SerializeObject( FArchive& Ar, UClass* InClass, UObject*& Obj, FNetworkGUID *OutNetGUID = NULL ) { return false; }
++#endif // [ARK]
+ 
+ 	// @todo document
+ 	COREUOBJECT_API virtual bool		SerializeName( FArchive& Ar, FName& InName );
+@@ -205,6 +208,7 @@ public:
+ 	virtual UObject*	ResolvePathAndAssignNetGUID( const FNetworkGUID& NetGUID, const FString& PathName ) { return NULL; }
+ 
+ 	virtual bool		SerializeNewActor(FArchive & Ar, class UActorChannel * Channel, class AActor *& Actor) { return false; }
++	virtual void Primal_ReceivedNakRange(int, int); // [ARK]
+ 
+ 	virtual void		ReceivedNak( const int32 NakPacketId ) { }
+ 	virtual void		ReceivedAck( const int32 AckPacketId ) { }

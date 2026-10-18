@@ -1,0 +1,28 @@
+diff --git a/Engine/Source/Runtime/Projects/Public/Interfaces/IPluginManager.h b/Engine/Source/Runtime/Projects/Public/Interfaces/IPluginManager.h
+--- a/Engine/Source/Runtime/Projects/Public/Interfaces/IPluginManager.h
++++ b/Engine/Source/Runtime/Projects/Public/Interfaces/IPluginManager.h
+@@ -290,13 +290,16 @@ public:
+ 	 * Updates the list of plugins.
+ 	 */
+ 	virtual void RefreshPluginsList() = 0;
++	virtual bool AddToPluginsList(const FString&, FText*, FString*) = 0; // [ARK]
+ 
+ 	/**
+ 	 * Adds a single plugin to the list of plugins. Faster than refreshing all plugins with RefreshPluginsList() when you only want to add one. Does nothing if already in the list.
+ 	 * 
+ 	 * @return True if the plugin was added or already in the list. False if it failed to load.
+ 	 */
++#if 0 // [ARK] removed
+ 	virtual bool AddToPluginsList(const FString& PluginFilename, FText* OutFailReason = nullptr) = 0;
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Remove a single plugin from the list of plugins.
+@@ -445,6 +448,7 @@ public:
+ 	 * Gets an array of all enabled plugins that can have content or Verse code.
+ 	 */
+ 	virtual TArray<TSharedRef<IPlugin>> GetEnabledPluginsWithContentOrVerse() const = 0;
++	virtual TArray<TSharedRef<IPlugin>> GetEnabledPluginsWithMods() const = 0; // [ARK]
+ 
+ 	/**
+ 	 * Gets an array of all the discovered plugins.

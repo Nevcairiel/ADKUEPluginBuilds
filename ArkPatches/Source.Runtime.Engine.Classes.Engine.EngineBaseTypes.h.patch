@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h b/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
+@@ -1109,6 +1109,7 @@ enum EViewModeIndex : int
+ 	VMI_StreamingTextureResidency = 46 UMETA(DisplayName = "Streaming Texture Residency"),
+ 	VMI_StreamingMeshLODDeficit = 47 UMETA(DisplayName = "Streaming Mesh LOD Deficit"),
+ 	VMI_StreamingMeshLODResidency = 48 UMETA(DisplayName = "Streaming Mesh LOD Residency"),
++	VMI_GrassSliceColoration = 49 UMETA(DisplayName = "Grass Slice Coloration"), // [ARK]
+ 
+ 	VMI_Max UMETA(Hidden),
+ 

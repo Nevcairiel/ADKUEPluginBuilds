@@ -1,0 +1,107 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SButton.h b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SButton.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SButton.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SButton.h
+@@ -41,6 +41,7 @@ public:
+ 
+ 	SLATE_BEGIN_ARGS( SButton )
+ 		: _Content()
++		, _bUseCustomDisabledStyle(false) // [ARK] defaults recovered from ShooterGameEditor-Slate.dll
+ 		, _ButtonStyle( &FCoreStyle::Get().GetWidgetStyle< FButtonStyle >( "Button" ) )
+ 		, _TextStyle( &FCoreStyle::Get().GetWidgetStyle< FTextBlockStyle >("ButtonText") )
+ 		, _HAlign( HAlign_Fill )
+@@ -90,9 +91,11 @@ public:
+ 
+ 		/** The text to display in this button, if no custom content is specified */
+ 		SLATE_ATTRIBUTE( FText, Text )
++		SLATE_ARGUMENT(bool, bUseCustomDisabledStyle) // [ARK]
+ 	
+ 		/** Called when the button is clicked */
+ 		SLATE_EVENT( FOnClicked, OnClicked )
++		SLATE_EVENT(TDelegate<FReply()>, OnSecondaryClicked) // [ARK]
+ 
+ 		/** Called when the button is pressed */
+ 		SLATE_EVENT( FSimpleDelegate, OnPressed )
+@@ -266,42 +269,66 @@ protected:
+ 
+ protected:
+ 	/** Press the button */
++public: // [ARK] was protected
+ 	SLATE_API virtual void Press();
++protected:
+ 
+ 	/** Release the button */
++public: // [ARK] was protected
+ 	SLATE_API virtual void Release();
++protected:
+ 
+ 	/** Execute the "OnClicked" delegate, and get the reply */
++public: // [ARK] was protected
+ 	SLATE_API FReply ExecuteOnClick();
++protected:
+ 
+ 	/** @return combines the user-specified margin and the button's internal margin. */
++public: // [ARK] was protected
+ 	SLATE_API FMargin GetCombinedPadding() const;
++protected:
+ 
+ 	/** @return True if the disabled effect should be shown. */
++public: // [ARK] was protected
+ 	SLATE_API bool GetShowDisabledEffect() const;
++protected:
+ 
+ 	/** Utility function to translate other input click methods to regular ones. */
++public: // [ARK] was protected
+ 	SLATE_API TEnumAsByte<EButtonClickMethod::Type> GetClickMethodFromInputType(const FPointerEvent& MouseEvent) const;
++protected:
+ 
+ 	/** Utility function to determine if the incoming mouse event is for a precise tap or click */
++public: // [ARK] was protected
+ 	SLATE_API bool IsPreciseTapOrClick(const FPointerEvent& MouseEvent) const;
++protected:
+ 
+ 	/** Play the pressed sound */
++public: // [ARK] was protected
+ 	SLATE_API void PlayPressedSound() const;
++protected:
+ 
+ 	/** Play the clicked sound */
++public: // [ARK] was protected
+ 	SLATE_API void PlayClickedSound() const;
++protected:
+ 
+ 	/** Play the hovered sound */
++public: // [ARK] was protected
+ 	SLATE_API void PlayHoverSound() const;
++protected:
+ 
+ 	/** Set if this button can be focused */
++public: // [ARK] was protected
+ 	void SetIsFocusable(bool bInIsFocusable)
+ 	{
+ 		bIsFocusable = bInIsFocusable;
+ 	}
++protected:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void ExecuteHoverStateChanged(bool bPlaySound);
++protected:
+ 
+ protected:
+ 	/** @return the BorderForegroundColor attribute. */
+@@ -414,4 +441,16 @@ private:
+ 	TSlateAttribute<FMargin> PressedPaddingAttribute;
+ 	/** Optional foreground color that will be inherited by all of this widget's contents */
+ 	TSlateAttribute<bool> AppearPressedAttribute;
++public:
++	bool bIsSecondaryPressed; // [ARK]
++private:
++public:
++	bool bForceHandleMouseDown; // [ARK]
++private:
++public:
++	TDelegate<FReply()> OnSecondaryClicked; // [ARK]
++private:
++public:
++	bool bEnableCustomDisabledStyle; // [ARK]
++private:
+ };

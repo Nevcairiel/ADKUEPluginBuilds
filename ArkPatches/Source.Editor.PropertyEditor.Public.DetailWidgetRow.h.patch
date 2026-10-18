@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Editor/PropertyEditor/Public/DetailWidgetRow.h b/Engine/Source/Editor/PropertyEditor/Public/DetailWidgetRow.h
+--- a/Engine/Source/Editor/PropertyEditor/Public/DetailWidgetRow.h
++++ b/Engine/Source/Editor/PropertyEditor/Public/DetailWidgetRow.h
+@@ -398,6 +398,7 @@ public:
+ 	TAttribute<bool> IsValueEnabledAttr;
+ 	/** String to filter with */
+ 	FText FilterTextString;
++	bool bPrimal_IgnoreDetailFilter; // [ARK]
+ 	/** Action for copying data on this row */
+ 	FUIAction CopyMenuAction;
+ 	/** Action for pasting data on this row */

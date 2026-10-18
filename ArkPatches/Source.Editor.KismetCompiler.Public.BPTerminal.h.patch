@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Editor/KismetCompiler/Public/BPTerminal.h b/Engine/Source/Editor/KismetCompiler/Public/BPTerminal.h
+--- a/Engine/Source/Editor/KismetCompiler/Public/BPTerminal.h
++++ b/Engine/Source/Editor/KismetCompiler/Public/BPTerminal.h
+@@ -17,6 +17,7 @@ struct FBPTerminal
+ 	FString Name;
+ 	FEdGraphPinType Type;
+ 	bool bIsLiteral; 
++	bool bIsLocalized; // [ARK]
+ 	bool bIsConst;
+ 	bool bIsSavePersistent;
+ 	bool bPassedByReference;

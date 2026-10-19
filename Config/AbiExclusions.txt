@@ -152,7 +152,6 @@ FStaticMeshRenderData
 FViewUniformShaderParameters
 IInterface_PostProcessVolume
 TSparseArray<TSparseSetElement<TTuple<FName,FUpdateLevelVisibilityLevelInfo> >,TSparseArrayAllocator<TSizedDefaultAllocator<32>,FDefaultBitArrayAllocator> >
-UAnimBlueprintGeneratedClass
 UAnimMontage
 UCameraShakeBase
 UChannel

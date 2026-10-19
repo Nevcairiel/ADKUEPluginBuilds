@@ -3,7 +3,8 @@
 Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
-BlueprintAssist, AutoSizeComments and GitSourceControl (Epic's Git plugin, which the devkit ships without binaries).
+BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries)
+and ElectronicNodes.
 
 The devkit only ships binaries + PDBs. The headers are reconstructed from a vanilla UE 5.8 source tree and
 patched to match the ARK engine's ABI; every patch was recovered from the devkit's PDB type information and
@@ -43,6 +44,7 @@ PluginBuild\
       Build\Output\BlueprintAssist\  staged plugin, ready to copy into the devkit
     AutoSizeComments\                same structure (sources only, no Resources: the devkit stub has them)
     GitSourceControl\                same structure (vanilla UE 5.8 sources, no Resources: the devkit stub has them)
+    ElectronicNodes\                 same structure (complete plugin: the devkit has no stub)
 ```
 
 Plugin and module names come from the plugin's `.uplugin`; the plugin folder name is what the scripts take as
@@ -87,7 +89,7 @@ BlueprintAssist\
 
 ## Installing
 
-The devkit already contains stubs of all three plugins (descriptor + resources, no binaries):
+The devkit already contains stubs of the first three plugins (descriptor + resources, no binaries):
 `<Devkit>\Engine\Plugins\Marketplace\BlueprintAssist`, `...\Marketplace\AutoSizeComments` and
 `...\Developer\GitSourceControl`. Copy the `Binaries` folder from the staged output
 (`Plugins\<Plugin>\Build\Output\<Plugin>`) into that folder, together with the staged `.uplugin` (the newer
@@ -97,11 +99,19 @@ The stubs are disabled by default. BlueprintAssist and GitSourceControl are disa
 `Projects\ShooterGame\ShooterGame.uproject`; AutoSizeComments has `"EnabledByDefault": false` in its descriptor
 and no project entry. Enable them either in *Edit → Plugins* (this edits `ShooterGame.uproject`), or for one
 session, without changing any file, by starting the devkit with
-`-EnablePlugins=BlueprintAssist,AutoSizeComments,GitSourceControl`. Then select Git under *Revision Control*.
+`-EnablePlugins=BlueprintAssist,AutoSizeComments,GitSourceControl,ElectronicNodes`. Then select Git under *Revision Control*.
 
 The *Find in files* / *Open file* menus need the `AssetSearch` engine plugin, which the devkit does not ship;
 BlueprintAssist detects this and shows a notification instead (no crash). Everything else is available.
 BlueprintAssist and AutoSizeComments work independently; each integrates with the other when both are loaded.
+
+ElectronicNodes has no stub in the devkit: copy the whole staged folder `Plugins\ElectronicNodes\Build\Output\ElectronicNodes`
+to `<Devkit>\Engine\Plugins\Marketplace\ElectronicNodes` and enable it like the others (its descriptor has no
+`EnabledByDefault`, so in the engine folder it starts disabled):
+`-EnablePlugins=BlueprintAssist,AutoSizeComments,GitSourceControl,ElectronicNodes`. With its default setting `UseHotPatch`, the plugin overwrites
+the start of `FNodeFactory::CreateConnectionPolicy` in `ShooterGameEditor-GraphEditor.dll` in memory, replacing it
+with its own copy of that function. The devkit's version was checked against vanilla UE 5.8: they are the same,
+so the replacement loses no ARK behaviour.
 
 ## Verification
 

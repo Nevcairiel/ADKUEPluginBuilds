@@ -250,5 +250,13 @@ the SDK root for PDBs built by `Build.ps1`.
   PowerShell 5.1 turns native stderr output into a terminating error under `$ErrorActionPreference='Stop'`.
   Windows Defender (AMSI) blocks PowerShell scripts that P/Invoke `LoadLibrary`; use the native
   `Tools\LoadTest\LoadTest.cpp` instead.
+* **Plugins that compile engine-private code:** ElectronicNodes adds engine `Private\` folders to its include path
+  and `#include`s engine `.cpp` files (`AnimGraphConnectionDrawingPolicy.cpp`, `SGraphPinPose.cpp`). Those are
+  copied into the SDK like headers, and the engine code inside reads members of types that other plugins only
+  passed around as pointers (`UAnimBlueprintGeneratedClass`). `Test-LayoutIndependence.ps1` catches this. Take
+  such a type off `Config\AbiExclusions.txt` and patch it (`Test-ArkAbi.ps1 -Patch`).
+* **Runtime hot patches:** a plugin that overwrites engine functions in memory (ElectronicNodes `FHotPatch`)
+  replaces the *devkit's* function. Disassemble the devkit function (address from `llvm-pdbutil dump --symbols`,
+  then `dumpbin /disasm /range:`) and compare it with the vanilla source before trusting the replacement.
 * **Do not modify the devkit** (`D:\ASA\ARKDevkitBeta`): everything reads from it only; REA needs copies on NTFS.
 * **Disk:** `Intermediate\PdbCache` grows to ~12 GB (text dumps of the devkit PDBs); safe to delete.

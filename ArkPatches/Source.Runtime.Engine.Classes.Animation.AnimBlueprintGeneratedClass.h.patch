@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimBlueprintGeneratedClass.h b/Engine/Source/Runtime/Engine/Classes/Animation/AnimBlueprintGeneratedClass.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/AnimBlueprintGeneratedClass.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/AnimBlueprintGeneratedClass.h
+@@ -508,6 +508,7 @@ private:
+ public:
+ #if WITH_EDITORONLY_DATA
+ 	FAnimBlueprintDebugData AnimBlueprintDebugData;
++	bool bPrimalBadAnimBP; // [ARK]
+ 
+ 	FAnimBlueprintDebugData& GetAnimBlueprintDebugData()
+ 	{

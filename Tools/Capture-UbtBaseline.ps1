@@ -25,7 +25,8 @@
 #>
 param(
     [Parameter(Position = 0)] [string] $Plugin,   # plugin folder name below Plugins
-    [switch] $SkipBuild
+    [switch] $SkipBuild,
+    [int]    $Jobs = [Environment]::ProcessorCount   # parallel compiler processes of the UBT build
 )
 . "$PSScriptRoot\..\Common.ps1"
 Initialize-Plugin $Plugin
@@ -43,12 +44,14 @@ $hostSource = Join-Path $hostPlugin 'Source'
 if ((Test-Path $hostSource) -and (Get-Item $hostSource).LinkType -eq 'Junction') { cmd /c rmdir "$hostSource" | Out-Null }
 New-Item -ItemType Directory -Force $hostSource | Out-Null
 $declared = (Get-Content $UpluginPath -Raw | ConvertFrom-Json).Modules.Name
+# modules a previous plugin version declared
+Get-ChildItem $hostSource -Directory | Where-Object { $_.Name -notin $declared } | ForEach-Object { cmd /c rmdir "$($_.FullName)" | Out-Null }
 foreach ($m in $declared) {
     if (-not (Test-Path "$hostSource\$m")) { New-Item -ItemType Junction -Path "$hostSource\$m" -Target "$PluginRoot\Source\$m" | Out-Null }
 }
 if (-not $SkipBuild) {
     & $UbtExe UnrealEditor Win64 Development `
-        "-Project=$hostDir\Host.uproject" "-Plugin=$hostPlugin\$PluginName.uplugin" -NoHotReload -NoUBA -WaitMutex
+        "-Project=$hostDir\Host.uproject" "-Plugin=$hostPlugin\$PluginName.uplugin" -NoHotReload -NoUBA -WaitMutex "-MaxParallelActions=$Jobs"
     if ($LASTEXITCODE -ne 0) { throw "UBT baseline build failed" }
 }
 

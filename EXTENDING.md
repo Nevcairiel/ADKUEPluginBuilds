@@ -156,7 +156,7 @@ patches come out differently, `Tools\Repatch-ArkSdk.ps1` re-creates them all at 
 
 1. It resets the SDK to vanilla headers + `ArkPatches\` + `ArkHeaders\` (`New-ArkSdk.ps1 -Clean -HeadersOnly`).
 2. It patches every type from the **baseline PDBs** in `Intermediate\BaselinePdb`: plugin PDBs built against that
-   reset SDK. Currently GitSourceControl and the three ue_mcp_bridge modules; together they reference every
+   reset SDK. Currently GitSourceControl and the ue_mcp_bridge modules; together they reference every
    patched type.
 3. It runs `Update-ArkTypes` and `Apply-ManualArkEdits.sh`.
 
@@ -164,7 +164,8 @@ Then run `New-ArkSdk.ps1`, build and test all plugins, and export (2.4).
 
 The baseline PDBs only fit the `ArkPatches\` they were built against. `-SaveBaseline` records a hash of
 `ArkPatches\` in `Intermediate\BaselinePdb\ArkPatches.stamp`, and the repatch refuses to run if the patches
-changed since. After an export, rebuild the baseline before the next repatch:
+changed since. After an export or an update of a baseline plugin, rebuild the baseline before the next repatch
+(remove the old PDBs from `Intermediate\BaselinePdb` first if a module was dropped):
 
 ```powershell
 .\New-ArkSdk.ps1 -Clean

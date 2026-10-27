@@ -4,7 +4,7 @@ Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
-ElectronicNodes and ue_mcp_bridge (three modules).
+ElectronicNodes and ue_mcp_bridge (1.4.10, two modules).
 
 The devkit only ships binaries + PDBs. The headers are reconstructed from a vanilla UE 5.8 source tree and
 patched to match the ARK engine's ABI; every patch was recovered from the devkit's PDB type information and
@@ -127,8 +127,8 @@ the start of `FNodeFactory::CreateConnectionPolicy` in `ShooterGameEditor-GraphE
 with its own copy of that function. The devkit's version was checked against vanilla UE 5.8: they are the same,
 so the replacement loses no ARK behaviour.
 
-ue_mcp_bridge has no stub either: copy `Plugins\ue_mcp_bridge\Build\Output\UE_MCP_Bridge` (three DLLs, one per
-module) to `<Devkit>\Engine\Plugins\Marketplace\UE_MCP_Bridge` and enable it with `-EnablePlugins=UE_MCP_Bridge`.
+ue_mcp_bridge has no stub either: copy `Plugins\ue_mcp_bridge\Build\Output\UE_MCP_Bridge` (DLLs of
+`UE_MCP_BridgeStatus` and `UE_MCP_Bridge`) to `<Devkit>\Engine\Plugins\Marketplace\UE_MCP_Bridge` and enable it with `-EnablePlugins=UE_MCP_Bridge`.
 Differences from the upstream plugin, all in `Build\SourcePatches` and `Build\DefinitionOverrides.txt`:
 
 * The devkit ships the Fab plugin without binaries: the bridge is built with `WITH_FAB_PLUGIN=0` and uses its
@@ -151,8 +151,11 @@ Differences from the upstream plugin, all in `Build\SourcePatches` and `Build\De
 ## Updating a plugin
 
 * New plugin version: replace the plugin's `Source\` (and `.uplugin`/`Resources\` if needed), then
-  `.\Tools\Capture-UbtBaseline.ps1 <Plugin>` (the new sources must build with stock UBT against vanilla UE 5.8; this
-  also refreshes the header list), `.\Build.ps1 <Plugin> -Rebuild` and the three verification scripts.
+  `.\Tools\Capture-UbtBaseline.ps1 <Plugin> [-Jobs N]` (the new sources must build with stock UBT against vanilla
+  UE 5.8; this also refreshes the header list), `.\Build.ps1 <Plugin> -Clean -Rebuild` and the three verification
+  scripts. Check that `Build\SourcePatches` still apply (the build stops otherwise). If the new version dropped a
+  module, delete its `Build\Config\<Module>` folder: the SDK is built for the union of all captured modules.
+  Remove the dropped module's DLL from an existing installation too.
 * If the audit reports new types: `.\Tools\Test-ArkAbi.ps1 <Plugin> -Patch`, check `patch-report.txt`, rebuild,
   repeat; then `.\Tools\Export-ArkPatches.ps1`, but only once **all** plugins pass the three tests. See EXTENDING.md.
 

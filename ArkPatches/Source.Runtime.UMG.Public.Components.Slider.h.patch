@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/Slider.h b/Engine/Source/Runtime/UMG/Public/Components/Slider.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/Slider.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/Slider.h
+@@ -225,4 +225,10 @@ protected:
+ #endif
+ 
+ 	PROPERTY_BINDING_IMPLEMENTATION(float, Value);
++public:
++	UMG_API virtual void Serialize(FArchive&); // [ARK]
++protected:
++public:
++	UMG_API virtual void Serialize(FStructuredArchiveRecord); // [ARK]
++protected:
+ };

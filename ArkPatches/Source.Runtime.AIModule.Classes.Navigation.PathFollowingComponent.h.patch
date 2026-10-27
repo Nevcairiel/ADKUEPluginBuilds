@@ -1,0 +1,223 @@
+diff --git a/Engine/Source/Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h b/Engine/Source/Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h
+--- a/Engine/Source/Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h
++++ b/Engine/Source/Runtime/AIModule/Classes/Navigation/PathFollowingComponent.h
+@@ -273,6 +273,7 @@ class UPathFollowingComponent : public UActorComponent, public IAIResourceInterf
+ 
+ 	/** notify about changing current path: new pointer or update from path event */
+ 	AIMODULE_API virtual void OnPathUpdated();
++	AIMODULE_API virtual void OnMoveSegmentUpdated(); // [ARK]
+ 
+ 	/**
+ 	 * set associated movement component.
+@@ -287,6 +288,7 @@ class UPathFollowingComponent : public UActorComponent, public IAIResourceInterf
+ 
+ 	/** get current focal point of movement */
+ 	AIMODULE_API virtual FVector GetMoveFocus(bool bAllowStrafe) const;
++	AIMODULE_API virtual FVector GetAdditionalGoalOffset() const; // [ARK]
+ 
+ 	/** simple test for stationary agent (used as early finish condition), check if reached given point
+ 	 *  @param TestPoint - point to test
+@@ -441,7 +443,9 @@ class UPathFollowingComponent : public UActorComponent, public IAIResourceInterf
+ 
+ protected:
+ 	/** Sets the current status and activates/deactivates the component if necessary */
++public: // [ARK] was protected
+ 	AIMODULE_API void SetStatus(EPathFollowingStatus::Type InStatus);
++protected:
+ 
+ 	/** deprecated associated movement component */
+ 	UE_DEPRECATED(5.5, "MovementComp is deprecated, please use NavMovementComp and the INavMoveInterface instead.")
+@@ -571,6 +575,9 @@ protected:
+ 	 * Note that this optimization is not used for any derived classes since those might need to tick in other cases.
+ 	 */
+ 	uint8 bTickComponentOnlyWhenMoving : 1;
++public:
++	uint8 bHasNotifiedMovementCloseToGoalThisRequestMove : 1; // [ARK]
++protected:
+ 
+ 	/** detect blocked movement when distance between center of location samples and furthest one (centroid radius) is below threshold */
+ 	float BlockDetectionDistance;
+@@ -615,116 +622,183 @@ protected:
+ 	int32 DecelerationSegmentIndex;
+ 
+ 	/** extract the navigation filter that should be used based on the provided MoveRequest and NavPath */
++public: // [ARK] was protected
+ 	AIMODULE_API FSharedConstNavQueryFilter ExtractNavigationFilter(const FAIMoveRequest& RequestData, FNavPathSharedPtr InPath) const;
++protected:
+ 
+ 	/** reset path following data */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void Reset();
++protected:
+ 
+ 	/** Called if owning Controller possesses new pawn or ends up pawn-less. 
+ 	 *	Doesn't get called if owner is not an AContoller */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void OnNewPawn(APawn* NewPawn);
++protected:
+ 
+ 	/** should verify if agent if still on path ater movement has been resumed? */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool ShouldCheckPathOnResume() const;
++protected:
+ 
+ 	/** sets variables related to current move segment */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void SetMoveSegment(int32 SegmentStartIndex);
++protected:
+ 	
+ 	/** follow current path segment */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void FollowPathSegment(float DeltaTime);
++protected:
+ 
+ 	/** check state of path following, update move segment if needed */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void UpdatePathSegment();
++protected:
+ 
+ 	/** next path segment if custom nav link, try passing control to it */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void StartUsingCustomLink(INavLinkCustomInterface* CustomNavLink, const FVector& DestPoint);
++protected:
+ 
+ 	/** update blocked movement detection, @returns true if new sample was added */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool UpdateBlockDetection();
++protected:
+ 
+ 	/** updates braking distance and deceleration segment */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void UpdateDecelerationData();
++protected:
+ 
+ 	/** check if move is completed */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool HasReachedDestination(const FVector& CurrentLocation) const;
++protected:
+ 
+ 	/** check if segment is completed */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool HasReachedCurrentTarget(const FVector& CurrentLocation) const;
++public:
++	AIMODULE_API virtual bool HasReachedInternal(const FVector&, float, float, const FVector&, float, float, bool) const; // [ARK]
++protected:
++protected:
+ 
+ 	/** check if moving agent has reached goal defined by cylinder */
+ 	AIMODULE_API bool HasReachedInternal(const FVector& GoalLocation, float GoalRadius, float GoalHalfHeight, const FVector& AgentLocation, float RadiusThreshold, float AgentRadiusMultiplier) const;
+ 
+ 	/** reset the cached information about CustomLinks on the next MoveSegment */
++public: // [ARK] was protected
+ 	AIMODULE_API void ResetMoveSegmentCustomLinkCache();
++protected:
+ 
+ 	/** check if agent is on path */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool IsOnPath() const;
++protected:
+ 
+ 	/** check if movement is blocked */
++public: // [ARK] was protected
+ 	AIMODULE_API bool IsBlocked() const;
++protected:
+ 
+ 	/** switch to next segment on path */
++public: // [ARK] was protected
+ 	inline void SetNextMoveSegment() { SetMoveSegment(GetNextPathIndex()); }
++protected:
+ 
+ 	/** assign new request Id */
++public: // [ARK] was protected
+ 	inline void StoreRequestId() { CurrentRequestId = UPathFollowingComponent::GetNextRequestId(); }
++protected:
+ 
++public: // [ARK] was protected
+ 	inline static uint32 GetNextRequestId() { return NextRequestId++; }
++protected:
+ 
+ 	/** Checks if this PathFollowingComponent is already on path, and
+ 	*	if so determines index of next path point
+ 	*	@return what PathFollowingComponent thinks should be next path point. INDEX_NONE if given path is invalid
+ 	*	@note this function does not set MoveSegmentEndIndex */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual int32 DetermineStartingPathPoint(const FNavigationPath* ConsideredPath) const;
++protected:
+ 
+ 	/** @return index of path point, that should be target of current move segment */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual int32 DetermineCurrentTargetPathPoint(int32 StartIndex);
++protected:
+ 
+ 	/** check if movement component is valid or tries to grab one from owner 
+ 	 *	@param bForce results in looking for owner's movement component even if pointer to one is already cached */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool UpdateMovementComponent(bool bForce = false);
++protected:
+ 
+ 	/** called after receiving update event from current path
+ 	 *  @return false if path was not accepted and move request needs to be aborted */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool HandlePathUpdateEvent();
++protected:
+ 
+ 	/** called from timer if component spends too much time in Waiting state */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void OnWaitingPathTimeout();
++protected:
+ 
+ 	/** clears Block Detection stored data effectively resetting the mechanism */
++public: // [ARK] was protected
+ 	AIMODULE_API void ResetBlockDetectionData();
++protected:
+ 
+ 	/** force creating new location sample for block detection */
++public: // [ARK] was protected
+ 	AIMODULE_API void ForceBlockDetectionUpdate();
++protected:
+ 
+ 	/** set move focus in AI owner */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void UpdateMoveFocus();
++protected:
+ 
+ 	/** defines if the agent should reset his velocity when the path is finished*/
++public: // [ARK] was protected
+ 	AIMODULE_API virtual bool ShouldStopMovementOnPathFinished() const; 
++protected:
+ 
+ 	/** For given path finds a path node at which
+ 	 *	PathfollowingComponent should start doing 
+ 	 *	precise is-goal-in-acceptance-radius  tests */
++public: // [ARK] was protected
+ 	AIMODULE_API int32 FindPreciseAcceptanceRadiusTestsStartNodeIndex(const FNavigationPath& PathInstance, const FVector& GoalLocation) const;
++protected:
+ 
+ 	/** Based on Path's properties, original move goal location and requested AcceptanceRadius
+ 	 *	this function calculates actual acceptance radius to apply when testing if the agent
+ 	 *	has successfully reached requested goal's vicinity */
++public: // [ARK] was protected
+ 	AIMODULE_API float GetFinalAcceptanceRadius(const FNavigationPath& PathInstance, const FVector OriginalGoalLocation, const FVector* PathEndOverride = nullptr) const;
++protected:
+ 
+ 	/** debug point reach test values */
++public: // [ARK] was protected
+ 	AIMODULE_API void DebugReachTest(float& CurrentDot, float& CurrentDistance, float& CurrentHeight, uint8& bDotFailed, uint8& bDistanceFailed, uint8& bHeightFailed) const;
++protected:
+ 
+ 	/** called when NavigationSystem finishes initial navigation data registration.
+ 	 *	This is usually required by AI agents hand-placed on levels to find MyNavData */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void OnNavigationInitDone();
++protected:
+ 
+ 	/** called when NavigationSystem registers new navigation data type while this component
+ 	 *	instance has empty MyNavData. This is usually the case for AI agents hand-placed
+ 	 *	on levels. */
++public: // [ARK] was protected
+ 	UFUNCTION()
+ 	AIMODULE_API void OnNavDataRegistered(ANavigationData* NavData);
++protected:
+ 
+ 
+ 	/** used to keep track of which subsystem requested this AI resource be locked */

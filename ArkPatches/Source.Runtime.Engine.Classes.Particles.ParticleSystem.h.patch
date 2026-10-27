@@ -1,0 +1,32 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystem.h b/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystem.h
+--- a/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystem.h
++++ b/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystem.h
+@@ -305,6 +305,7 @@ class UParticleSystem : public UFXSystemAsset
+ 	/** If true, the system's Z axis will be oriented toward the camera				*/
+ 	UPROPERTY(EditAnywhere, Category = ParticleSystem)
+ 	uint8 bOrientZAxisTowardCamera : 1;
++	uint8 bAllowLOD : 1; // [ARK]
+ 
+ 	/** Whether to use the fixed relative bounding box or calculate it every frame. */
+ 	UPROPERTY(EditAnywhere, Category = Bounds)
+@@ -608,4 +609,19 @@ private:
+ 	uint8 bIsImmortal : 1;
+ 	/** Does any emitter ever become a zombie (is immortal AND stops spawning at some point, i.e. is burst only)? */
+ 	uint8 bWillBecomeZombie : 1;
++public:
++	uint32 bLocalSpaceUsesParticleBase : 1; // [ARK]
++private:
++public:
++	uint32 bForceHighQualityEmitter : 1; // [ARK]
++private:
++public:
++	uint32 bForcePreventInactiveLoopReset : 1; // [ARK]
++private:
++public:
++	float OverrideMaxDrawDistance; // [ARK]
++private:
++public:
++	float CustomTimeDilation; // [ARK]
++private:
+ };
+\ No newline at end of file

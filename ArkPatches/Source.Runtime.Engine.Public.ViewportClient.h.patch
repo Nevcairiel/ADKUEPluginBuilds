@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/ViewportClient.h b/Engine/Source/Runtime/Engine/Public/ViewportClient.h
+--- a/Engine/Source/Runtime/Engine/Public/ViewportClient.h
++++ b/Engine/Source/Runtime/Engine/Public/ViewportClient.h
+@@ -5,6 +5,7 @@
+ #include "Engine/EngineBaseTypes.h"
+ #include "GenericPlatform/ICursor.h"
+ #include "InputCoreTypes.h"
++#include "Ark/PrimalViewportClient.h" // [ARK] base class
+ 
+ class FCanvas;
+ class FCursorReply;
+@@ -25,7 +26,7 @@ struct FStatThermalsData;
+  * An abstract interface to a viewport's client.
+  * The viewport's client processes input received by the viewport, and draws the viewport.
+  */
+-class FViewportClient
++class FViewportClient : public FPrimalViewportClient // [ARK] bases
+ {
+ public:
+ 	virtual ~FViewportClient()= default;

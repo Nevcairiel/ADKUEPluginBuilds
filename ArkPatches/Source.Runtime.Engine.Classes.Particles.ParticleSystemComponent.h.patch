@@ -1,0 +1,43 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystemComponent.h b/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystemComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystemComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Particles/ParticleSystemComponent.h
+@@ -419,6 +419,7 @@ public:
+ 	*/
+ 	UFUNCTION(BlueprintCallable, Category = "Effects|Components|ParticleSystem")
+ 	virtual UFXSystemAsset* GetFXSystemAsset() const { return nullptr; };
++	ENGINE_API virtual void SetFXSystemAsset(UFXSystemAsset*); // [ARK]
+ 
+ 	/**
+ 	 *	Enables / disables an emitter by halting spawning of new particles.
+@@ -1340,6 +1341,21 @@ private:
+ 	uint32 NumSignificantEmitters;
+ 	/** Time in ms since a tick was last performed; used with MinTimeBetweenTicks (on UParticleSystem) to control tick rate */
+ 	uint32 TimeSinceLastTick;
++public:
++	uint32 bForceDisableParticleOcclusion : 1; // [ARK]
++private:
++public:
++	uint32 bForceAllowParticleCollisions : 1; // [ARK]
++private:
++public:
++	uint32 bPreserveOnDedicatedServer : 1; // [ARK]
++private:
++public:
++	uint32 bCheckedInactiveTime : 1; // [ARK]
++private:
++public:
++	FBox CachedBoundingBox; // [ARK]
++private:
+ 
+ #if WITH_STATE_STREAM_ACTOR
+ 	FParticleSystemHandle ParticleSystemHandle;
+@@ -1721,6 +1737,9 @@ private:
+ 
+ public:
+ 	inline FParticlePerfStatsContext GetPerfStatsContext(){ return FParticlePerfStatsContext(GetWorld(), Template, this); }
++	ENGINE_API virtual void SetFXSystemAsset(UFXSystemAsset*); // [ARK]
++	ENGINE_API virtual void FailedToRegisterWithWorld(UWorld*); // [ARK]
++	ENGINE_API virtual bool CanSkipInstancingWhenPrevented() const; // [ARK]
+ };
+ 
+ 

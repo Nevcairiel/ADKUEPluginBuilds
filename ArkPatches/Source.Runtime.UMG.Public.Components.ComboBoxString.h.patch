@@ -1,0 +1,39 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/ComboBoxString.h b/Engine/Source/Runtime/UMG/Public/Components/ComboBoxString.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/ComboBoxString.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/ComboBoxString.h
+@@ -28,8 +28,11 @@ class UComboBoxString : public UWidget
+ private:
+ 
+ 	/** The default list of items to be displayed on the combobox. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, Category=Content)
+ 	TArray<FString> DefaultOptions;
++#endif // [ARK]
++	TArray<FText> DefaultOptions; // [ARK] type changed
+ 
+ 	/** The item in the combobox to select by default */
+ 	UPROPERTY(EditAnywhere, FieldNotify, Category=Content)
+@@ -107,6 +110,7 @@ public: // Events
+ 	/** Called when the combobox is opening */
+ 	UPROPERTY(BlueprintAssignable, Category=Events)
+ 	FOnOpeningEvent OnOpening;
++	alignas(8) uint8 OnClosing[24]; // [ARK]
+ 
+ public:
+ 
+@@ -228,6 +232,7 @@ protected:
+ 
+ 	/** Called by slate when the underlying combobox is opening */
+ 	UMG_API virtual void HandleOpening();
++	UMG_API virtual void HandleClosing(); // [ARK]
+ 
+ 	//~ Begin UWidget Interface
+ 	UMG_API virtual TSharedRef<SWidget> RebuildWidget() override;
+@@ -260,4 +265,7 @@ protected:
+ 
+ 	/** A shared pointer to the current selected string */
+ 	TSharedPtr<FString> CurrentOptionPtr;
++public:
++	FSlateColor TextColorAndOpacity; // [ARK]
++protected:
+ };

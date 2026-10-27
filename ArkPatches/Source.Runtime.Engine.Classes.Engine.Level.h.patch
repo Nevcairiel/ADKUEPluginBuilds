@@ -1,0 +1,57 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/Level.h b/Engine/Source/Runtime/Engine/Classes/Engine/Level.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/Level.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/Level.h
+@@ -416,7 +416,7 @@ enum class ELevelPendingVisibilityState : uint8
+  * @see UActor
+  */
+ UCLASS(MinimalAPI)
+-class ULevel : public UObject, public IInterface_AssetUserData, public ITextureStreamingContainer, public IEditorPathObjectInterface
++class ULevel : public UObject, public IInterface_AssetUserData, public IEditorPathObjectInterface, public ITextureStreamingContainer // [ARK] bases (was : public UObject, public IInterface_AssetUserData, public ITextureStreamingContainer, public IEditorPathObjectInterface)
+ {
+ 	GENERATED_BODY()
+ 
+@@ -429,7 +429,14 @@ public:
+ 	TArray<TObjectPtr<AActor>> Actors;
+ 
+ 	/** Array of actors to be exposed to GC in this level. All other actors will be referenced through ULevelActorContainer */
++#if 0 // [ARK] removed
+ 	TArray<TObjectPtr<AActor>> ActorsForGC;
++#endif // [ARK]
++	TSet<TObjectPtr<AActor>> ActorsForGC; // [ARK] type changed
++	TMap<TObjectPtr<AActor>,int> ActorToActors2Index; // [ARK]
++	TSet<int> CachedActors2NullPointerIndices; // [ARK]
++	bool bIsCachedActors2NullPointerIndicesValid; // [ARK]
++	bool bIsActors2TMapValid; // [ARK]
+ 
+ 	/** Number of actors marked for pending unload by GC */
+ 	int32 NumActorsMarkedForPendingUnloadByGC = 0;
+@@ -439,6 +446,7 @@ public:
+ 
+ #if WITH_EDITORONLY_DATA
+ 	AActor* PlayFromHereActor;
++	TMap<FName,TObjectPtr<AActor>> ActorsModifiedForPIE; // [ARK]
+ 
+ 	/** Use external actors, new actor spawned in this level will be external and existing external actors will be loaded on load. */
+ 	UPROPERTY(EditInstanceOnly, Category=World)
+@@ -885,6 +893,8 @@ private:
+ 	/** List of replicated static actors that have been destroyed. Used by net drivers to replicate destruction to clients. */
+ 	UPROPERTY(Transient)
+ 	TArray<FReplicatedStaticActorDestructionInfo> DestroyedReplicatedStaticActors;
++	TScriptInterface<ILevelPartitionInterface> LevelPartition; // [ARK]
++	TSoftObjectPtr<UObject> OwnerLevelPartition; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	/** Use actor folder objects, actor folders of this level will be persistent in their own object. */
+@@ -1538,6 +1548,12 @@ private:
+ 
+ 	/** Notification popup used to guide the user to repair multiple LSAs detected upon loading in the editor */
+ 	TWeakPtr<SNotificationItem> MultipleLSAsNotification;
++public:
++	TArray<TArray<FString>> DestroyedMapActorsPaths; // [ARK]
++private:
++public:
++	TSet<TWeakObjectPtr<UPrimitiveComponent>> ParentProxyPending; // [ARK]
++private:
+ 	void OnMultipleLSAsPopupClicked();
+ 	void OnMultipleLSAsPopupDismissed();
+ 

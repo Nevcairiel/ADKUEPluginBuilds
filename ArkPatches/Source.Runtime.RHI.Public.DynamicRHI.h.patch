@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/RHI/Public/DynamicRHI.h b/Engine/Source/Runtime/RHI/Public/DynamicRHI.h
+--- a/Engine/Source/Runtime/RHI/Public/DynamicRHI.h
++++ b/Engine/Source/Runtime/RHI/Public/DynamicRHI.h
+@@ -573,6 +573,7 @@ public:
+ 	virtual void RHIUpdateTexture3D(FRHICommandListBase& RHICmdList, FRHITexture* Texture, uint32 MipIndex, const struct FUpdateTextureRegion3D& UpdateRegion, uint32 SourceRowPitch, uint32 SourceDepthPitch, const uint8* SourceData) = 0;
+ 
+ 	RHI_API virtual void RHIBindDebugLabelName(FRHICommandListBase& RHICmdList,FRHITexture* Texture, const TCHAR* Name);
++	RHI_API virtual void RHIReadSurfaceDataRaw(FRHITexture*, UE::Math::TIntRect<int>, TArray<uint8>&, FReadSurfaceDataFlags) = 0; // [ARK]
+ 	RHI_API virtual void RHIBindDebugLabelName(FRHICommandListBase& RHICmdList, FRHIBuffer* Buffer, const TCHAR* Name);
+ 	RHI_API virtual void RHIBindDebugLabelName(FRHICommandListBase& RHICmdList, FRHIUnorderedAccessView* UnorderedAccessViewRHI, const TCHAR* Name);
+ 

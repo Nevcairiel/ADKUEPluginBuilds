@@ -26,28 +26,69 @@ static class Patcher
         return set;
     }
 
+    // --ark-classes Config\ArkClasses.txt: generated ARK-only classes, included when a type is re-based onto them
+    public static void LoadArkClasses(ref string[] args)
+    {
+        int i = Array.IndexOf(args, "--ark-classes");
+        if (i < 0) return;
+        foreach (var l in File.ReadAllLines(args[i + 1]))
+        {
+            var f = l.Split('#')[0].Split('|').Select(x => x.Trim()).ToArray();
+            if (f.Length < 4) continue;
+            var pub = f[0].Replace('/', '\\');
+            var k = pub.IndexOf("\\Public\\", StringComparison.OrdinalIgnoreCase);
+            var inc = (k >= 0 ? pub[(k + 8)..] : Path.GetFileName(pub)).Replace('\\', '/');
+            foreach (var t in f[3].Split(' ', StringSplitOptions.RemoveEmptyEntries)) HeaderFile.ArkClassIncludes[t] = inc;
+        }
+        args = args.Where((_, k) => k != i && k != i + 1).ToArray();
+    }
+
     public static int Run(string[] args)
     {
         var excluded = LoadExclusions(ref args);
+        LoadArkClasses(ref args);
+        int ri = Array.IndexOf(args, "--renames");
+        if (ri >= 0)
+        {
+            foreach (var l in File.ReadAllLines(args[ri + 1]))
+            {
+                var f = l.Split('#')[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (f.Length == 3) Differ.Renames[(f[0], f[1])] = f[2];
+            }
+            args = args.Where((_, k) => k != ri && k != ri + 1).ToArray();
+        }
         var refPdb = args[1];
         var sdkRoot = Path.GetFullPath(args[2]);
         var refEngineRoot = args[3].TrimEnd('\\', '/');
         var reportPath = args[4];
         MacroIndex.Root = sdkRoot;
-        var refDb = TypeDb.Open(refPdb);
+        // several reference PDBs ('a;b;c', all built against the same SDK headers): every type is patched once, from the
+        // first reference PDB that has it
+        var refs = refPdb.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(p => { var d = TypeDb.Open(p); return (db: d, locations: SourceLocations.Load(p, d)); }).ToList();
+        var refDb = refs[0].db;
         var arks = args.Skip(5).Select(p => (Path.GetFileNameWithoutExtension(p), TypeDb.Open(p))).ToList();
-        var locations = SourceLocations.Load(refPdb, refDb);
+        var lookupCache = new Dictionary<string, TypeLayout>();
+        Ops.Lookup = n => lookupCache.TryGetValue(n, out var c) ? c
+            : lookupCache[n] = arks.Select(x => x.Item2.Describe(n)).FirstOrDefault(x => x != null) ?? refs.Select(r => r.db.Describe(n)).FirstOrDefault(x => x != null);
+        // the SDK header defining an engine type (by-value members inserted into other headers need it)
+        HeaderFile.HeaderOf = n => refs.Select(r => r.db.UniqueNameOfType(n) is string u && r.locations.TryGetValue(u, out var l) ? l.File : null)
+            .Where(f => f != null && f.StartsWith(refEngineRoot, StringComparison.OrdinalIgnoreCase))
+            .Select(f => Path.Combine(sdkRoot, f.Substring(refEngineRoot.Length).TrimStart('\\', '/'))).FirstOrDefault();
 
         var report = new StringBuilder();
         var files = new Dictionary<string, HeaderFile>(StringComparer.OrdinalIgnoreCase);
         int patchedTypes = 0, manual = 0;
 
-        foreach (var uniq in refDb.CompleteUniqueNames().OrderBy(x => x, StringComparer.Ordinal))
+        var allTypes = refs.SelectMany(r => r.db.CompleteUniqueNames().Select(u => (u, r))).GroupBy(x => x.u).Select(g => g.First());
+        foreach (var (uniq, r) in allTypes.OrderBy(x => x.u, StringComparer.Ordinal))
         {
             var (mod, b) = arks.FirstOrDefault(x => x.Item2.Has(uniq));
             if (b == null) continue;
+            refDb = r.db;
+            var locations = r.locations;
             var ta = refDb.Describe(uniq);
             var tb = b.Describe(uniq);
+            if (tb != null) tb = Differ.WithRenames(tb);   // members the SDK keeps under their vanilla name
             if (ta == null || tb == null || ta.Name.Contains("<unnamed") || ta.Name.Contains("<lambda")) continue;
             var ops = Ops.Compute(ta, tb);
             if (ops.Count == 0) continue;
@@ -83,8 +124,8 @@ static class Patcher
                 manual++; report.Append(typeReport).AppendLine(); continue;
             }
             var results = hf.Apply(ta, loc.Line, ops);
-            foreach (var r in results) typeReport.AppendLine("  " + r);
-            if (results.Any(r => r.StartsWith("MANUAL"))) manual++;
+            foreach (var line in results) typeReport.AppendLine("  " + line);
+            if (results.Any(x => x.StartsWith("MANUAL"))) manual++;
             patchedTypes++;
             report.Append(typeReport).AppendLine();
         }
@@ -97,17 +138,34 @@ static class Patcher
 
 static class Prober
 {
-    // probe <refpdb> <sdkRoot> <engineRootInRefPdb> <exclusionsFile>
+    // probe <refpdb>[;<refpdb>...] <sdkRoot> <engineRootInRefPdb> <exclusionsFile> <arkpdb>... [--renames <file>]
+    // Several PDBs (the modules of one plugin): every excluded type is probed once, located via the first PDB using it.
+    // The probe goes where the SDK layout starts to differ from the devkit's (first devkit PDB defining the type), so
+    // the plugin may use the part both agree on. Exclusions whose comment contains "[no probe]" are skipped.
     public static int Run(string[] args)
     {
-        var refPdb = args[1];
+        int ri = Array.IndexOf(args, "--renames");
+        if (ri >= 0)
+        {
+            foreach (var l in File.ReadAllLines(args[ri + 1]))
+            {
+                var f = l.Split('#')[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (f.Length == 3) Differ.Renames[(f[0], f[1])] = f[2];
+            }
+            args = args.Where((_, k) => k != ri && k != ri + 1).ToArray();
+        }
         var sdkRoot = Path.GetFullPath(args[2]);
         var refEngineRoot = args[3].TrimEnd('\\', '/');
-        var names = File.ReadAllLines(args[4]).Select(l => l.Split('#')[0].Trim()).Where(l => l.Length > 0).ToHashSet();
+        var lines = File.ReadAllLines(args[4]).Select(l => (Name: l.Split('#')[0].Trim(), NoProbe: l.Contains("[no probe]"))).Where(l => l.Name.Length > 0).ToList();
+        var names = lines.Select(l => l.Name).ToHashSet();
+        foreach (var l in lines.Where(l => l.NoProbe)) { names.Remove(l.Name); Console.WriteLine($"  {l.Name}: [no probe]"); }
+        var arks = args.Skip(5).Select(TypeDb.Open).ToList();
         MacroIndex.Root = sdkRoot;
+        var files = new Dictionary<string, HeaderFile>(StringComparer.OrdinalIgnoreCase);
+        foreach (var refPdb in args[1].Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
         var db = TypeDb.Open(refPdb);
         var locations = SourceLocations.Load(refPdb, db);
-        var files = new Dictionary<string, HeaderFile>(StringComparer.OrdinalIgnoreCase);
         foreach (var uniq in db.CompleteUniqueNames())
         {
             var t = db.Describe(uniq);
@@ -116,9 +174,17 @@ static class Prober
             if (t.Kind == "enum") { Console.WriteLine($"  {t.Name}: enum, not probed"); continue; }
             if (!locations.TryGetValue(uniq, out var loc)) { Console.WriteLine($"  {t.Name}: no location"); continue; }
             var path = loc.File.StartsWith(refEngineRoot, StringComparison.OrdinalIgnoreCase) ? Path.Combine(sdkRoot, loc.File.Substring(refEngineRoot.Length).TrimStart('\\', '/')) : loc.File;
-            if (!files.TryGetValue(path, out var hf)) files[path] = hf = new HeaderFile(path);
+            if (!Path.GetFullPath(path).StartsWith(sdkRoot, StringComparison.OrdinalIgnoreCase)) { Console.WriteLine($"  {t.Name}: outside the SDK ({loc.File}), not probed"); continue; }
             bool poly = t.Members.Any(m => m.Kind == "vfptr" || (m.Kind == "method" && m.Virtual));
-            Console.WriteLine($"  {t.Name}: {hf.InjectProbe(t, loc.Line, poly)}{(poly ? " (+virtual)" : "")}");
+            // without a devkit counterpart: the whole type (data member and virtual function at the start)
+            var dk = arks.FirstOrDefault(x => x.Has(uniq))?.Describe(uniq);
+            var (first, atEnd, virtuals) = dk != null ? Differ.ProbePoint(t, dk) : (null, false, true);
+            bool data = dk == null || first != null || atEnd;
+            virtuals &= poly;
+            if (!data && !virtuals) { Console.WriteLine($"  {t.Name}: same layout as the devkit, not probed"); continue; }
+            if (!files.TryGetValue(path, out var hf)) files[path] = hf = new HeaderFile(path);
+            Console.WriteLine($"  {t.Name}: {hf.InjectProbe(t, loc.Line, data, first, atEnd, virtuals)}");
+        }
         }
         foreach (var n in names) Console.WriteLine($"  {n}: not referenced by the plugin's PDB");
         foreach (var f in files.Values) f.Save();
@@ -176,9 +242,12 @@ sealed class Op
     public Member Replaces;      // insert-data: removed reference member with the same name (type changed in place)
     public Member Virtualizes;   // insert-virtual: non-virtual reference method that became virtual
     public Member OverloadOf;    // insert-virtual: existing virtual overload with the same name
+    public Member ReplacesVirtual; // insert-virtual: removed overload of the same name (signature changed in place)
     public bool OverloadFirst;   // ... and the new overload precedes it in the vtable
     public long Value;           // enum value
-    public override string ToString() => $"{Kind} {(Member == null ? "" : TypeLayout.Format(Member))}{(Anchor != null ? $"   after {Anchor.Name}" : Kind.StartsWith("insert") ? "   at start" : "")}";
+    public List<string> Bases;   // set-bases: the devkit's base classes in declaration order
+    public override string ToString() => Kind == "set-bases" ? $"set-bases {string.Join(", ", Bases)}"
+        : $"{Kind} {(Member == null ? "" : TypeLayout.Format(Member))}{(Anchor != null ? $"   after {Anchor.Name}" : Kind.StartsWith("insert") ? "   at start" : "")}";
 }
 
 static class Ops
@@ -187,9 +256,24 @@ static class Ops
     static string DataKey(Member m) => m.Kind == "bitfield" ? $"{m.Type} {m.Name}:{m.BitCount}" : $"{m.Type} {m.Name}";
     static string VirtKey(Member m) => m.Name + m.Signature;
 
+    // Empty bases (no data, no vtable, e.g. ARK's PrimalLiveTunablesMixin<T>) do not affect the layout and are
+    // left out by the generated ARK classes; they are ignored when comparing base lists.
+    public static Func<string, TypeLayout> Lookup;
+    static bool IsEmptyBase(Member m) => Lookup?.Invoke(m.Type) is TypeLayout t && t.Size == 1
+        && !t.Members.Any(x => x.Kind is "data" or "bitfield" or "vfptr" or "base");
+    static bool IsOverride(Member m) => m.Kind == "method" && m.Virtual && !m.Intro && !m.CompilerGenerated && !m.Name.StartsWith("~")
+        && m.Name is not ("__vecDelDtor" or "_getUObject");
+
     public static List<Op> Compute(TypeLayout a, TypeLayout b)
     {
         var ops = new List<Op>();
+        // ---- base classes (ARK inserted new bases, e.g. AActor : UPrimalActor, and reordered interfaces)
+        if (a.Kind != "enum")
+        {
+            var ba = a.Members.Where(m => m.Kind == "base" && !IsEmptyBase(m)).Select(m => m.Type).ToList();
+            var bb = b.Members.Where(m => m.Kind == "base" && !IsEmptyBase(m)).Select(m => m.Type).ToList();
+            if (!ba.SequenceEqual(bb)) ops.Add(new Op { Kind = "set-bases", Bases = bb });
+        }
         // ---- data members (access ignored: MSVC lays out members in declaration order regardless of access)
         Sequence(a.Members.Where(IsData).ToList(), b.Members.Where(IsData).ToList(), DataKey, "data", ops);
         // ---- introduced virtual functions in vtable order
@@ -214,22 +298,91 @@ static class Ops
                 else ops.Add(new Op { Kind = "insert-enum", Member = new Member { Kind = "enumerator", Name = e.Name }, Anchor = prevCommon == null ? null : new Member { Name = prevCommon.Name }, Value = e.Value });
             }
             foreach (var e in ea) if (!bNames.Contains(e.Name)) ops.Add(new Op { Kind = "remove-enum", Member = new Member { Kind = "enumerator", Name = e.Name } });
+            // ARK changed the underlying type of some enums (e.g. ETeleportType : uint8)
+            if (a.Size != b.Size && b.Size > 0) ops.Add(new Op { Kind = "set-underlying", Value = b.Size });
         }
         // ---- members whose type changed: replace in place; methods that became virtual: move the declaration
         foreach (var ins in ops.Where(o => o.Kind == "insert-data"))
-            ins.Replaces = ops.FirstOrDefault(r => r.Kind == "remove-data" && r.Member.Name == ins.Member.Name)?.Member;
+        {
+            // retyped in place: same name, other type, and still after the same kept member (else it moved)
+            var old = ops.FirstOrDefault(r => r.Kind == "remove-data" && r.Member.Name == ins.Member.Name && r.Member.Type != ins.Member.Type)?.Member;
+            if (old == null) continue;
+            var aData = a.Members.Where(IsData).ToList();
+            var bAll = b.Members.Where(IsData).ToList();
+            // predecessors that exist on both sides (members only one side has, e.g. new ones, do not count)
+            var aNames = aData.Select(m => m.Name).ToHashSet(); var bNames = bAll.Select(m => m.Name).ToHashSet();
+            int oi = aData.IndexOf(old), bi = bAll.IndexOf(ins.Member);
+            var oldPrev = aData.Take(Math.Max(0, oi)).LastOrDefault(m => bNames.Contains(m.Name))?.Name;
+            var newPrev = bAll.Take(Math.Max(0, bi)).LastOrDefault(m => aNames.Contains(m.Name))?.Name;
+            if (oldPrev == newPrev) ins.Replaces = old;
+        }
+        // a new member without a kept predecessor follows its devkit predecessor if that one exists by name in the
+        // reference (with another type): e.g. LastRenderTimeOnScreen after the retyped LastRenderTime
+        var bData = b.Members.Where(IsData).ToList();
+        foreach (var ins in ops.Where(o => o.Kind == "insert-data" && o.Replaces == null))
+        {
+            int k = bData.IndexOf(ins.Member);
+            if (k <= 0) continue;
+            var prev = bData[k - 1];
+            var refPrev = a.Members.FirstOrDefault(m => IsData(m) && m.Name == prev.Name);
+            if (refPrev != null && (ins.Anchor == null || ops.Any(o => o.Kind == "insert-data" && o.Member == prev && o.Replaces != null))) { ins.Anchor = refPrev; continue; }
+            // further back: new members that follow a retyped member (through other new ones) are placed after it too
+            var aKeys = a.Members.Where(IsData).Select(DataKey).ToHashSet();
+            for (int j = k - 1; j >= 0; j--)
+            {
+                var retyped = ops.FirstOrDefault(o => o.Kind == "insert-data" && o.Member == bData[j] && o.Replaces != null);
+                if (retyped != null) { ins.Anchor = retyped.Replaces; break; }
+                if (aKeys.Contains(DataKey(bData[j]))) break;   // reached a kept member: the normal anchor is right
+            }
+        }
         var nonVirtual = a.Members.Where(m => m.Kind == "method" && !m.Virtual).GroupBy(VirtKey).ToDictionary(g => g.Key, g => g.First());
         foreach (var ins in ops.Where(o => o.Kind == "insert-virtual"))
         {
             if (nonVirtual.TryGetValue(VirtKey(ins.Member), out var nv)) ins.Virtualizes = nv;
+            else
+            {
+                // ARK replaced a non-virtual method by a virtual one with another signature (e.g. a different return
+                // type): same name and argument count, and the devkit no longer has the old one
+                var (insArgs, insConst, _) = CppType.SplitSignature(ins.Member.Signature);
+                var old = a.Members.FirstOrDefault(m => m.Kind == "method" && !m.Virtual && !m.Static && m.Name == ins.Member.Name
+                    && CppType.ArgCount(CppType.SplitSignature(m.Signature).args) == CppType.ArgCount(insArgs)
+                    && !b.Members.Any(x => x.Kind == "method" && x.Name == m.Name && x.Signature == m.Signature));
+                if (old != null) ins.Virtualizes = old;
+            }
             // MSVC groups overloaded virtuals and lays them out in reverse declaration order
             var sibling = b.Members.FirstOrDefault(m => m.Kind == "method" && m.Intro && m.Name == ins.Member.Name && m.Signature != ins.Member.Signature
                                                         && a.Members.Any(r => r.Kind == "method" && r.Name == m.Name && r.Signature == m.Signature));
             if (sibling != null) { ins.OverloadOf = sibling; ins.OverloadFirst = ins.Member.VSlot < sibling.VSlot; }
+            // an overload whose signature changed (the old one is removed): the group stays where it was declared
+            // (a single, not overloaded virtual follows its vtable neighbours instead: ARK also moved some of them)
+            if (ins.Virtualizes == null && b.Members.Count(m => m.Kind == "method" && m.Intro && m.Name == ins.Member.Name) > 1)
+                ins.ReplacesVirtual = ops.FirstOrDefault(r => r.Kind == "remove-virtual" && r.Member.Name == ins.Member.Name)?.Member;
+        }
+        // several new overloads of one name after the same anchor: declared in reverse vtable order (MSVC lays out
+        // overloads in reverse declaration order)
+        foreach (var grp in ops.Where(o => o.Kind == "insert-virtual" && o.OverloadOf == null && o.Virtualizes == null)
+                               .GroupBy(o => (o.Member.Name, o.ReplacesVirtual ?? o.Anchor)).Where(g => g.Count() > 1).ToList())
+        {
+            var idx = grp.Select(o => ops.IndexOf(o)).OrderBy(i => i).ToList();
+            var rev = grp.Reverse().ToList();
+            for (int k = 0; k < idx.Count; k++) ops[idx[k]] = rev[k];
         }
         // removals first: replacements are placed after the removed declaration
         var ordered = ops.OrderBy(o => o.Kind.StartsWith("remove") ? 0 : 1).ToList();   // stable
         ops.Clear(); ops.AddRange(ordered);
+        // ---- overrides of base class virtuals: they decide the vtable entries of classes derived in a plugin
+        // (a missing override silently calls the base implementation, a removed one is an unresolved external)
+        var virtA = a.Members.Where(m => m.Kind == "method" && m.Virtual).Select(VirtKey).ToHashSet();
+        var virtB = b.Members.Where(m => m.Kind == "method" && m.Virtual).Select(VirtKey).ToHashSet();
+        foreach (var m in b.Members.Where(IsOverride)) if (!virtA.Contains(VirtKey(m))) ops.Add(new Op { Kind = "insert-override", Member = m });
+        foreach (var m in a.Members.Where(IsOverride)) if (!virtB.Contains(VirtKey(m))) ops.Add(new Op { Kind = "remove-override", Member = m });
+        // a virtual the devkit introduces in a new base class (e.g. CheckForErrors in UPrimalActor) is removed from the
+        // introduced virtuals here but still overridden: declare it again as an override
+        foreach (var rv in ops.Where(o => o.Kind == "remove-virtual").ToList())
+        {
+            var ov = b.Members.FirstOrDefault(m => IsOverride(m) && VirtKey(m) == VirtKey(rv.Member));
+            if (ov != null) ops.Add(new Op { Kind = "insert-override", Member = ov });
+        }
         // ---- access / virtual changes of methods present in both
         var am = a.Members.Where(m => m.Kind == "method" && !m.CompilerGenerated).GroupBy(VirtKey).ToDictionary(g => g.Key, g => g.First());
         foreach (var m in b.Members.Where(m => m.Kind == "method" && !m.CompilerGenerated))
@@ -433,6 +586,8 @@ static class MacroIndex
 
 sealed class HeaderFile
 {
+    // a module export macro (not a function-like macro such as SLATE_DECLARE_WIDGET_API(...))
+    const string ApiMacro = @"\b[A-Z][A-Z0-9_]*_API\b(?!\s*\()";
     readonly string path;
     string text;
     readonly List<(int pos, int order, string insert, int removeLen)> edits = new();
@@ -445,7 +600,10 @@ sealed class HeaderFile
     {
         if (edits.Count == 0) return;
         var sb = new StringBuilder(text);
-        foreach (var e in edits.OrderByDescending(e => e.pos).ThenByDescending(e => e.order))
+        // at the same position: the end of a removed block, then inserted declarations, then the start of the next
+        // removed block (declarations inserted between two removed members stay outside both '#if 0' blocks)
+        static int Rank(string s) => s == null ? 1 : s.StartsWith("#endif // [ARK]") ? 0 : s.StartsWith("#if 0 // [ARK] removed") ? 2 : 1;
+        foreach (var e in edits.OrderByDescending(e => e.pos).ThenByDescending(e => Rank(e.insert)).ThenByDescending(e => e.order))
         {
             if (e.removeLen > 0) sb.Remove(e.pos, e.removeLen);
             if (e.insert != null) sb.Insert(e.pos, e.insert);
@@ -456,6 +614,65 @@ sealed class HeaderFile
     }
 
     void Insert(int pos, string s) => edits.Add((pos, editOrder++, s, 0));
+    void Replace(int pos, int len, string s) => edits.Add((pos, editOrder++, s, len));
+
+    // ARK-only classes generated by Tools\New-ArkClassHeaders.ps1: type name -> include path ("Ark/PrimalActor.h")
+    public static Dictionary<string, string> ArkClassIncludes = new();
+
+    // the base clause of the class whose body starts at 'open': ": public A, public B" -> devkit bases
+    string SetBases(TypeLayout t, int open, List<string> bases)
+    {
+        var shortName = t.Name.Contains("::") ? t.Name[(t.Name.LastIndexOf("::") + 2)..] : t.Name;
+        int from = Math.Max(0, open - 4000);
+        var head = Regex.Matches(text[from..open], @"\b(class|struct)\b[^;{}]*?\b" + Regex.Escape(shortName) + @"\b(\s*final)?").LastOrDefault()
+                   ?? throw new Exception("class head not found");
+        int nameEnd = from + head.Index + head.Length;
+        var clause = text[nameEnd..open];
+        var colon = clause.IndexOf(':');
+        var newClause = " : " + string.Join(", ", bases.Select(b => "public " + CppType.Clean(b)));
+        if (colon < 0) Insert(nameEnd, newClause + " // [ARK] bases");
+        else
+        {
+            // keep everything after the base list (comments, line break before '{')
+            int end = clause.Length; while (end > 0 && char.IsWhiteSpace(clause[end - 1])) end--;
+            Replace(nameEnd, end, newClause + " // [ARK] bases (was" + Regex.Replace(clause[..end], @"\s+", " ") + ")");
+        }
+        // generated ARK-only bases need their header
+        foreach (var b in bases)
+            if (ArkClassIncludes.TryGetValue(b, out var inc)) AddInclude(inc, "base class");
+        return $"bases -> {string.Join(", ", bases)}";
+    }
+
+    // type name -> SDK header defining it (set by Patcher.Run)
+    public static Func<string, string> HeaderOf;
+    readonly HashSet<string> addedIncludes = new(StringComparer.OrdinalIgnoreCase);
+
+    // #include before the .generated.h include (which must stay last), else after the last #include
+    void AddInclude(string inc, string why)
+    {
+        if (text.Contains($"\"{inc}\"") || !addedIncludes.Add(inc)) return;
+        var gen = Regex.Match(text, @"^#include\s+""[^""]+\.generated\.h"".*$", RegexOptions.Multiline);
+        if (gen.Success) Insert(gen.Index, $"#include \"{inc}\" // [ARK] {why}\r\n");
+        else
+        {
+            var last = Regex.Matches(text, @"^#include\s+.*$", RegexOptions.Multiline).LastOrDefault() ?? throw new Exception("no #include to anchor on");
+            Insert(LineEndOf(last.Index) + 1, $"#include \"{inc}\" // [ARK] {why}\r\n");
+        }
+    }
+
+    // a data member of this class/struct/union/enum type held by value needs the type's definition: its ARK-only
+    // header or the engine header defining it, as included by other modules (path below Public\ or Classes\)
+    void IncludeDefinitionOf(string type)
+    {
+        var name = CppType.Clean(type);
+        if (!Regex.IsMatch(name, @"^[A-Za-z_][\w:]*$") || Ops.Lookup?.Invoke(type) is not TypeLayout tl || tl.Kind is not ("class" or "struct" or "union" or "enum")) return;
+        if (ArkClassIncludes.TryGetValue(name, out var ark)) { AddInclude(ark, "member type"); return; }
+        var header = HeaderOf?.Invoke(name);
+        if (header == null || string.Equals(Path.GetFullPath(header), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)) return;
+        // only real headers (FString is defined in UnrealString.h.inl, which UnrealString.h includes with its macros)
+        var m = Regex.Match(header.Replace('/', '\\'), @"\\(?:Public|Classes)\\(.+\.h)$", RegexOptions.IgnoreCase);
+        if (m.Success) AddInclude(m.Groups[1].Value.Replace('\\', '/'), "member type");
+    }
 
     int LineStart(int line)
     {
@@ -673,6 +890,14 @@ sealed class HeaderFile
                 {
                     // macro statement without semicolon: IDENT(...) followed by a new line and something that does not continue a declaration
                     var soFar = code.ToString().Trim();
+                    // "virtual float F() const PURE_VIRTUAL(F, return 0.f;)": a function whose body is the macro
+                    var pv = Regex.Match(soFar, @"\)[^()]*\bPURE_VIRTUAL\s*\(.*\)$", RegexOptions.Singleline);
+                    if (pv.Success)
+                    {
+                        int k = SkipTrivia(i);
+                        if (k < text.Length && text[k] == ';') i = k + 1;
+                        return Classify(start, i, soFar[..(pv.Index + 1)] + Regex.Replace(soFar[(pv.Index + 1)..], @"\bPURE_VIRTUAL\s*\(.*\)$", "{}", RegexOptions.Singleline), access);
+                    }
                     var mm = Regex.Match(soFar, @"^([A-Z_][A-Z0-9_]*)\s*\((.*)\)$", RegexOptions.Singleline);
                     if (mm.Success)
                     {
@@ -703,7 +928,8 @@ sealed class HeaderFile
                 code.Append(" {}");
                 i = close + 1;
                 bool isFunctionBody = Regex.IsMatch(soFar, @"\)\s*(const|override|final|noexcept|volatile|&|&&|\s|->\s*[\w:<>,\s\*&]+)*$") && !sawEquals;
-                bool isType = firstWord is "class" or "struct" or "union" or "enum" or "namespace";
+                // "class X* Get() const { ... }" is a function with an elaborated return type, not a nested type
+                bool isType = !isFunctionBody && firstWord is "class" or "struct" or "union" or "enum" or "namespace";
                 if (isFunctionBody && !isType)
                 {
                     int k = SkipTrivia(i);
@@ -737,7 +963,13 @@ sealed class HeaderFile
         var t = st.Text;
         var first = Ident.Match(t).Value;
         if (first is "typedef" or "using" or "friend" or "static_assert") { st.Kind = "other"; return st; }
-        if (first is "class" or "struct" or "union" or "enum")
+        // "class AActor* Target;" is a data member with an elaborated type specifier, not a forward declaration
+        if (first is "class" or "struct" && !t.Contains('{') && !t.Contains('(') && Regex.IsMatch(t, @"^(class|struct)\s+[\w:]+(\s*<[^;]*>)?[\s*&]+[A-Za-z_]\w*(\s*\[[^\]]*\])?\s*(=[^;]*)?;?$"))
+            t = st.Text = t[(first.Length)..].TrimStart();
+        // "class X* Get() const { ... }": a function with an elaborated return type
+        else if (first is "class" or "struct" && Regex.IsMatch(t, @"^(class|struct)\s+[\w:]+(\s*<[^;{(]*>)?[\s*&]+[A-Za-z_]\w*\s*\("))
+            t = t[(first.Length)..].TrimStart();
+        else if (first is "class" or "struct" or "union" or "enum")
         {
             st.Kind = t.Contains('{') ? "type" : "other";
             return st;
@@ -831,24 +1063,41 @@ sealed class HeaderFile
         return -1;
     }
 
-    // Layout-independence probe: inject a data member (and a virtual function for polymorphic types) at the start
-    // of the type body without changing any line numbers.
-    public string InjectProbe(TypeLayout t, int line, bool polymorphic)
+    // Layout-independence probe, without changing any line numbers: a data member before 'before' (with its
+    // UPROPERTY; a base, vfptr or null: at the start of the type body, atEnd: before its closing brace) and a virtual
+    // function at the start of the body.
+    public string InjectProbe(TypeLayout t, int line, bool data, Member before, bool atEnd, bool virtualFn)
     {
         var (open, slateArgs) = FindBody(t, line);
         if (open < 0 || slateArgs) return "body not found";
-        int pos = open + 1;
+        var stmts = Scan(open, t.Kind != "class", false, out int bodyEnd);
+        int start = open + 1;
         var gen = new Regex(@"\G\s*GENERATED_\w*BODY\w*\s*\(\s*\)").Match(text, open + 1);
-        if (gen.Success) pos = gen.Index + gen.Length;   // keep UHT's GENERATED_*BODY() first
+        if (gen.Success) start = gen.Index + gen.Length;   // keep UHT's GENERATED_*BODY() first
         else
         {
-            var stmts = Scan(open, t.Kind != "class", false, out int bodyEnd);
             var first = stmts.FirstOrDefault(s => s.Kind != "preproc");
-            if (first != null && first.Kind == "macro" && first.MacroName.StartsWith("GENERATED_")) pos = first.End;
+            if (first != null && first.Kind == "macro" && first.MacroName.StartsWith("GENERATED_")) start = first.End;
         }
-        var probe = " uint8 ArkLayoutProbe_Data[64];" + (polymorphic ? " virtual void ArkLayoutProbe_Virtual();" : "");
-        Insert(pos, probe);
-        return "probed";
+        var done = new List<string>();
+        if (data)
+        {
+            int pos = start; string where = "at start";
+            if (atEnd)
+            {
+                if (bodyEnd < 0) return "body end not found";
+                pos = bodyEnd; where = "at end";
+            }
+            else if (before != null && before.Kind is "data" or "bitfield")
+            {
+                if (FindData(stmts, before.Name) is Stmt s) { pos = LeadingMacrosStart(s, stmts); where = $"before {before.Name}"; }
+                else where = $"at start ({before.Name} not found)";
+            }
+            Insert(pos, " uint8 ArkLayoutProbe_Data[64]; ");
+            done.Add("data " + where);
+        }
+        if (virtualFn) { Insert(start, " virtual void ArkLayoutProbe_Virtual();"); done.Add("virtual"); }
+        return "probed: " + string.Join(", ", done);
     }
 
     // debugging aid: PdbLayout scan <header> <line> <kind> <name>
@@ -891,6 +1140,14 @@ sealed class HeaderFile
         return results;
     }
 
+    // the module export macro for members of a class that is not exported as a whole (null if it is, or unknown)
+    string ClassApi(int open, int bodyEnd)
+    {
+        if (Regex.IsMatch(text[Math.Max(0, open - 400)..open], @"\b(class|struct)\s+[A-Z][A-Z0-9_]*_API\b")) return null;
+        var api = Regex.Match(text[Math.Max(0, open - 400)..bodyEnd], ApiMacro);
+        return api.Success ? api.Value : null;
+    }
+
     Stmt FindData(List<Stmt> stmts, string name) => stmts.FirstOrDefault(s => (s.Kind is "data" or "macro") && s.Names.Contains(name));
 
     Stmt FindFunction(List<Stmt> stmts, Member m)
@@ -900,6 +1157,15 @@ sealed class HeaderFile
         var cands = stmts.Where(s => s.Kind == "function" && s.Names.Contains(m.Name)).ToList();
         var exact = cands.Where(s => s.ArgCount == n).ToList();
         if (exact.Count > 1) exact = exact.Where(s => Regex.IsMatch(s.Text, @"\)\s*const\b") == isConst).DefaultIfEmpty(exact[0]).ToList();
+        if (exact.Count > 1)
+        {
+            // overloads with the same number of arguments: the one whose declaration names the argument types
+            // first (outer template, e.g. TArray vs TArrayView) and last identifier of every argument type
+            var typeNames = CppType.SplitArgs(args).Select(CppType.Clean)
+                .Select(a => Regex.Matches(a, @"[A-Za-z_]\w*").Select(x => x.Value).Where(w => w is not ("const" or "unsigned" or "signed")).ToList())
+                .SelectMany(w => w.Count == 0 ? new string[0] : new[] { w[0], w[^1] }.Distinct()).ToList();
+            exact = exact.OrderByDescending(s => typeNames.Count(tn => Regex.IsMatch(s.Text, $@"\b{Regex.Escape(tn)}(8|16|32|64)?\b"))).ToList();   // int -> int32
+        }
         return exact.FirstOrDefault() ?? (cands.Count == 1 ? cands[0] : null);
     }
 
@@ -923,13 +1189,49 @@ sealed class HeaderFile
                 if (slateArgs) decl = SlateArgDecl(op.Member);
                 else if (op.Member.Kind == "bitfield") decl = $"{CppType.Clean(op.Member.Type)} {op.Member.Name} : {op.Member.BitCount};";
                 else decl = CppType.Declare(op.Member.Type, op.Member.Name) + ";";
+                if (!slateArgs && op.Member.Kind == "data")
+                {
+                    // a type nested in this class: unqualified if the header declares it; ARK-only nested and unnamed
+                    // types become opaque storage of the same size and alignment
+                    var nested = Regex.Match(CppType.Clean(op.Member.Type), $@"^{Regex.Escape(t.Name)}::(\w+)$");
+                    bool opaque = op.Member.Type.Contains("<unnamed");
+                    if (nested.Success)
+                    {
+                        if (Regex.IsMatch(text[open..bodyEnd], $@"\b{Regex.Escape(nested.Groups[1].Value)}\b"))
+                            decl = CppType.Declare(nested.Groups[1].Value, op.Member.Name) + ";";
+                        else opaque = true;
+                    }
+                    if (opaque && Ops.Lookup?.Invoke(op.Member.Type) is TypeLayout ot)
+                        decl = $"alignas({Generator.AlignOf(Ops.Lookup, op.Member.Type, 0)}) uint8 {op.Member.Name}[{ot.Size}];";
+                    else if (!nested.Success) IncludeDefinitionOf(op.Member.Type);
+                }
                 if (op.Replaces != null && FindData(stmts, op.Replaces.Name) is Stmt old)
                 {
-                    // same member, new type: put the new declaration right after the (removed) old one
+                    // same member, new type: put the new declaration right after the (removed) old one, keeping what is
+                    // not part of the layout but inline code relies on: 'mutable' and a simple default initializer
+                    if (Regex.IsMatch(old.Text, @"^\s*mutable\b")) decl = "mutable " + decl;
+                    var init = Regex.Match(old.Text, @"=\s*(-?[\d.]+f?|nullptr|true|false)\s*;?\s*$");
+                    if (init.Success && op.Member.Kind == "data") decl = decl.TrimEnd(';') + " = " + init.Groups[1].Value + ";";
                     int lineAfter = AfterStmt(old);
                     if (lineAfter < text.Length && text[lineAfter] == '\n') lineAfter++;
                     Insert(lineAfter, $"{IndentOf(old.Start)}{decl} // [ARK] type changed\r\n");
                     return $"replaced {op.Replaces.Name} by {decl}";
+                }
+                // anchor declared in several preprocessor branches (#if ... #else): follow each of them
+                var anchors = op.Anchor != null && op.Anchor.Kind is "data" or "bitfield"
+                    ? stmts.Where(s => s.Kind is "data" or "macro" && s.Names.Contains(op.Anchor.Name)).ToList() : new List<Stmt>();
+                if (anchors.Count > 1)
+                {
+                    foreach (var a in anchors) InsertDecl(AfterStmt(a), IndentOf(a.Start), decl, slateArgs ? null : op.Member.Access, a.Access);
+                    return $"inserted {decl} (after each of {anchors.Count} declarations of {op.Anchor.Name})";
+                }
+                // anchor removed (#if 0) and replaced: follow the replacement, i.e. go after the #endif of the removal
+                if (anchors.Count == 1 && removed.Contains(anchors[0]))
+                {
+                    int lineAfter = AfterStmt(anchors[0]);
+                    if (lineAfter < text.Length && text[lineAfter] == '\n') lineAfter++;
+                    Insert(lineAfter, $"{IndentOf(anchors[0].Start)}{decl} // [ARK]\r\n");
+                    return $"inserted {decl} (after the replaced {op.Anchor.Name})";
                 }
                 var (pos, indent, accessHere) = DataInsertPoint(op, stmts, open, bodyEnd, slateArgs);
                 InsertDecl(pos, indent, decl, slateArgs ? null : op.Member.Access, accessHere);
@@ -944,17 +1246,36 @@ sealed class HeaderFile
             }
             case "insert-virtual":
             {
+                // An RPC / BlueprintNativeEvent wrapper that sits between UHT generated virtuals (or replaces one) must be
+                // declared as a UFUNCTION; one that ARK added outside of them can be declared explicitly.
+                bool isWrapper = op.Member.Name.EndsWith("_Implementation") || op.Member.Name.EndsWith("_Validate");
+                bool anchorIsWrapper = op.Anchor != null && (op.Anchor.Name.EndsWith("_Implementation") || op.Anchor.Name.EndsWith("_Validate"))
+                                       && FindFunction(stmts, op.Anchor) == null;
+                if (isWrapper && anchorIsWrapper)
+                    throw new Exception("generated by UHT from a UFUNCTION: edit the UFUNCTION declaration (vtable order = reverse declaration order)");
                 var decl = CppType.MethodDecl(op.Member);
                 string virtualized = "";
                 if (op.Virtualizes != null && FindFunction(stmts, op.Virtualizes) is Stmt orig)
                 {
                     // ARK made an existing method virtual: drop the old declaration, keep its export macro
-                    var api = Regex.Match(orig.Text, @"\b[A-Z][A-Z0-9_]*_API\b");
+                    var api = Regex.Match(orig.Text, ApiMacro);
                     if (api.Success) decl = api.Value + " " + decl;
                     RemoveStmt(orig, stmts);
                     virtualized = " (was non-virtual)";
                 }
+                // new virtuals of a class that is not exported as a whole are exported individually (Super:: calls)
+                if (!Regex.IsMatch(decl, ApiMacro) && ClassApi(open, bodyEnd) is string classMacro) decl = classMacro + " " + decl;
                 int pos; string indent; string accessHere;
+                if (op.ReplacesVirtual != null && FindFunction(stmts, op.ReplacesVirtual) is Stmt prevSig)
+                {
+                    // signature changed in place: after the removed declaration (its #endif), keeping its export macro
+                    var api = Regex.Match(prevSig.Text, ApiMacro);
+                    if (api.Success && !Regex.IsMatch(decl, ApiMacro)) decl = api.Value + " " + decl;
+                    int lineAfter = AfterStmt(prevSig);
+                    if (lineAfter < text.Length && text[lineAfter] == '\n') lineAfter++;
+                    Insert(lineAfter, $"{IndentOf(prevSig.Start)}{decl} // [ARK] signature changed\r\n");
+                    return $"inserted {decl} (in place of {op.ReplacesVirtual.Name}{op.ReplacesVirtual.Signature})";
+                }
                 if (op.OverloadOf != null && FindFunction(stmts, op.OverloadOf) is Stmt sib)
                 {
                     // vtable order of overloads = reverse declaration order
@@ -963,9 +1284,14 @@ sealed class HeaderFile
                     InsertDecl(pos, IndentOf(sib.Start), decl, op.Member.Access, sib.Access);
                     return $"inserted {decl}{virtualized} (overload of {op.OverloadOf.Name}, {(op.OverloadFirst ? "declared after" : "declared before")} it)";
                 }
-                if (op.Anchor != null)
+                // virtuals UHT declares in GENERATED_BODY (RPC / BlueprintNativeEvent wrappers, interface boilerplate)
+                // come first in the vtable: following one of them means being the first declared virtual
+                var anchorDecl = op.Anchor != null ? FindFunction(stmts, op.Anchor) : null;
+                bool anchorGenerated = op.Anchor != null && anchorDecl == null
+                    && (op.Anchor.Name.EndsWith("_Implementation") || op.Anchor.Name.EndsWith("_Validate") || op.Anchor.Name == "_getUObject");
+                if (op.Anchor != null && !anchorGenerated)
                 {
-                    var a = FindFunction(stmts, op.Anchor) ?? throw new Exception($"anchor virtual {op.Anchor.Name} not found");
+                    var a = anchorDecl ?? throw new Exception($"anchor virtual {op.Anchor.Name} not found");
                     pos = AfterStmt(a); indent = IndentOf(a.Start); accessHere = a.Access;
                 }
                 else
@@ -976,6 +1302,30 @@ sealed class HeaderFile
                 }
                 InsertDecl(pos, indent, decl, op.Member.Access, accessHere);
                 return $"inserted {decl}{virtualized}";
+            }
+            case "set-bases":
+                return SetBases(t, open, op.Bases);
+            case "insert-override":
+            {
+                // at the end of the class body; the module's export macro if the class is not exported as a whole
+                if (FindFunction(stmts, op.Member) is Stmt nonVirtual && !nonVirtual.Virtual)
+                {
+                    // ARK overrides a method the class declares non-virtual (e.g. an inline accessor that implements an
+                    // ARK interface): make that declaration virtual, keeping its body and export macro
+                    Insert(nonVirtual.Start, "virtual /* [ARK] */ ");
+                    return $"made {op.Member.Name} virtual (override)";
+                }
+                var decl = CppType.MethodDecl(op.Member);
+                if (ClassApi(open, bodyEnd) is string api) decl = api + " " + decl;
+                var last = stmts.LastOrDefault();
+                InsertDecl(LineStartOf(bodyEnd) - 1, last != null ? IndentOf(last.Start) : IndentOf(open) + "\t", decl, op.Member.Access, last?.Access ?? (t.Kind == "class" ? "private" : "public"));
+                return $"inserted override {decl}";
+            }
+            case "remove-override":
+            {
+                var s = FindFunction(stmts, op.Member) ?? throw new Exception($"override {op.Member.Name} not found");
+                RemoveStmt(s, stmts);
+                return $"removed override {op.Member.Name}{op.Member.Signature}";
             }
             case "remove-virtual":
             {
@@ -1045,8 +1395,10 @@ sealed class HeaderFile
         Insert(pos, sb.ToString());
     }
 
+    readonly HashSet<Stmt> removed = new();
     void RemoveStmt(Stmt s, List<Stmt> stmts)
     {
+        removed.Add(s);
         var start = LineStartOf(LeadingMacrosStart(s, stmts));
         var end = AfterStmt(s);
         if (end < text.Length && text[end] == '\n') end++;
@@ -1090,6 +1442,17 @@ sealed class HeaderFile
 
         foreach (var op in ops)
         {
+            if (op.Kind == "set-underlying")
+            {
+                var u = op.Value switch { 1 => "uint8", 2 => "uint16", 8 => "uint64", _ => "int32" };
+                int from = Math.Max(0, open - 600);
+                var head = Regex.Matches(text[from..open], @"\benum\s+(?:class\s+|struct\s+)?[A-Za-z_]\w*(\s*:\s*[\w:]+)?\s*$").LastOrDefault();
+                if (head == null) { results.Add($"MANUAL: enum head not found (underlying type {u})"); continue; }
+                if (head.Groups[1].Success) Replace(from + head.Groups[1].Index, head.Groups[1].Length, $" : {u} /* [ARK] was{head.Groups[1].Value.Replace(":", "")} */");
+                else Insert(from + head.Index + head.Value.TrimEnd().Length, $" : {u} /* [ARK] */");
+                results.Add($"underlying type -> {u}");
+                continue;
+            }
             var nm = op.Member.Name;
             switch (op.Kind)
             {

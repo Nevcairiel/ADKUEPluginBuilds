@@ -1,0 +1,67 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/PhysicsEngine/BodyInstance.h b/Engine/Source/Runtime/Engine/Classes/PhysicsEngine/BodyInstance.h
+--- a/Engine/Source/Runtime/Engine/Classes/PhysicsEngine/BodyInstance.h
++++ b/Engine/Source/Runtime/Engine/Classes/PhysicsEngine/BodyInstance.h
+@@ -394,12 +394,16 @@ private:
+ 	/** When per-shape collision is changed at runtime, state is stored in an optional array of per-shape collision state.
+ 	*	Before bShapeCollisionEnabledIsSet state is true, collision values from the BodySetup's AggGeom are used in GetShapeCollisionEnabled.
+ 	*/
++#if 0 // [ARK] removed
+ 	TArray<TEnumAsByte<ECollisionEnabled::Type>> ShapeCollisionEnabled;
++#endif // [ARK]
+ 
+ 	/** When per-shape collision responses are changed at runtime, state is stored in an optional array of per-shape
+ 	*	collision response settings. If bShapeCollisionResponsesIsSet is false, the base body instance's CollisionResponses member is used for all shapes.
+ 	*/
++#if 0 // [ARK] removed
+ 	TArray<TPair<int32, FCollisionResponse>> ShapeCollisionResponses;
++#endif // [ARK]
+ 
+ public:
+ 	// Current state of the physics body for tracking deferred addition and removal.
+@@ -448,6 +452,9 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = Collision)
+ 	uint8 bSmoothEdgeCollisions : 1;
++	uint8 bIsSilenced : 1; // [ARK]
++	uint8 bUseSpecificBodyArmorType : 1; // [ARK]
++	uint8 bIsShieldHolder : 1; // [ARK]
+ 
+ 	/////////
+ 	// SIM SETTINGS
+@@ -692,12 +699,16 @@ public:
+ 
+ 
+ 	/** If the SleepFamily is set to custom, multiply the natural sleep threshold by this amount. A higher number will cause the body to sleep sooner. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = Physics)
+ 	float CustomSleepThresholdMultiplier;
++#endif // [ARK]
+ 
+ 	/** Stabilization factor for this body if Physics stabilization is enabled. A higher number will cause more aggressive stabilization at the risk of loss of momentum at low speeds. A value of 0 will disable stabilization for this body.*/
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=Physics)
+ 	float StabilizationThresholdMultiplier;
++#endif // [ARK]
+ 
+ 	/**	Influence of rigid body physics (blending) on the mesh's pose (0.0 == use only animation, 1.0 == use only physics) */
+ 	/** Provide appropriate interface for doing this instead of allowing BlueprintReadWrite **/
+@@ -1168,7 +1179,9 @@ private:
+ 	};
+ 
+ 	/** Pointer to lazily created container for the body instance delegates. */
++#if 0 // [ARK] removed
+ 	FBodyInstanceDelegatesPtr BodyInstanceDelegates;
++#endif // [ARK]
+ 
+ public:
+ 	/** Executes the OnCalculateCustomProjection delegate if bound. */
+@@ -1574,6 +1587,9 @@ private:
+ 	static ENGINE_API void BuildBodyFilterData(const FBodyInstance* InInstance, UPrimitiveComponent* InOwnerComp, UObject* InSourceObj, UBodySetup* InSetup, FBodyCollisionFilterData& OutFilterData, const int32 InShapeIndex = INDEX_NONE);
+ 
+ 	FBodyInstancePhysicsCreationInputsPtr PhysicsCreationInputs;
++public:
++	TEnumAsByte<EPrimalEquipmentType::Type> BodyArmorType; // [ARK]
++private:
+ };
+ 
+ template<>

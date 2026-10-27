@@ -1,7 +1,73 @@
 diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h b/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
 --- a/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
 +++ b/Engine/Source/Runtime/Engine/Classes/Engine/EngineBaseTypes.h
-@@ -1109,6 +1109,7 @@ enum EViewModeIndex : int
+@@ -16,6 +16,8 @@
+ #include "Net/Core/Connection/NetEnums.h"
+ #include <atomic>
+ 
++#include "Ark/PrimalTickFunctionData.h" // [ARK] base class
++#include "UObject/NameTypes.h" // [ARK] member type
+ #include "EngineBaseTypes.generated.h"
+ 
+ class UActorComponent;
+@@ -275,7 +277,7 @@ private:
+ 	};
+ 
+ 	/** Internal data structure that contains members only required for a registered tick function. */
+-	struct FInternalData
++	struct FInternalData : public FPrimalTickFunctionData // [ARK] bases
+ 	{
+ 		FInternalData();
+ 
+@@ -320,10 +322,20 @@ private:
+ 
+ 		/** Back pointer to the FTickTaskLevel managing this tick function, if it is currently registered */
+ 		class FTickTaskLevel* TickTaskLevel;
++		TWeakObjectPtr<UObject> WeakOwnerPtr; // [ARK]
++		bool bShouldHaveOwner; // [ARK]
++		FName PrimalTag; // [ARK]
++		virtual bool IsRegistered() const; // [ARK]
++		virtual FName GetPrimalTag() const; // [ARK]
++		virtual const TWeakObjectPtr<UObject>& GetOwnerAsWeakPtr() const; // [ARK]
++		virtual const bool GetShouldHaveOwner() const; // [ARK]
+ 	};
+ 
+ 	/** Lazily allocated struct that contains the necessary data for a tick function that is registered */
++#if 0 // [ARK] removed
+ 	TUniquePtr<FInternalData> InternalData;
++#endif // [ARK]
++	TSharedPtr<FTickFunction::FInternalData> InternalData; // [ARK] type changed
+ 
+ public:
+ 	/** Default constructor, initializes to disabled. */
+@@ -570,8 +582,12 @@ struct FActorTickFunction : public FTickFunction
+ 	/** Actor that is the target of this tick **/
+ #if UE_WITH_REMOTE_OBJECT_HANDLE
+ 	TObjectPtr<AActor> Target;
++	uint32 bSavedActorTickState : 1; // [ARK]
++	uint32 bSavedActorTickStateValue : 1; // [ARK]
+ #else
+ 	class AActor*	Target;
++	uint32 bSavedActorTickState : 1; // [ARK]
++	uint32 bSavedActorTickStateValue : 1; // [ARK]
+ #endif
+ 
+ 	/** 
+@@ -615,9 +631,13 @@ struct FActorComponentTickFunction : public FTickFunction
+ 
+ #if UE_WITH_REMOTE_OBJECT_HANDLE
+ 	TObjectPtr<class UActorComponent> Target;
++	uint32 bSavedComponentTickState : 1; // [ARK]
++	uint32 bSavedComponentTickStateValue : 1; // [ARK]
+ #else
+ 	/** Actor component that is the target of this tick */
+ 	class UActorComponent*	Target;
++	uint32 bSavedComponentTickState : 1; // [ARK]
++	uint32 bSavedComponentTickStateValue : 1; // [ARK]
+ #endif
+ 
+ 	/** 
+@@ -1109,6 +1129,7 @@ enum EViewModeIndex : int
  	VMI_StreamingTextureResidency = 46 UMETA(DisplayName = "Streaming Texture Residency"),
  	VMI_StreamingMeshLODDeficit = 47 UMETA(DisplayName = "Streaming Mesh LOD Deficit"),
  	VMI_StreamingMeshLODResidency = 48 UMETA(DisplayName = "Streaming Mesh LOD Residency"),

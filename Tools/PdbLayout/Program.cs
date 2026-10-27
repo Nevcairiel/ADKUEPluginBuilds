@@ -28,14 +28,29 @@ static class Program
                     return Patcher.Run(args);
                 case "probe":
                     return Prober.Run(args);
+                case "genclass":
+                    return Generator.Run(args);
+                case "gentypes":
+                    return Generator.RunTypes(args);
                 case "scan":
                     MacroIndex.Root = args.Length > 5 ? args[5] : null;
                     new HeaderFile(args[1]).Dump(args[3], args[4], int.Parse(args[2]));
                     return 0;
                 case "audit":
                 {
-                    // audit <refpdb> <report> <arkpdb>...  : every type of the reference PDB is looked up in the
-                    // devkit PDBs (first one that defines it wins) and checked for changes of its own.
+                    // audit <refpdb> <report> <arkpdb>... [--renames <file>] : every type of the reference PDB is looked up
+                    // in the devkit PDBs (first one that defines it wins) and checked for changes of its own.
+                    // --renames: data members that keep their vanilla name in the SDK ("<Type> <DevkitName> <SdkName>")
+                    int ri = Array.IndexOf(args, "--renames");
+                    if (ri >= 0)
+                    {
+                        foreach (var l in File.ReadAllLines(args[ri + 1]))
+                        {
+                            var f = l.Split('#')[0].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            if (f.Length == 3) Differ.Renames[(f[0], f[1])] = f[2];
+                        }
+                        args = args.Where((_, k) => k != ri && k != ri + 1).ToArray();
+                    }
                     var a = TypeDb.Open(args[1]);
                     var arks = args.Skip(3).Select(p => (Path.GetFileNameWithoutExtension(p), TypeDb.Open(p))).ToList();
                     using var w = new StreamWriter(args[2]);
@@ -422,6 +437,7 @@ sealed class TypeDb
         return u != null ? u[14..^1] : r.Name;
     }
     public bool Has(string name) => completeByUnique.ContainsKey(name) || completeByName.ContainsKey(name);
+    public string UniqueNameOfType(string name) => completeByName.TryGetValue(name, out var idx) ? UniqueNameOf(idx) : null;
 
     public TypeLayout Describe(string name)
     {
@@ -579,27 +595,102 @@ static class Differ
     static bool Relevant(Member m) => !(m.Kind == "method" && m.CompilerGenerated && !m.Virtual);
 
     // Changes that originate in the type itself (not merely offsets shifted by a changed base/member type).
+    public static readonly Dictionary<(string type, string member), string> Renames = new();
+
+    // empty bases (no data, no vtable, e.g. ARK's PrimalLiveTunablesMixin<T>) share their offset with a member
+    // (empty base optimization) and do not affect the layout
+    static TypeLayout WithoutEmptyBases(TypeLayout t)
+    {
+        var empty = t.Members.Where(m => m.Kind == "base" && m.Offset > 0
+            && t.Members.Any(o => o != m && o.Kind is "data" or "bitfield" or "base" && o.Offset == m.Offset)).ToHashSet();
+        if (empty.Count == 0) return t;
+        return new TypeLayout { Name = t.Name, Kind = t.Kind, Size = t.Size, Members = t.Members.Where(m => !empty.Contains(m)).ToList() };
+    }
+
+    // data members the SDK keeps under their vanilla name (Config\AbiRenames.txt)
+    public static TypeLayout WithRenames(TypeLayout t)
+    {
+        if (!t.Members.Any(m => m.Kind is "data" or "bitfield" && Renames.ContainsKey((t.Name, m.Name)))) return t;
+        return new TypeLayout { Name = t.Name, Kind = t.Kind, Size = t.Size, Members = t.Members.Select(m =>
+            m.Kind is "data" or "bitfield" && Renames.TryGetValue((t.Name, m.Name), out var n)
+                ? new Member { Kind = m.Kind, Name = n, Type = m.Type, Offset = m.Offset, BitOffset = m.BitOffset, BitCount = m.BitCount, Access = m.Access } : m).ToList() };
+    }
+
+    // members the SDK declares as opaque storage (uint8 Name[N], for ARK-only nested or unnamed types) match the
+    // devkit's member of the same name and offset when that one occupies the same N bytes (up to alignment padding)
+    static TypeLayout WithOpaqueMembers(TypeLayout a, TypeLayout b)
+    {
+        Member Counterpart(Member m)
+        {
+            var arr = m.Kind == "data" ? Regex.Match(m.Type, @"^unsigned char\[(\d+)\]$") : Match.Empty;
+            if (!arr.Success) return null;
+            var o = b.Members.FirstOrDefault(x => x.Kind == "data" && x.Name == m.Name && x.Offset == m.Offset && x.Type != m.Type);
+            if (o == null) return null;
+            long end = m.Offset + long.Parse(arr.Groups[1].Value);
+            long next = b.Members.Where(x => x.Kind is "data" or "bitfield" or "base" && x.Offset > o.Offset).Select(x => x.Offset).DefaultIfEmpty(b.Size).Min();
+            return next >= end && next <= (end + 7) / 8 * 8 ? o : null;
+        }
+        if (!a.Members.Any(m => Counterpart(m) != null)) return a;
+        return new TypeLayout { Name = a.Name, Kind = a.Kind, Size = a.Size, Members = a.Members.Select(m =>
+            Counterpart(m) is Member o ? new Member { Kind = m.Kind, Name = m.Name, Type = o.Type, Offset = m.Offset, Access = m.Access } : m).ToList() };
+    }
+
+    // access is not part of the key: MSVC lays out members in declaration order regardless of access
+    static string D(Member m) => m.Kind switch
+    {
+        // offsets are part of the key: a member with the right name but at another offset is an ABI difference too
+        "base" or "vbase" => $"+0x{m.Offset:X4} {m.Kind} {m.Type}",
+        "vfptr" => "vfptr",
+        "bitfield" => $"+0x{m.Offset:X4}.{m.BitOffset} {m.Type} {m.Name} : {m.BitCount}",
+        _ => $"+0x{m.Offset:X4} {m.Type} {m.Name}",
+    };
+    static bool IsData(Member m) => m.Kind is "base" or "vbase" or "vfptr" or "data" or "bitfield";
+    static List<string> IntroVirtuals(TypeLayout t) =>
+        t.Members.Where(m => m.Kind == "method" && m.Intro).OrderBy(m => m.VSlot).Select(m => $"{m.Name}{m.Signature}").ToList();
+
+    // Where the layout-independence probe goes: the first data item (base, vfptr, member) of the SDK layout that
+    // differs from the devkit's (null when one is a prefix of the other), whether the devkit only appends members or
+    // grows (AtEnd) and whether the introduced virtuals differ.
+    public static (Member First, bool AtEnd, bool Virtuals) ProbePoint(TypeLayout a, TypeLayout b)
+    {
+        a = WithOpaqueMembers(WithoutEmptyBases(a), b);
+        b = WithRenames(WithoutEmptyBases(b));
+        var x = a.Members.Where(IsData).ToList();
+        var y = b.Members.Where(IsData).Select(D).ToList();
+        int i = 0;
+        while (i < x.Count && i < y.Count && D(x[i]) == y[i]) i++;
+        var first = i < x.Count ? x[i] : null;
+        return (first, first == null && (y.Count > x.Count || a.Size != b.Size), !IntroVirtuals(a).SequenceEqual(IntroVirtuals(b)));
+    }
+
     public static string Audit(TypeLayout a, TypeLayout b)
     {
-        // access is not part of the key: MSVC lays out members in declaration order regardless of access
-        static string D(Member m) => m.Kind switch
-        {
-            "base" or "vbase" => $"{m.Kind} {m.Type}",
-            "vfptr" => "vfptr",
-            "bitfield" => $"{m.Type} {m.Name} : {m.BitCount}",
-            _ => $"{m.Type} {m.Name}",
-        };
-        static bool IsData(Member m) => m.Kind is "base" or "vbase" or "vfptr" or "data" or "bitfield";
+        a = WithOpaqueMembers(WithoutEmptyBases(a), b);
+        b = WithRenames(WithoutEmptyBases(b));
         var sections = new List<string>();
         void Seq(string title, List<string> x, List<string> y)
         {
             if (x.SequenceEqual(y)) return;
             sections.Add($"  {title}:\n" + string.Join("\n", Lcs(x, y).Select(l => "    " + l)));
         }
-        Seq("data", a.Members.Where(IsData).Select(D).ToList(), b.Members.Where(IsData).Select(D).ToList());
-        Seq("introduced virtuals (vtable order)",
-            a.Members.Where(m => m.Kind == "method" && m.Intro).OrderBy(m => m.VSlot).Select(m => $"{m.Name}{m.Signature}").ToList(),
-            b.Members.Where(m => m.Kind == "method" && m.Intro).OrderBy(m => m.VSlot).Select(m => $"{m.Name}{m.Signature}").ToList());
+        // ARK-only types generated with opaque storage (ArkData*, Tools\New-ArkClassHeaders.ps1 / ArkTypes.h): their
+        // layout is right when the bases and the size match the devkit
+        bool opaque = a.Members.Any(m => m.Kind == "data" && m.Name.StartsWith("ArkData"));
+        static bool IsBase(Member m) => m.Kind is "base" or "vbase" or "vfptr";
+        if (opaque)
+        {
+            // opaque structs without bases (ArkTypes.h, e.g. dynamic delegates): size and polymorphism decide the layout
+            bool aBases = a.Members.Any(IsBase), bPoly = b.Members.Any(m => m.Kind == "vfptr");
+            if (aBases || bPoly) Seq("bases", a.Members.Where(IsBase).Select(D).ToList(), b.Members.Where(IsBase).Select(D).ToList());
+            if (a.Size != b.Size) sections.Add($"  size:\n    - {a.Size}\n    + {b.Size}");
+        }
+        else if (a.Kind == "enum" && a.Size != b.Size)
+        {
+            // underlying type changed (members of this enum type move)
+            sections.Add($"  size:\n    - {a.Size}\n    + {b.Size}");
+        }
+        else Seq("data", a.Members.Where(IsData).Select(D).ToList(), b.Members.Where(IsData).Select(D).ToList());
+        Seq("introduced virtuals (vtable order)", IntroVirtuals(a), IntroVirtuals(b));
         Seq("enumerators", a.Members.Where(m => m.Kind == "enumerator").Select(m => m.Name).ToList(), b.Members.Where(m => m.Kind == "enumerator").Select(m => m.Name).ToList());
         // methods: signature/access/virtual changes of methods existing in both, removed and added methods
         var am = a.Members.Where(m => m.Kind == "method" && !m.CompilerGenerated).GroupBy(m => m.Name + m.Signature).ToDictionary(g => g.Key, g => g.First());

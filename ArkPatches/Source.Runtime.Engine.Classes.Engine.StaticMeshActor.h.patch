@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshActor.h b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshActor.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshActor.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshActor.h
+@@ -72,6 +72,8 @@ public:
+ 
+ 	/** Name of the StaticMeshComponent.  Use this name if you want to use a different class (with ObjectInitializer.SetDefaultSubobjectClass). */
+ 	static ENGINE_API FName StaticMeshComponentName;
++	ENGINE_API virtual bool IsHLODRelevant() const; // [ARK]
++	ENGINE_API virtual FString GetCustomLabelInfo() const; // [ARK]
+ };
+ 
+ 

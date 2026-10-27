@@ -1,0 +1,178 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SceneComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/SceneComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/SceneComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/SceneComponent.h
+@@ -66,6 +66,7 @@ enum EMoveComponentFlags
+ 	MOVECOMP_DisableBlockingOverlapDispatch		= 0x0008,	
+ 	/** Compare the root actor of a blocking hit with the ignore UPrimitiveComponent::MoveIgnoreActors array */
+ 	MOVECOMP_CheckBlockingRootActorInIgnoreList	= 0x0010,	
++	MOVECOMP_DoCenterOfMassCheck = 22, // [ARK]
+ };
+ // Declare bitwise operators to allow EMoveComponentFlags to be combined but still retain type safety
+ ENUM_CLASS_FLAGS(EMoveComponentFlags);
+@@ -156,6 +157,7 @@ public:
+ 	*/
+ 	UPROPERTY()
+ 	FVector ComponentVelocity;
++	uint32 bClientSyncAlwaysUpdatePhysicsCollision : 1; // [ARK]
+ 
+ private:
+ 	/** True if we have ever updated ComponentToWorld based on RelativeLocation/Rotation/Scale. Used at startup to make sure it is initialized. */
+@@ -224,6 +226,7 @@ public:
+ 	/** Whether to hide the primitive in game, if the primitive is Visible. */
+ 	UPROPERTY(Interp, EditAnywhere, BlueprintReadOnly, Category=Rendering, meta=(SequencerTrackClass = "/Script/MovieSceneTracks.MovieSceneVisibilityTrack"))
+ 	uint8 bHiddenInGame:1;
++	uint32 bAttachedSoundsForceHighPriority : 1; // [ARK]
+ 
+ 	/** If true, a change in the bounds of the component will call trigger a streaming data rebuild */
+ 	UPROPERTY()
+@@ -364,6 +367,18 @@ private:
+ 
+ 	/** Current transform of the component, relative to the world */
+ 	FTransform ComponentToWorld;
++public:
++	uint32 bIgnoreParentTransformUpdate : 1; // [ARK]
++private:
++public:
++	uint32 bUpdateChildOverlaps : 1; // [ARK]
++private:
++public:
++	uint32 bPrimalEnableRoundRobinMoveComponent : 1; // [ARK]
++private:
++public:
++	int AttachmentChangedIncrementer; // [ARK]
++private:
+ 
+ public:
+ 	/** Sets the RelativeRotationCache. Used to ensure component ends up with the same RelativeRotation after calling SetWorldTransform(). */
+@@ -686,6 +701,7 @@ public:
+ 	ENGINE_API FVector GetRightVector() const;
+ 
+ 	/** Returns whether the specified body is currently using physics simulation */
++	ENGINE_API virtual bool IsSymmetricCollision(); // [ARK]
+ 	UFUNCTION(BlueprintCallable, Category="Physics")
+ 	ENGINE_API virtual bool IsSimulatingPhysics(FName BoneName = NAME_None) const;
+ 
+@@ -879,8 +895,12 @@ protected:
+ 	* Overridable internal function to respond to changes in the hidden in game value of the component.
+ 	*/
+ 	ENGINE_API virtual void OnHiddenInGameChanged();
++protected:
++	enum class EVisibilityPropagation : uint8; // [ARK] declared early for InternalSetVisibility
++protected:
++	ENGINE_API virtual void InternalSetVisibility(bool, USceneComponent::EVisibilityPropagation, bool); // [ARK]
+ 
+-private:
++protected: // [ARK] enum protected
+ 	/** 
+ 	 * Enum that dictates what propagation policy to follow when calling SetVisibility or SetHiddenInGame recursively 
+ 	 */
+@@ -895,28 +915,31 @@ private:
+ 		/** Call function recursively on attached components and also mark their render state as dirty */
+ 		Propagate
+ 	};
++private:
+ 
+ 	/**
+ 	 * Internal function to set visibility of the component. Enum controls propagation rules.
+ 	 */
+-	ENGINE_API void SetVisibility(bool bNewVisibility, EVisibilityPropagation PropagateToChildren);
++	void SetVisibility(bool bNewVisibility, EVisibilityPropagation PropagateToChildren, bool bArkUnknown = false) { InternalSetVisibility(bNewVisibility, PropagateToChildren, bArkUnknown); } // [ARK] not exported: calls InternalSetVisibility
+ 
+ 	/**
+ 	* Internal function to set hidden in game for the component. Enum controls propagation rules.
+ 	*/
+-	ENGINE_API void SetHiddenInGame(bool bNewHiddenInGame, EVisibilityPropagation PropagateToChildren);
++	ENGINE_API void SetHiddenInGame(bool bNewHiddenInGame, EVisibilityPropagation PropagateToChildren, bool bArkUnknown = false); // [ARK] bool (name assumed)
+ 
+ 	/** Appends all descendants (recursively) of this scene component to the list of Children.  NOTE: It does NOT clear the list first. */
++public: // [ARK] was private
+ 	ENGINE_API void AppendDescendants(TArray<USceneComponent*>& Children) const;
++private:
+ 
+ public:
+ 	/** 
+ 	 * Set visibility of the component, if during game use this to turn on/off
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Rendering")
+-	void SetVisibility(bool bNewVisibility, bool bPropagateToChildren=false)
++	void SetVisibility(bool bNewVisibility, bool bPropagateToChildren=false, bool bArkUnknown=false) /* [ARK] bool (name assumed) */
+ 	{
+-		SetVisibility(bNewVisibility, bPropagateToChildren ? EVisibilityPropagation::Propagate : EVisibilityPropagation::DirtyOnly);
++		SetVisibility(bNewVisibility, bPropagateToChildren ? EVisibilityPropagation::Propagate : EVisibilityPropagation::DirtyOnly, bArkUnknown);
+ 	}
+ 
+ 	/** 
+@@ -930,9 +953,9 @@ public:
+ 
+ 	/** Changes the value of bHiddenInGame, if false this will disable Visibility during gameplay */
+ 	UFUNCTION(BlueprintCallable, Category="Development")
+-	void SetHiddenInGame(bool NewHidden, bool bPropagateToChildren=false)
++	void SetHiddenInGame(bool NewHidden, bool bPropagateToChildren=false, bool bArkUnknown=false) /* [ARK] bool (name assumed) */
+ 	{
+-		SetHiddenInGame(NewHidden, bPropagateToChildren ? EVisibilityPropagation::Propagate : EVisibilityPropagation::DirtyOnly);
++		SetHiddenInGame(NewHidden, bPropagateToChildren ? EVisibilityPropagation::Propagate : EVisibilityPropagation::DirtyOnly, bArkUnknown);
+ 	}
+ 
+ #if WITH_EDITOR
+@@ -955,7 +978,7 @@ public:
+ 	ENGINE_API virtual void OnUnregister() override;
+ 	ENGINE_API virtual void EndPlay(EEndPlayReason::Type Reason) override;
+ 	virtual bool ShouldCreateRenderState() const override { return true; }
+-	virtual void UpdateComponentToWorld(EUpdateTransformFlags UpdateTransformFlags = EUpdateTransformFlags::None, ETeleportType Teleport = ETeleportType::None) override final
++	virtual void UpdateComponentToWorld(EUpdateTransformFlags UpdateTransformFlags = EUpdateTransformFlags::None, ETeleportType Teleport = ETeleportType::None) override /* [ARK] not final */
+ 	{
+ 		UpdateComponentToWorldWithParent(GetAttachParent(), GetAttachSocketName(), UpdateTransformFlags, RelativeRotationCache.RotatorToQuat(GetRelativeRotation()), Teleport);
+ 	}
+@@ -1011,7 +1034,9 @@ protected:
+ 
+ private:
+ 	ENGINE_API void PropagateTransformUpdate(bool bTransformChanged, EUpdateTransformFlags UpdateTransformFlags = EUpdateTransformFlags::None, ETeleportType Teleport = ETeleportType::None);
++public: // [ARK] was private
+ 	ENGINE_API void UpdateComponentToWorldWithParent(USceneComponent* Parent, FName SocketName, EUpdateTransformFlags UpdateTransformFlags, const FQuat& RelativeRotationQuat, ETeleportType Teleport = ETeleportType::None);
++private:
+ 
+ public:
+ 
+@@ -1184,6 +1209,10 @@ public:
+ 
+ 	/** Called to update any visuals needed for a feature level change */
+ 	virtual void PreFeatureLevelChange(ERHIFeatureLevel::Type PendingFeatureLevel) {}
++protected:
++	ENGINE_API virtual FTransform CalcNewComponentToWorld(const FTransform&, const USceneComponent*, FName) const; // [ARK]
++public:
++	ENGINE_API virtual FVector GetMeshScaleMultiplier() const; // [ARK]
+ #endif // WITH_EDITOR
+ 
+ protected:
+@@ -1191,6 +1220,7 @@ protected:
+ 	/** Calculate the new ComponentToWorld transform for this component.
+ 		Parent is optional and can be used for computing ComponentToWorld based on arbitrary USceneComponent.
+ 		If Parent is not passed in we use the component's AttachParent*/
++#if 0 // [ARK] removed
+ 	inline FTransform CalcNewComponentToWorld(const FTransform& NewRelativeTransform, const USceneComponent* Parent = nullptr, FName SocketName = NAME_None) const
+ 	{
+ 		SocketName = Parent ? SocketName : GetAttachSocketName();
+@@ -1210,6 +1240,7 @@ protected:
+ 			return NewRelativeTransform;
+ 		}
+ 	}
++#endif // [ARK]
+ 
+ 	/** Utility function to handle calculating transform with a parent */
+ 	ENGINE_API FTransform CalcNewComponentToWorld_GeneralCase(const FTransform& NewRelativeTransform, const USceneComponent* Parent, FName SocketName) const;
+@@ -1412,6 +1443,7 @@ public:
+ 	* Note that replication still applies when overriding this, it's not intended to replace replication.
+ 	*/
+ 	virtual void OnReceiveReplicatedState(const FVector X, const FQuat R, const FVector V, const FVector W) {};
++	ENGINE_API virtual void StopSound(USoundBase*, float); // [ARK]
+ 
+ 	/**
+ 	 * Gets the property name for RelativeLocation.
+@@ -1667,6 +1699,7 @@ public:
+ 	{
+ 		return Mobility;
+ 	}
++	ENGINE_API virtual bool IsSceneComponent() const; // [ARK]
+ };
+ 
+ /** 

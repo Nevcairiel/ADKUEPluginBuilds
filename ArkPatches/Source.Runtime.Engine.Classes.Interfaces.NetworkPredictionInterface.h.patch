@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Interfaces/NetworkPredictionInterface.h b/Engine/Source/Runtime/Engine/Classes/Interfaces/NetworkPredictionInterface.h
+--- a/Engine/Source/Runtime/Engine/Classes/Interfaces/NetworkPredictionInterface.h
++++ b/Engine/Source/Runtime/Engine/Classes/Interfaces/NetworkPredictionInterface.h
+@@ -108,7 +108,10 @@ public:
+ 	virtual void AddStructReferencedObjects(FReferenceCollector& Collector) const {};
+ 
+ 	/** Server clock time when last server move was received or movement was forced to be processed */
++#if 0 // [ARK] removed
+ 	float ServerTimeStamp;
++#endif // [ARK]
++	double ServerTimeStamp; // [ARK] type changed
+ 
+ 	//////////////////////////////////////////////////////////////////////////
+ 	// Forced update state

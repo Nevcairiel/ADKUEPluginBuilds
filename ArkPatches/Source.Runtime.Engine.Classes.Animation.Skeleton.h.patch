@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/Skeleton.h b/Engine/Source/Runtime/Engine/Classes/Animation/Skeleton.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/Skeleton.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/Skeleton.h
+@@ -1023,6 +1023,9 @@ protected:
+ 	/** Array of user data stored with the asset */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, Instanced, Category = Skeleton)
+ 	TArray<TObjectPtr<UAssetUserData>> AssetUserDataEditorOnly;
++public:
++	TArray<FBoneReductionSetting> BoneReductionSettingsForLODs; // [ARK]
++protected:
+ #endif
+ 
+ 	friend FReferenceSkeleton;

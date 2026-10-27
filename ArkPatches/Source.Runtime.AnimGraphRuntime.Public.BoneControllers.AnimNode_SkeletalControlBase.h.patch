@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_SkeletalControlBase.h b/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_SkeletalControlBase.h
+--- a/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_SkeletalControlBase.h
++++ b/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_SkeletalControlBase.h
+@@ -71,6 +71,9 @@ public:
+ 	{
+ 	}
+ 
++	ANIMGRAPHRUNTIME_API virtual void BeforeEvaluateSkeletalControl_AnyThread_Pt1(FComponentSpacePoseContext&); // [ARK]
++	ANIMGRAPHRUNTIME_API virtual void BeforeEvaluateSkeletalControl_AnyThread_Pt2(FComponentSpacePoseContext&, FAnimationBaseContext&); // [ARK]
++	ANIMGRAPHRUNTIME_API virtual void AfterEvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext&); // [ARK]
+ 	virtual ~FAnimNode_SkeletalControlBase() = default;
+ 
+ public:
+@@ -83,7 +86,7 @@ public:
+ 	ANIMGRAPHRUNTIME_API virtual void Initialize_AnyThread(const FAnimationInitializeContext& Context) override;
+ 	ANIMGRAPHRUNTIME_API virtual void CacheBones_AnyThread(const FAnimationCacheBonesContext& Context)  override;
+ 	ANIMGRAPHRUNTIME_API virtual void Update_AnyThread(const FAnimationUpdateContext& Context) final;
+-	ANIMGRAPHRUNTIME_API virtual void EvaluateComponentSpace_AnyThread(FComponentSpacePoseContext& Output) final;
++	ANIMGRAPHRUNTIME_API virtual void EvaluateComponentSpace_AnyThread(FComponentSpacePoseContext& Output) /* [ARK] not final */;
+ 	virtual int32 GetLODThreshold() const override { return LODThreshold; }
+ 	// End of FAnimNode_Base interface
+ 

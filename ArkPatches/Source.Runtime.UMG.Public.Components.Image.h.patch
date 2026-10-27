@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/Image.h b/Engine/Source/Runtime/UMG/Public/Components/Image.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/Image.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/Image.h
+@@ -55,6 +55,7 @@ public:
+ 	/** Flips the image if the localization's flow direction is RightToLeft */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Getter = "ShouldFlipForRightToLeftFlowDirection", Setter = "SetFlipForRightToLeftFlowDirection", Category = "Localization")
+ 	bool bFlipForRightToLeftFlowDirection;
++	bool EnableDefaultDisabledEffect; // [ARK]
+ 
+ public:
+ 

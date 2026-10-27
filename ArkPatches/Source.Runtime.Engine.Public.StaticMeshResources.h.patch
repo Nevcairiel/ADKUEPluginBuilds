@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/StaticMeshResources.h b/Engine/Source/Runtime/Engine/Public/StaticMeshResources.h
+--- a/Engine/Source/Runtime/Engine/Public/StaticMeshResources.h
++++ b/Engine/Source/Runtime/Engine/Public/StaticMeshResources.h
+@@ -435,6 +435,7 @@ public:
+ 
+ 	/** The maximum distance by which this LOD deviates from the base from which it was generated. */
+ 	float MaxDeviation;
++	int DynamicCustomDataOutputMaterialIndex; // [ARK]
+ 
+ 	/** True if the depth only index buffers contained data at init. Needed as it will not be available to the CPU afterwards. */
+ 	uint32 bHasDepthOnlyIndices : 1;

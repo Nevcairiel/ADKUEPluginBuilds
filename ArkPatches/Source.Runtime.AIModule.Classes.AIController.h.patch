@@ -1,0 +1,36 @@
+diff --git a/Engine/Source/Runtime/AIModule/Classes/AIController.h b/Engine/Source/Runtime/AIModule/Classes/AIController.h
+--- a/Engine/Source/Runtime/AIModule/Classes/AIController.h
++++ b/Engine/Source/Runtime/AIModule/Classes/AIController.h
+@@ -15,6 +15,7 @@
+ #include "Perception/AIPerceptionListenerInterface.h"
+ #include "GenericTeamAgentInterface.h"
+ #include "VisualLogger/VisualLoggerDebugSnapshotInterface.h"
++#include "Ark/PrimalController.h" // [ARK] base class
+ #include "AIController.generated.h"
+ 
+ class FDebugDisplayInfo;
+@@ -84,7 +85,7 @@ struct FFocusKnowledge
+  */
+ 
+ UCLASS(ClassGroup = AI, BlueprintType, Blueprintable, MinimalAPI)
+-class AAIController : public AController, public IAIPerceptionListenerInterface, public IGameplayTaskOwnerInterface, public IGenericTeamAgentInterface, public IVisualLoggerDebugSnapshotInterface
++class AAIController : public APrimalController, public IAIPerceptionListenerInterface, public IGameplayTaskOwnerInterface, public IGenericTeamAgentInterface, public IVisualLoggerDebugSnapshotInterface // [ARK] bases (was : public AController, public IAIPerceptionListenerInterface, public IGameplayTaskOwnerInterface, public IGenericTeamAgentInterface, public IVisualLoggerDebugSnapshotInterface)
+ {
+ 	GENERATED_BODY()
+ 
+@@ -118,6 +119,7 @@ public:
+ 	/** Specifies if this AI wants its own PlayerState. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+ 	uint32 bWantsPlayerState : 1;
++	uint32 bLastRequestedMoveToLocationWasPlayerCommand : 1; // [ARK]
+ 
+ 	/** Copy Pawn rotation to ControlRotation, if there is no focus point. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+@@ -126,6 +128,7 @@ public:
+ 	/** If true, the RootComponent's transform will not be updated when SetControlRotation() is called. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = AI)
+ 	uint32 bSkipRootComponentUpdate:1;
++	uint32 bExecutingRotateToFace : 1; // [ARK]
+ 
+ private:
+ 

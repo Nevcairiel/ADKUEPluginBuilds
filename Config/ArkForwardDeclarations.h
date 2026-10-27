@@ -32,4 +32,9 @@ namespace EPrimalEquipmentType { enum Type : int; }
 namespace EAlignHorizontalUI { enum Type : int; }
 namespace EAlignVerticalUI { enum Type : int; }
 
+// generated: all other ARK-only types the patched SDK headers use (Update-ArkTypes in Common.ps1)
+#if __has_include("Ark/ArkTypes.h")
+#include "Ark/ArkTypes.h"
+#endif
+
 #endif

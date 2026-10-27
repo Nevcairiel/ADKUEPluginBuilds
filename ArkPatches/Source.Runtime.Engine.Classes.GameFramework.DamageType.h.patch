@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/DamageType.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/DamageType.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/DamageType.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/DamageType.h
+@@ -22,6 +22,7 @@ class UDamageType : public UObject
+ 	GENERATED_UCLASS_BODY()
+ 
+ 	/** True if this damagetype is caused by the world (falling off level, into lava, etc). */
++	uint32 bIsPassiveDamage : 1; // [ARK]
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=DamageType)
+ 	uint32 bCausedByWorld:1;
+ 

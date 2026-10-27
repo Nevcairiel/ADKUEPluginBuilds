@@ -1,0 +1,116 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/Character.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/Character.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/Character.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/Character.h
+@@ -16,6 +16,7 @@
+ #include "Animation/AnimationAsset.h"
+ #include "GameFramework/RootMotionSource.h"
+ #include "Interfaces/MovementBaseInterface.h"
++#include "Ark/PrimalPawn.h" // [ARK] base class
+ #include "Character.generated.h"
+ 
+ class ACharacter;
+@@ -335,13 +336,14 @@ struct FBasedMovementInfo
+  * @see https://docs.unrealengine.com/latest/INT/Gameplay/Framework/Pawn/Character/
+  */ 
+ UCLASS(config=Game, BlueprintType, meta=(ShortTooltip="A character is a type of Pawn that includes the ability to walk around."), MinimalAPI)
+-class ACharacter : public APawn
++class ACharacter : public APrimalPawn // [ARK] bases (was : public APawn)
+ {
+ 	GENERATED_BODY()
+ public:
+ 	/** Default UObject constructor. */
+ 	ENGINE_API ACharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+ 
++	ENGINE_API virtual void ClientForceUpdateMovement_Implementation(FVector, FVector); // [ARK]
+ 	ENGINE_API virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+ 
+ 	ENGINE_API virtual void GetReplicatedCustomConditionState(FCustomPropertyConditionState& OutActiveState) const override;
+@@ -532,8 +534,11 @@ protected:
+ 	struct FBasedMovementInfo BasedMovement;
+ 
+ 	/** Replicated version of relative movement. Read-only on simulated proxies! */
++#if 0 // [ARK] removed
+ 	UPROPERTY(ReplicatedUsing=OnRep_ReplicatedBasedMovement)
+ 	struct FBasedMovementInfo ReplicatedBasedMovement;
++#endif // [ARK]
++	FReplicatedBasedMovementInfo ReplicatedBasedMovement; // [ARK] type changed
+ 
+ 	/** This is the Replicated version of relative movement. Do not modify on simulated proxies! Returns non-const ReplicatedBasedMovement. */
+ 	ENGINE_API FBasedMovementInfo& GetReplicatedBasedMovement_Mutable();
+@@ -553,8 +558,11 @@ protected:
+ 	virtual bool ShouldReplicateAcceleration() const { return CharacterCVars::EnableCharacterAccelerationReplication != 0; }
+ 
+ 	/** CharacterMovement ServerLastTransformUpdateTimeStamp value, replicated to simulated proxies. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(Replicated)
+ 	float ReplicatedServerLastTransformUpdateTimeStamp;
++#endif // [ARK]
++	double ReplicatedServerLastTransformUpdateTimeStamp; // [ARK] type changed
+ 
+ 	UPROPERTY(ReplicatedUsing=OnRep_ReplayLastTransformUpdateTimeStamp)
+ 	float ReplayLastTransformUpdateTimeStamp;
+@@ -603,7 +611,7 @@ public:
+ 	inline const FBasedMovementInfo& GetBasedMovement() const { return BasedMovement; }
+ 	
+ 	/** Accessor for ReplicatedBasedMovement */
+-	inline const FBasedMovementInfo& GetReplicatedBasedMovement() const { return ReplicatedBasedMovement; }
++	inline const FReplicatedBasedMovementInfo& GetReplicatedBasedMovement() /* [ARK] type */ const { return ReplicatedBasedMovement; }
+ 
+ 	/** Save a new relative location in BasedMovement and a new rotation with is either relative or absolute. */
+ 	ENGINE_API void SaveRelativeBasedMovement(const FVector& NewRelativeLocation, const FRotator& NewRotation, bool bRelativeRotation);
+@@ -637,8 +645,11 @@ public:
+ 
+ protected:
+ 	/** Flag that we are receiving replication of the based movement. */
++#if 0 // [ARK] removed
+ 	UPROPERTY()
+ 	uint8 bInBaseReplication:1;
++#endif // [ARK]
++	bool bInBaseReplication; // [ARK] type changed
+ 
+ public:
+ 	/** Set by character movement to specify that this Character is currently crouched. */
+@@ -648,6 +659,7 @@ public:
+ 	/** Set to indicate that this Character is currently under the force of a jump (if JumpMaxHoldTime is non-zero). IsJumpProvidingForce() handles this as well. */
+ 	UPROPERTY(Transient, Replicated)
+ 	uint8 bProxyIsJumpForceApplied : 1;
++	uint32 bCurrentlyUpdatingRootMotion : 1; // [ARK]
+ 
+ 	/** Handle Crouching replicated from server */
+ 	UFUNCTION()
+@@ -712,6 +724,7 @@ public:
+ 	 */
+ 	UPROPERTY(Transient, BlueprintReadOnly, VisibleInstanceOnly, Category=Character)
+ 	float JumpKeyHoldTime;
++	float JumpOfWaterKeyHoldTime; // [ARK]
+ 
+ 	/** Amount of jump force time remaining, if JumpMaxHoldTime > 0. */
+ 	UPROPERTY(Transient, BlueprintReadOnly, VisibleInstanceOnly, Category=Character)
+@@ -884,10 +897,13 @@ public:
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category=Character)
+ 	ENGINE_API virtual bool IsJumpProvidingForce() const;
++	ENGINE_API virtual float PlayAnimMontage(UAnimMontage*, float, FName, bool, bool, float, float); // [ARK]
+ 
+ 	/** Play Animation Montage on the character mesh. Returns the length of the animation montage in seconds, or 0.f if failed to play. **/
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category=Animation)
+ 	ENGINE_API virtual float PlayAnimMontage(class UAnimMontage* AnimMontage, float InPlayRate = 1.f, FName StartSectionName = NAME_None);
++#endif // [ARK]
+ 
+ 	/** Stop Animation Montage. If nullptr, it will stop what's currently active. The Blend Out Time is taken from the montage asset that is being stopped. **/
+ 	UFUNCTION(BlueprintCallable, Category=Animation)
+@@ -1154,10 +1170,13 @@ public:
+ 	 * Default behavior is to check for penetration in a blocking object if bClientCheckEncroachmentOnNetUpdate is enabled, and set bSimGravityDisabled=true if so.
+ 	 */
+ 	ENGINE_API virtual void OnUpdateSimulatedPosition(const FVector& OldLocation, const FQuat& OldRotation);
++	ENGINE_API virtual void ModifyRootMotion(FRootMotionMovementParams&, float); // [ARK]
+ 
+ 	/** Replicated Root Motion montage */
+ 	UPROPERTY(ReplicatedUsing=OnRep_RootMotion)
+ 	struct FRepRootMotionMontage RepRootMotion;
++	double LeftDynamicActorBaseTime; // [ARK]
++	double LastClientForceUpdateMovementTime; // [ARK]
+ 
+ 	/** Replicated Root Motion montage. Returns RepRootMotion */
+ 	inline const FRepRootMotionMontage& GetRepRootMotion() const { return RepRootMotion; }

@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StreamableManager.h b/Engine/Source/Runtime/Engine/Classes/Engine/StreamableManager.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/StreamableManager.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/StreamableManager.h
+@@ -673,6 +673,9 @@ private:
+ 
+ 	/** If true, use the JIT async loader when queueing requests */
+ 	bool bUseJustInTimeAsyncLoader = false;
++public:
++	bool bCallCompletionImmediately; // [ARK]
++private:
+ };
+ 
+ enum class EStreamableManagerCombinedHandleOptions : uint8 

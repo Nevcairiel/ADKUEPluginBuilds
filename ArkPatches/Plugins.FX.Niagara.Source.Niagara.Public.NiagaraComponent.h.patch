@@ -1,0 +1,19 @@
+diff --git a/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h b/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h
+--- a/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h
++++ b/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraComponent.h
+@@ -138,6 +138,7 @@ private:
+ 	/** When true then this instance will override the system's warmup settings. */
+ 	UPROPERTY(EditAnywhere, Category = Warmup)
+ 	uint32 bOverrideWarmupSettings : 1;
++	uint32 bAutoManageNiagaraHiddenState : 1; // [ARK]
+ 	
+ 	/** Number of ticks to process for warmup of the system. Total warmup time is WarmupTickCount * WarmupTickDelta. */
+ 	UPROPERTY(EditAnywhere, Category = Warmup, meta=(EditCondition="bOverrideWarmupSettings", ClampMin = "0"))
+@@ -997,6 +998,7 @@ private:
+ 
+ public:
+ 	NIAGARA_API FParticlePerfStatsContext GetPerfStatsContext();
++	NIAGARA_API virtual void SetFXSystemAsset(UFXSystemAsset*); // [ARK]
+ };
+ 
+ inline bool UNiagaraComponent::GetPreviewLODDistanceEnabled()const { return bEnablePreviewLODDistance; }

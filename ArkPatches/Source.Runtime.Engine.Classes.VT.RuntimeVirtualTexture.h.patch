@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/VT/RuntimeVirtualTexture.h b/Engine/Source/Runtime/Engine/Classes/VT/RuntimeVirtualTexture.h
+--- a/Engine/Source/Runtime/Engine/Classes/VT/RuntimeVirtualTexture.h
++++ b/Engine/Source/Runtime/Engine/Classes/VT/RuntimeVirtualTexture.h
+@@ -89,6 +89,7 @@ protected:
+ 	/** Texture group this texture belongs to */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings, meta = (DisplayName = "Texture Group"), AssetRegistrySearchable)
+ 	TEnumAsByte<enum TextureGroup> LODGroup = TEXTUREGROUP_World;
++	int TileCount_LowQuality; // [ARK]
+ 	
+ 	/** Deprecated size of virtual texture. */
+ 	UPROPERTY()

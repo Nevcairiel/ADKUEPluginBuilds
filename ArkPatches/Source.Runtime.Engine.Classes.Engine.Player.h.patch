@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/Player.h b/Engine/Source/Runtime/Engine/Classes/Engine/Player.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/Player.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/Player.h
+@@ -34,6 +34,7 @@ class UPlayer : public UObject, public FExec
+ 	/** @todo document */
+ 	UPROPERTY(globalconfig)
+ 	int32 ConfiguredLanSpeed;
++	uint64 TransferringPlayerDataId; // [ARK]
+ 
+ public:
+ 	//~ Begin FExec Interface.

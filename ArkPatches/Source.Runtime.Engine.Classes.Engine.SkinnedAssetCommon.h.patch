@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAssetCommon.h b/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAssetCommon.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAssetCommon.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAssetCommon.h
+@@ -249,6 +249,7 @@ struct FSkeletalMeshLODInfo
+ 	*/
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = SkeletalMeshLODInfo, meta=(EditCondition="bAllowCPUAccess"))
+ 	uint8 bSupportUniformlyDistributedSampling : 1;
++	uint8 bOverrideLODSettingsScreenSize : 1; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	/*
+@@ -346,6 +347,7 @@ struct FSkeletalMeshLODInfo
+ 	//We use this GUID to store the LOD Key so we can know if the LOD needs to be rebuilt
+ 	//This GUID is set when we Cache the render data (build function)
+ 	FThreadSafeBuildGUID BuildGUID;
++	bool bReplacedWithCustomLOD; // [ARK]
+ 
+ 	ENGINE_API FGuid ComputeDeriveDataCacheKey(const FSkeletalMeshLODGroupSettings* SkeletalMeshLODGroupSettings);
+ #endif

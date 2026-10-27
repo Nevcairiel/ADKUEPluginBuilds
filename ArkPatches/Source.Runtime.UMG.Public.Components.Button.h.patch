@@ -1,0 +1,62 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/Button.h b/Engine/Source/Runtime/UMG/Public/Components/Button.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/Button.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/Button.h
+@@ -38,6 +38,7 @@ public:
+ 	/** The button style used at runtime */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Getter = "GetStyle", Setter = "SetStyle", BlueprintSetter = "SetStyle", Category = "Appearance", meta = (DisplayName = "Style"))
+ 	FButtonStyle WidgetStyle;
++	bool bUseDisabledStyle; // [ARK]
+ 	
+ 	UE_DEPRECATED(5.2, "Direct access to ColorAndOpacity is deprecated. Please use the getter and setter.")
+ 	/** The color multiplier for the button content */
+@@ -64,10 +65,16 @@ public:
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Getter, Setter, BlueprintSetter = "SetPressMethod", Category="Interaction", AdvancedDisplay)
+ 	TEnumAsByte<EButtonPressMethod::Type> PressMethod;
+ 
++#if 0 // [ARK] removed
+ 	UE_DEPRECATED(5.2, "Direct access to IsFocusable is deprecated. Please use the getter.")
+ 	/** Sometimes a button should only be mouse-clickable and never keyboard focusable. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter, Category="Interaction")
+ 	bool IsFocusable;
++#endif // [ARK]
++	uint8 IsFocusable : 1; // [ARK] type changed
++	uint32 bForceHandleMouseDown : 1; // [ARK]
++	uint8 bRedirectGamepadPressToClick : 1; // [ARK]
++	uint8 bUseHoverSound : 1; // [ARK]
+ 
+ public:
+ 
+@@ -161,6 +168,7 @@ public:
+ public:
+ 
+ 	//~ Begin UWidget Interface
++	UMG_API virtual void SetButtonString(const FString&); // [ARK]
+ 	UMG_API virtual void SynchronizeProperties() override;
+ 	//~ End UWidget Interface
+ 
+@@ -223,4 +231,25 @@ protected:
+ 	/** True if this button can be dragged */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Interaction")
+ 	bool bAllowDragDrop;
++public:
++	FOnButtonClickedEventObject OnClickedObject; // [ARK]
++protected:
++public:
++	FOnButtonClickedEvent OnSecondaryClicked; // [ARK]
++protected:
++public:
++	FOnButtonClickedEventObject OnSecondaryClickedObject; // [ARK]
++protected:
++public:
++	FOnButtonClickedEvent OnGamepadClicked; // [ARK]
++protected:
++public:
++	FOnButtonClickedEventObject OnGamepadClickedObject; // [ARK]
++protected:
++public:
++	FOnButtonHoverEventObject OnHoveredObject; // [ARK]
++protected:
++public:
++	FOnButtonHoverEventObject OnUnhoveredObject; // [ARK]
++protected:
+ };

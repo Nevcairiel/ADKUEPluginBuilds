@@ -1,0 +1,158 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/PrimitiveComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/PrimitiveComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/PrimitiveComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/PrimitiveComponent.h
+@@ -3,6 +3,7 @@
+ #pragma once
+ 
+ #include "CoreMinimal.h"
++#include "Math/GenericOctreePublic.h" // [ARK] FOctreeElementId2 members
+ #include "Algo/Copy.h"
+ #include "EngineStats.h"
+ #include "HAL/ThreadSafeCounter.h"
+@@ -39,6 +40,7 @@
+ #include "Streaming/RenderAssetOwnerStreamingState.h"
+ #include "Materials/MaterialParameters.h"
+ #include "PhysicsEngine/PhysicsBodyInstanceOwnerInterface.h"
++#include "Math/GenericOctreePublic.h" // [ARK] member type
+ #include "PrimitiveComponent.generated.h"
+ 
+ DECLARE_CYCLE_STAT_EXTERN(TEXT("BeginComponentOverlap"), STAT_BeginComponentOverlap, STATGROUP_Game, ENGINE_API);
+@@ -728,6 +730,7 @@ public:
+ 	/** If this is set to FirstPerson, the camera FirstPersonFieldOfView and FirstPersonScale parameters will be used on this component. These parameters can be used to render the component with a different field of view and a smaller depth range such that clipping with the scene can be avoided. This is useful for rendering first person view geometry. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = Rendering)
+ 	EFirstPersonPrimitiveType FirstPersonPrimitiveType;
++	uint8 bUseAsUnfogger : 1; // [ARK]
+ 
+ protected:
+ 	/** Result of last call to AreAllCollideableDescendantsRelative(). */
+@@ -748,6 +751,7 @@ protected:
+ 	uint8 bStaticWhenNotMoveable:1;
+ 
+ 	uint8 bIgnoreBoundsForEditorFocus : 1;
++	uint8 bIgnoreUpdatingOwnersLastRenderTime : 1; // [ARK]
+ 	
+ public:
+ 
+@@ -1303,6 +1307,7 @@ protected:
+ 
+ 	/** Set of components that this component is currently overlapping. */
+ 	TArray<FOverlapInfo> OverlappingComponents;
++	TMap<TWeakObjectPtr<UPrimitiveComponent>,int> OverlappingPrimitiveComponents; // [ARK]
+ 
+ public:
+ 	/** Convert a set of overlaps from a sweep to a subset that includes only those at the end location (filling in OverlapsAtEndLocation). */
+@@ -1496,6 +1501,7 @@ public:
+ 	 */
+ 	UPROPERTY(BlueprintAssignable, Category = "Physics", TextExportTransient)
+ 	FComponentPhysicsStateChanged OnComponentPhysicsStateChanged;
++	FPrimalComponentPhysicsStatePreChange OnPrimalComponentPhysicsStatePreChange; // [ARK]
+ 
+ 	/** Event called when the mouse cursor is moved over this component and mouse over events are enabled in the player controller */
+ 	UPROPERTY(BlueprintAssignable, Category="Input|Mouse Input")
+@@ -2430,7 +2436,9 @@ public:
+ 	ENGINE_API virtual void RecreateInstanceBody(int32 InstanceBodyIndex);
+ 
+ 	/** Event called when a component is 'damaged', allowing for component class specific behaviour */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void ReceiveComponentDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
++#endif // [ARK]
+ 
+ 	/**
+ 	*   Welds this component to another scene component, optionally at a named socket. Component is automatically attached if not already
+@@ -2942,6 +2950,7 @@ public:
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Collision")
+ 	ENGINE_API virtual void SetCollisionResponseToChannel(ECollisionChannel Channel, ECollisionResponse NewResponse);
++	ENGINE_API virtual void SetCollisionResponseToChannelEx(ECollisionChannel, ECollisionResponse, bool); // [ARK]
+ 	
+ 	/**
+ 	 *	Changes all ResponseToChannels container for this PrimitiveComponent. to be NewResponse
+@@ -3319,6 +3328,75 @@ private:
+ 	/** SSAM handle for this component. Aliases the proxy's SSAMPrimitiveHandle when both are
+ 	 *  live. Same atomicity reasoning as the proxy-side field -- see PrimitiveSceneProxy.h. */
+ 	FSSAMAtomicPrimitiveHandle SSAMPrimitiveHandle;
++public:
++	uint32 bForcePreventBlockingProjectiles : 1; // [ARK]
++private:
++public:
++	uint32 bForceOverlapEvents : 1; // [ARK]
++private:
++public:
++	uint32 bIsInForeground : 1; // [ARK]
++private:
++public:
++	uint32 bUseInternalOctree : 1; // [ARK]
++private:
++public:
++	uint32 bUseInternalOctreeOnClient : 1; // [ARK]
++private:
++public:
++	uint32 bRegisteredInternalOctree : 1; // [ARK]
++private:
++public:
++	uint32 bPlaceholderBool1 : 1; // [ARK]
++private:
++public:
++	uint32 bPreventCharacterBasing : 1; // [ARK]
++private:
++public:
++	uint32 bAllowBasedCharacters : 1; // [ARK]
++private:
++public:
++	uint32 bIsAbstractBasingComponent : 1; // [ARK]
++private:
++public:
++	uint32 bClimbable : 1; // [ARK]
++private:
++public:
++	uint32 bUseAbsoluteMaxDrawDisatance : 1; // [ARK]
++private:
++public:
++	uint32 bMovableUseDynamicDrawDistance : 1; // [ARK]
++private:
++public:
++	uint32 bIncludeBoundsRadiusInDrawDistances : 1; // [ARK]
++private:
++public:
++	uint32 bExcludeFromLevelBounds : 1; // [ARK]
++private:
++public:
++	uint32 bIgnoredByCharacterEncroachment : 1; // [ARK]
++private:
++public:
++	uint32 bPreventDamage : 1; // [ARK]
++private:
++public:
++	uint32 bRegisterWithMaterialGPUMessageQueue : 1; // [ARK]
++private:
++public:
++	int ObjectLayer; // [ARK]
++private:
++public:
++	float OverrideStepHeight; // [ARK]
++private:
++public:
++	FOctreeElementId2 InternalOctreeId; // [ARK]
++private:
++public:
++	FOctreeElementId2 SpecializedInternalOctreeId[20]; // [ARK]
++private:
++public:
++	int InternalOctreeMask; // [ARK]
++private:
+ protected:
+ 
+ 	UFUNCTION()
+@@ -3337,6 +3415,12 @@ protected:
+ 
+ protected:
+ 	void AddNavigationModifier(FNavigationRelevantData& OutData) const;
++public:
++	ENGINE_API virtual bool IsPrimitiveComponent() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual void ReceiveComponentDamage(float, const FDamageEvent&, AController*, AActor*); // [ARK]
++protected:
+ };
+ 
+ /** 

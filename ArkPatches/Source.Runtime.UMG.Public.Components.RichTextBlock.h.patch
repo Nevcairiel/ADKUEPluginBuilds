@@ -1,0 +1,9 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/RichTextBlock.h b/Engine/Source/Runtime/UMG/Public/Components/RichTextBlock.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/RichTextBlock.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/RichTextBlock.h
+@@ -258,4 +258,5 @@ protected:
+ 	TArray<TObjectPtr<URichTextBlockDecorator>> InstanceDecorators;
+ 	TSharedPtr<class FSlateStyleSet> StyleInstance;
+ 	TSharedPtr<SRichTextBlock> MyRichTextBlock;
++	UMG_API virtual void PostLoad(); // [ARK]
+ };

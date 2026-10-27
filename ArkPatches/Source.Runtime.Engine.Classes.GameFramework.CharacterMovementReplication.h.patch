@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementReplication.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementReplication.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementReplication.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementReplication.h
+@@ -138,6 +138,10 @@ public:
+ 	 * @see UCharacterMovementComponent::CallServerMovePacked
+ 	 */
+ 	ENGINE_API virtual bool Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap, ENetworkMoveType MoveType);
++	ENGINE_API virtual bool Validate(UCharacterMovementComponent&); // [ARK]
++	ENGINE_API virtual void LogPreServerMove(ACharacter*, UCharacterMovementComponent*, float) const; // [ARK]
++	ENGINE_API virtual void LogPostServerMove(ACharacter*, UCharacterMovementComponent*) const; // [ARK]
++	ENGINE_API virtual void LogServerCorrectedClient(ACharacter*, UCharacterMovementComponent*, bool) const; // [ARK]
+ 
+ 	// Indicates whether this was the latest new move, a pending/dual move, or old important move.
+ 	ENetworkMoveType NetworkMoveType;
+@@ -200,6 +204,7 @@ public:
+ 	 * Serialize movement data. Passes Serialize calls to each FCharacterNetworkMoveData as applicable, based on bHasPendingMove and bHasOldMove.
+ 	 */
+ 	ENGINE_API virtual bool Serialize(UCharacterMovementComponent& CharacterMovement, FArchive& Ar, UPackageMap* PackageMap);
++	ENGINE_API virtual bool Validate(UCharacterMovementComponent&); // [ARK]
+ 
+ 	//------------------------------------------------------------------------
+ 	// Basic movement data. NewMoveData is the most recent move, PendingMoveData is a move right before it (dual move). OldMoveData is an "important" move not yet acknowledged.

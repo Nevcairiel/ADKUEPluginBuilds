@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAreaBase.h b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAreaBase.h
+--- a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAreaBase.h
++++ b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAreaBase.h
+@@ -16,6 +16,9 @@ class UNavAreaBase : public UObject
+ 
+ protected:
+ 	uint8 bIsMetaArea : 1;
++public:
++	int NavAreaPriority; // [ARK]
++protected:
+ 
+ public:
+ 	ENGINE_API UNavAreaBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());

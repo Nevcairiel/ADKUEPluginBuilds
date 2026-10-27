@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/HUD.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/HUD.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/HUD.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/HUD.h
+@@ -79,7 +79,10 @@ public:
+ 	TArray<TObjectPtr<AActor>> PostRenderedActors;
+ 
+ 	/** Used to calculate delta time between HUD rendering. */
++#if 0 // [ARK] removed
+ 	float LastHUDRenderTime;
++#endif // [ARK]
++	double LastHUDRenderTime; // [ARK] type changed
+ 
+ 	/** Time since last HUD render. */
+ 	float RenderDelta;

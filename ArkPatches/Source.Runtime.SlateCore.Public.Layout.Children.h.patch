@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/SlateCore/Public/Layout/Children.h b/Engine/Source/Runtime/SlateCore/Public/Layout/Children.h
+--- a/Engine/Source/Runtime/SlateCore/Public/Layout/Children.h
++++ b/Engine/Source/Runtime/SlateCore/Public/Layout/Children.h
+@@ -461,6 +461,9 @@ class TPanelChildren final : public FChildren
+ {
+ private:
+ 	TArray<TUniquePtr<SlotType>> Children;
++protected:
++	virtual bool IsChildValid(int32 Index) const override { return Children.IsValidIndex(Index) && Children[Index].IsValid() && Children[Index]->GetWidget().ToSharedPtr().IsValid(); } // [ARK] TPanelChildren::IsChildValid
++private:
+ 	static constexpr bool bSupportSlotWithSlateAttribute = std::is_base_of<TWidgetSlotWithAttributeSupport<SlotType>, SlotType>::value;
+ 
+ protected:

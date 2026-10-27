@@ -9,3 +9,424 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h b/Engine/
  };
  
  /** Rules for attaching components */
+@@ -719,12 +720,13 @@ enum EMaterialShadingModel : int
+ 	MSM_SingleLayerWater		UMETA(DisplayName="SingleLayerWater"),
+ 	MSM_ThinTranslucent			UMETA(DisplayName="Thin Translucent"),
+ 	MSM_Strata					UMETA(DisplayName="Substrate", Hidden),
++	MSM_Toon = 13, // [ARK]
+ 	/** Number of unique shading models. */
+-	MSM_NUM						UMETA(Hidden),
++	MSM_NUM = 14 /* [ARK] */						UMETA(Hidden),
+ 	/** Shading model will be determined by the Material Expression Graph,
+ 		by utilizing the 'Shading Model' MaterialAttribute output pin. */
+-	MSM_FromMaterialExpression	UMETA(DisplayName="From Material Expression"),
+-	MSM_MAX
++	MSM_FromMaterialExpression = 15 /* [ARK] */	UMETA(DisplayName="From Material Expression"),
++	MSM_MAX = 0x10 /* [ARK] */
+ };
+ 
+ static_assert(MSM_NUM <= 16, "Do not exceed 16 shading models without expanding FMaterialShadingModelField to support uint32 instead of uint16!");
+@@ -1100,80 +1102,98 @@ enum ECollisionChannel : int
+ 
+ 	ECC_WorldStatic UMETA(DisplayName="WorldStatic"),
+ 	ECC_WorldDynamic UMETA(DisplayName="WorldDynamic"),
++#if 0 // [ARK] removed
+ 	ECC_Pawn UMETA(DisplayName="Pawn"),
+-	ECC_Visibility UMETA(DisplayName="Visibility" , TraceQuery="1"),
++#endif // [ARK]
++	ECC_Visibility = 2 /* [ARK] */ UMETA(DisplayName="Visibility" , TraceQuery="1"),
++#if 0 // [ARK] removed
+ 	ECC_Camera UMETA(DisplayName="Camera" , TraceQuery="1"),
+-	ECC_PhysicsBody UMETA(DisplayName="PhysicsBody"),
++#endif // [ARK]
++	ECC_PhysicsBody = 3 /* [ARK] */ UMETA(DisplayName="PhysicsBody"),
++#if 0 // [ARK] removed
+ 	ECC_Vehicle UMETA(DisplayName="Vehicle"),
+-	ECC_Destructible UMETA(DisplayName="Destructible"),
++#endif // [ARK]
++	ECC_Destructible = 4 /* [ARK] */ UMETA(DisplayName="Destructible"),
+ 
+ 	/** Reserved for gizmo collision */
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel1 UMETA(Hidden),
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel2 UMETA(Hidden),
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel3 UMETA(Hidden),
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel4 UMETA(Hidden), 
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel5 UMETA(Hidden),
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	ECC_EngineTraceChannel6 UMETA(Hidden),
+-
+-	ECC_GameTraceChannel1 UMETA(Hidden),
+-	ECC_GameTraceChannel2 UMETA(Hidden),
+-	ECC_GameTraceChannel3 UMETA(Hidden),
+-	ECC_GameTraceChannel4 UMETA(Hidden),
+-	ECC_GameTraceChannel5 UMETA(Hidden),
+-	ECC_GameTraceChannel6 UMETA(Hidden),
+-	ECC_GameTraceChannel7 UMETA(Hidden),
+-	ECC_GameTraceChannel8 UMETA(Hidden),
+-	ECC_GameTraceChannel9 UMETA(Hidden),
+-	ECC_GameTraceChannel10 UMETA(Hidden),
+-	ECC_GameTraceChannel11 UMETA(Hidden),
+-	ECC_GameTraceChannel12 UMETA(Hidden),
+-	ECC_GameTraceChannel13 UMETA(Hidden),
+-	ECC_GameTraceChannel14 UMETA(Hidden),
+-	ECC_GameTraceChannel15 UMETA(Hidden),
+-	ECC_GameTraceChannel16 UMETA(Hidden),
+-	ECC_GameTraceChannel17 UMETA(Hidden),
+-	ECC_GameTraceChannel18 UMETA(Hidden),
+-	ECC_GameTraceChannel19 UMETA(Hidden),
+-	ECC_GameTraceChannel20 UMETA(Hidden),
+-	ECC_GameTraceChannel21 UMETA(Hidden),
+-	ECC_GameTraceChannel22 UMETA(Hidden),
+-	ECC_GameTraceChannel23 UMETA(Hidden),
+-	ECC_GameTraceChannel24 UMETA(Hidden),
+-	ECC_GameTraceChannel25 UMETA(Hidden),
+-	ECC_GameTraceChannel26 UMETA(Hidden),
+-	ECC_GameTraceChannel27 UMETA(Hidden),
+-	ECC_GameTraceChannel28 UMETA(Hidden),
+-	ECC_GameTraceChannel29 UMETA(Hidden),
+-	ECC_GameTraceChannel30 UMETA(Hidden),
+-	ECC_GameTraceChannel31 UMETA(Hidden),
+-	ECC_GameTraceChannel32 UMETA(Hidden),
+-	ECC_GameTraceChannel33 UMETA(Hidden),
+-	ECC_GameTraceChannel34 UMETA(Hidden),
+-	ECC_GameTraceChannel35 UMETA(Hidden),
+-	ECC_GameTraceChannel36 UMETA(Hidden),
+-	ECC_GameTraceChannel37 UMETA(Hidden),
+-	ECC_GameTraceChannel38 UMETA(Hidden),
+-	ECC_GameTraceChannel39 UMETA(Hidden),
+-	ECC_GameTraceChannel40 UMETA(Hidden),
+-	ECC_GameTraceChannel41 UMETA(Hidden),
+-	ECC_GameTraceChannel42 UMETA(Hidden),
+-	ECC_GameTraceChannel43 UMETA(Hidden),
+-	ECC_GameTraceChannel44 UMETA(Hidden),
+-	ECC_GameTraceChannel45 UMETA(Hidden),
+-	ECC_GameTraceChannel46 UMETA(Hidden),
+-	ECC_GameTraceChannel47 UMETA(Hidden),
+-	ECC_GameTraceChannel48 UMETA(Hidden),
+-	ECC_GameTraceChannel49 UMETA(Hidden),
+-	ECC_GameTraceChannel50 UMETA(Hidden),
++#endif // [ARK]
++
++	ECC_GameTraceChannel1 = 5 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel2 = 6 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel3 = 7 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel4 = 8 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel5 = 9 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel6 = 10 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel7 = 11 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel8 = 12 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel9 = 13 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel10 = 14 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel11 = 15 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel12 = 0x10 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel13 = 17 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel14 = 18 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel15 = 19 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel16 = 20 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel17 = 21 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel18 = 22 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel19 = 23 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel20 = 24 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel21 = 25 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel22 = 26 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel23 = 27 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel24 = 28 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel25 = 29 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel26 = 30 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel27 = 31 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel28 = 0x20 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel29 = 33 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel30 = 34 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel31 = 35 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel32 = 36 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel33 = 37 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel34 = 38 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel35 = 39 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel36 = 40 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel37 = 41 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel38 = 42 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel39 = 43 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel40 = 44 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel41 = 45 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel42 = 46 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel43 = 47 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel44 = 48 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel45 = 49 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel46 = 50 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel47 = 51 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel48 = 52 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel49 = 53 /* [ARK] */ UMETA(Hidden),
++	ECC_GameTraceChannel50 = 54 /* [ARK] */ UMETA(Hidden),
+ 	
+ 	/** Add new serializeable channels above here (i.e. entries that exist in FCollisionResponseContainer) */
+ 	/** Add only nonserialized/transient flags below */
+ 
+ 	// NOTE!!!! THESE ARE BEING DEPRECATED BUT STILL THERE FOR BLUEPRINT. PLEASE DO NOT USE THEM IN CODE
+ 
+-	ECC_OverlapAll_Deprecated UMETA(Hidden),
+-	ECC_MAX,
++	ECC_OverlapAll_Deprecated = 55 /* [ARK] */ UMETA(Hidden),
++	ECC_MAX = 56 /* [ARK] */,
+ };
+ 
+ DECLARE_DELEGATE_OneParam(FOnConstraintBroken, int32 /*ConstraintIndex*/);
+@@ -1461,20 +1481,26 @@ struct FCollisionResponseContainer
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="WorldDynamic"))
+ 	TEnumAsByte<enum ECollisionResponse> WorldDynamic;    // 1.
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="Pawn"))
+ 	TEnumAsByte<enum ECollisionResponse> Pawn;    		// 2
++#endif // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="Visibility"))
+ 	TEnumAsByte<enum ECollisionResponse> Visibility;    // 3
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="Camera"))
+ 	TEnumAsByte<enum ECollisionResponse> Camera;    // 4
++#endif // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="PhysicsBody"))
+ 	TEnumAsByte<enum ECollisionResponse> PhysicsBody;    // 5
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="Vehicle"))
+ 	TEnumAsByte<enum ECollisionResponse> Vehicle;    // 6
++#endif // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer, meta=(DisplayName="Destructible"))
+ 	TEnumAsByte<enum ECollisionResponse> Destructible;    // 7
+@@ -1483,23 +1509,35 @@ struct FCollisionResponseContainer
+ 	///////////////////////////////////////
+ 	// Unspecified Engine Trace Channels
+ 	///////////////////////////////////////
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel1;    // 8
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel2;    // 9
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel3;    // 10
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel4;    // 11
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel5;    // 12
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=CollisionResponseContainer)
+ 	TEnumAsByte<enum ECollisionResponse> EngineTraceChannel6;    // 13
++#endif // [ARK]
+ 
+ 	///////////////////////////////////////
+ 	// in order to use this custom channels
+@@ -1672,75 +1710,62 @@ struct FCollisionResponseContainer
+ 	{
+ 		struct
+ 		{
+-			//Reserved Engine Trace Channels
+-			uint8 WorldStatic;			// 0
+-			uint8 WorldDynamic;			// 1
+-			uint8 Pawn;					// 2
+-			uint8 Visibility;			// 3
+-			uint8 Camera;				// 4
+-			uint8 PhysicsBody;			// 5
+-			uint8 Vehicle;				// 6
+-			uint8 Destructible;			// 7
+-
+-			// Unspecified Engine Trace Channels
+-			uint8 EngineTraceChannel1;   // 8
+-			uint8 EngineTraceChannel2;   // 9
+-			uint8 EngineTraceChannel3;   // 10
+-			uint8 EngineTraceChannel4;   // 11
+-			uint8 EngineTraceChannel5;   // 12
+-			uint8 EngineTraceChannel6;   // 13
+-
+-			// Unspecified Game Trace Channels
+-			uint8 GameTraceChannel1;     // 14
+-			uint8 GameTraceChannel2;     // 15
+-			uint8 GameTraceChannel3;     // 16
+-			uint8 GameTraceChannel4;     // 17
+-			uint8 GameTraceChannel5;     // 18
+-			uint8 GameTraceChannel6;     // 19
+-			uint8 GameTraceChannel7;     // 20
+-			uint8 GameTraceChannel8;     // 21
+-			uint8 GameTraceChannel9;     // 22
+-			uint8 GameTraceChannel10;    // 23
+-			uint8 GameTraceChannel11;    // 24 
+-			uint8 GameTraceChannel12;    // 25
+-			uint8 GameTraceChannel13;    // 26
+-			uint8 GameTraceChannel14;    // 27
+-			uint8 GameTraceChannel15;    // 28
+-			uint8 GameTraceChannel16;    // 29 
+-			uint8 GameTraceChannel17;    // 30
+-			uint8 GameTraceChannel18;    // 31
+-			uint8 GameTraceChannel19;    // 32
+-			uint8 GameTraceChannel20;    // 33
+-			uint8 GameTraceChannel21;    // 34
+-			uint8 GameTraceChannel22;    // 35
+-			uint8 GameTraceChannel23;    // 36
+-			uint8 GameTraceChannel24;    // 37
+-			uint8 GameTraceChannel25;    // 38
+-			uint8 GameTraceChannel26;    // 39
+-			uint8 GameTraceChannel27;    // 40
+-			uint8 GameTraceChannel28;    // 41
+-			uint8 GameTraceChannel29;    // 42
+-			uint8 GameTraceChannel30;    // 43
+-			uint8 GameTraceChannel31;    // 44
+-			uint8 GameTraceChannel32;    // 45
+-			uint8 GameTraceChannel33;    // 46
+-			uint8 GameTraceChannel34;    // 47
+-			uint8 GameTraceChannel35;    // 48
+-			uint8 GameTraceChannel36;    // 49
+-			uint8 GameTraceChannel37;    // 50
+-			uint8 GameTraceChannel38;    // 51
+-			uint8 GameTraceChannel39;    // 52
+-			uint8 GameTraceChannel40;    // 53
+-			uint8 GameTraceChannel41;    // 54
+-			uint8 GameTraceChannel42;    // 55
+-			uint8 GameTraceChannel43;    // 56
+-			uint8 GameTraceChannel44;    // 57
+-			uint8 GameTraceChannel45;    // 58
+-			uint8 GameTraceChannel46;    // 59
+-			uint8 GameTraceChannel47;    // 60
+-			uint8 GameTraceChannel48;    // 61
+-			uint8 GameTraceChannel49;    // 62
+-			uint8 GameTraceChannel50;    // 63
++			// [ARK] channel names of the devkit (ShooterGameEditor-Engine.pdb)
++			uint8 WorldStatic;
++			uint8 WorldDynamic;
++			uint8 Visibility;
++			uint8 PhysicsBody;
++			uint8 Destructible;
++			uint8 GameTraceChannel1;
++			uint8 GameTraceChannel2;
++			uint8 GameTraceChannel3;
++			uint8 GameTraceChannel4;
++			uint8 GameTraceChannel5;
++			uint8 GameTraceChannel6;
++			uint8 GameTraceChannel7;
++			uint8 GameTraceChannel8;
++			uint8 GameTraceChannel9;
++			uint8 GameTraceChannel10;
++			uint8 GameTraceChannel11;
++			uint8 GameTraceChannel12;
++			uint8 GameTraceChannel13;
++			uint8 GameTraceChannel14;
++			uint8 GameTraceChannel15;
++			uint8 GameTraceChannel16;
++			uint8 GameTraceChannel17;
++			uint8 GameTraceChannel18;
++			uint8 GameTraceChannel19;
++			uint8 GameTraceChannel20;
++			uint8 GameTraceChannel21;
++			uint8 GameTraceChannel22;
++			uint8 GameTraceChannel23;
++			uint8 GameTraceChannel24;
++			uint8 GameTraceChannel25;
++			uint8 GameTraceChannel26;
++			uint8 GameTraceChannel27;
++			uint8 GameTraceChannel28;
++			uint8 GameTraceChannel29;
++			uint8 GameTraceChannel30;
++			uint8 GameTraceChannel31;
++			uint8 GameTraceChannel32;
++			uint8 GameTraceChannel33;
++			uint8 GameTraceChannel34;
++			uint8 GameTraceChannel35;
++			uint8 GameTraceChannel36;
++			uint8 GameTraceChannel37;
++			uint8 GameTraceChannel38;
++			uint8 GameTraceChannel39;
++			uint8 GameTraceChannel40;
++			uint8 GameTraceChannel41;
++			uint8 GameTraceChannel42;
++			uint8 GameTraceChannel43;
++			uint8 GameTraceChannel44;
++			uint8 GameTraceChannel45;
++			uint8 GameTraceChannel46;
++			uint8 GameTraceChannel47;
++			uint8 GameTraceChannel48;
++			uint8 GameTraceChannel49;
++			uint8 GameTraceChannel50;
+ 		};
+ 		uint8 EnumArray[64];
+ 	};
+@@ -2741,6 +2766,7 @@ public:
+ 	/** (This frame) animation evaluation should be skipped. */
+ 	UPROPERTY()
+ 	uint8 bSkipEvaluation : 1;
++	uint8 bForceCustomSetting : 1; // [ARK]
+ 
+ 	/** How often animation will be updated/ticked. 1 = every frame, 2 = every 2 frames, etc. */
+ 	UPROPERTY()
+@@ -2981,13 +3007,19 @@ struct FMeshBuildSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=BuildSettings)
+ 	uint8 bGenerateLightmapUVs:1;
++	uint8 bGenerateDistanceFieldAsIfTwoSided_DEPRECATED : 1; // [ARK]
++	uint8 bForceOneSidedDistanceField_DEPRECATED : 1; // [ARK]
++	ETwoSidedDistanceFieldSetting MeshDistanceFieldTwoSidedSetting; // [ARK]
++	ETwoSidedDistanceFieldSetting LumenMeshCardsTwoSidedSetting; // [ARK]
+ 
+ 	/** 
+ 	 * Whether to generate the distance field treating every triangle hit as a front face.  
+ 	 * When enabled prevents the distance field from being discarded due to the mesh being open, but also lowers Distance Field AO quality.
+ 	 */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=BuildSettings, meta=(DisplayName="Two-Sided Distance Field Generation"))
+ 	uint8 bGenerateDistanceFieldAsIfTwoSided:1;
++#endif // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=BuildSettings, meta=(DisplayName="Enable Physical Material Mask"))
+ 	uint8 bSupportFaceRemap : 1;
+@@ -3014,6 +3046,7 @@ struct FMeshBuildSettings
+ 	 */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=BuildSettings)
+ 	float DistanceFieldResolutionScale;
++	float DistanceFieldTraceDistanceScale; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	UPROPERTY(NotReplicated)
+@@ -3044,7 +3077,7 @@ struct FMeshBuildSettings
+ 		, bUseFullPrecisionUVs(false)
+ 		, bUseBackwardsCompatibleF16TruncUVs(false)
+ 		, bGenerateLightmapUVs(true)
+-		, bGenerateDistanceFieldAsIfTwoSided(false)
++		/* [ARK] no bGenerateDistanceFieldAsIfTwoSided */
+ 		, bSupportFaceRemap(false)
+ 		, MinLightmapResolution(64)
+ 		, SrcLightmapIndex(0)
+@@ -3077,7 +3110,7 @@ struct FMeshBuildSettings
+ 			&& DstLightmapIndex == Other.DstLightmapIndex
+ 			&& BuildScale3D == Other.BuildScale3D
+ 			&& DistanceFieldResolutionScale == Other.DistanceFieldResolutionScale
+-			&& bGenerateDistanceFieldAsIfTwoSided == Other.bGenerateDistanceFieldAsIfTwoSided
++			/* [ARK] no bGenerateDistanceFieldAsIfTwoSided == */
+ 			&& DistanceFieldReplacementMesh == Other.DistanceFieldReplacementMesh
+ 			&& MaxLumenMeshCards == Other.MaxLumenMeshCards;
+ 	}

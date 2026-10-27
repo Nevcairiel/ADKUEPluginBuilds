@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/LightSceneProxyDesc.h b/Engine/Source/Runtime/Engine/Public/LightSceneProxyDesc.h
+--- a/Engine/Source/Runtime/Engine/Public/LightSceneProxyDesc.h
++++ b/Engine/Source/Runtime/Engine/Public/LightSceneProxyDesc.h
+@@ -81,6 +81,13 @@ struct FLightSceneProxyDesc
+ 
+ 	/** Enables cached shadows for movable primitives for this light even if r.shadow.cachedshadowscastfrommovableprimitives is 0. */
+ 	uint8 bForceCachedShadowsForMovablePrimitives : 1 = false;
++	uint8 bAffectedByAtmosphereLights : 1; // [ARK]
++	uint8 bPrimaryShadow : 1; // [ARK]
++	uint8 bInheritedShadow : 1; // [ARK]
++	uint8 bDummyPrimaryShadowLight : 1; // [ARK]
++	uint8 bPrimaryCloudShadowEnable : 1; // [ARK]
++	float TurnOffShadowsAtDistanceFromViewer; // [ARK]
++	int ObjectLayerMask; // [ARK]
+ 
+ 	/** Whether the light affects objects in reflections, when ray-traced reflection is enabled. */
+ 	uint8 bAffectReflection : 1 = false;

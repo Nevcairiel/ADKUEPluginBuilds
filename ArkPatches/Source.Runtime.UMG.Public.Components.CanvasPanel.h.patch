@@ -1,0 +1,34 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/CanvasPanel.h b/Engine/Source/Runtime/UMG/Public/Components/CanvasPanel.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/CanvasPanel.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/CanvasPanel.h
+@@ -7,6 +7,8 @@
+ #include "Widgets/SWidget.h"
+ #include "Widgets/Layout/SConstraintCanvas.h"
+ #include "Components/PanelWidget.h"
++#include "Math/Color.h" // [ARK] member type
++#include "Components/Widget.h" // [ARK] member type
+ #include "CanvasPanel.generated.h"
+ 
+ class UCanvasPanelSlot;
+@@ -67,9 +69,21 @@ protected:
+ protected:
+ 
+ 	TSharedPtr<class SConstraintCanvas> MyCanvas;
++public:
++	FLinearColor ColorAndOpacity; // [ARK]
++protected:
++public:
++	UWidget::FGetLinearColor ColorAndOpacityDelegate; // [ARK]
++protected:
++public:
++	FLinearColor K2_Cache_ColorAndOpacity; // [ARK]
++protected:
+ 
+ protected:
+ 	// UWidget interface
+ 	UMG_API virtual TSharedRef<SWidget> RebuildWidget() override;
+ 	// End of UWidget interface
++public:
++	UMG_API virtual void SynchronizeProperties(); // [ARK]
++protected:
+ };

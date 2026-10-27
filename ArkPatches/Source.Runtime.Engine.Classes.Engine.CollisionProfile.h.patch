@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/CollisionProfile.h b/Engine/Source/Runtime/Engine/Classes/Engine/CollisionProfile.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/CollisionProfile.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/CollisionProfile.h
+@@ -116,6 +116,7 @@ struct FCustomChannelSetup
+ 	/** Name used in editor and metadata to refer to this channel */
+ 	UPROPERTY()
+ 	FName Name;
++	int MappingIndex; // [ARK]
+ 
+ 	FCustomChannelSetup()
+ 		: Channel(ECC_WorldStatic)

@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h b/Engine/Source/Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h
+--- a/Engine/Source/Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h
++++ b/Engine/Source/Runtime/Engine/Classes/Kismet/KismetRenderingLibrary.h
+@@ -45,7 +45,7 @@ class UKismetRenderingLibrary : public UBlueprintFunctionLibrary
+ 	 * Creates a new render target and initializes it to the specified dimensions
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Rendering", meta=(WorldContext="WorldContextObject"))
+-	static ENGINE_API UTextureRenderTarget2D* CreateRenderTarget2D(UObject* WorldContextObject, int32 Width = 256, int32 Height = 256, ETextureRenderTargetFormat Format = RTF_RGBA16f, FLinearColor ClearColor = FLinearColor::Black, bool bAutoGenerateMipMaps = false, bool bSupportUAVs = false);
++	static ENGINE_API UTextureRenderTarget2D* CreateRenderTarget2D(UObject* WorldContextObject, int32 Width = 256, int32 Height = 256, ETextureRenderTargetFormat Format = RTF_RGBA16f, FLinearColor ClearColor = FLinearColor::Black, bool bAutoGenerateMipMaps = false, bool bSupportUAVs = false, bool bArkUnknown = false); // [ARK] bool (name assumed)
+ 
+ 	/**
+ 	 * Creates a new render target array and initializes it to the specified dimensions

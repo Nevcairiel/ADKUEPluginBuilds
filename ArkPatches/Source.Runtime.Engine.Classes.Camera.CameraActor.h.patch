@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Camera/CameraActor.h b/Engine/Source/Runtime/Engine/Classes/Camera/CameraActor.h
+--- a/Engine/Source/Runtime/Engine/Classes/Camera/CameraActor.h
++++ b/Engine/Source/Runtime/Engine/Classes/Camera/CameraActor.h
+@@ -31,6 +31,9 @@ private:
+ 
+ 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+ 	TObjectPtr<class USceneComponent> SceneComponent;
++public:
++	TWeakObjectPtr<UCameraAnim> PreviewedCameraAnim; // [ARK]
++private:
+ public:
+ 
+ 	/** Returns index of the player for whom we auto-activate, or INDEX_NONE (-1) if disabled. */
+@@ -80,4 +83,5 @@ public:
+ 	 */
+ 	virtual void NotifyCameraCut() {};
+ 
++	ENGINE_API virtual void PostEditChangeProperty(FPropertyChangedEvent&); // [ARK]
+ };

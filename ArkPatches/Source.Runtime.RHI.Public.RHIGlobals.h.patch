@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/RHI/Public/RHIGlobals.h b/Engine/Source/Runtime/RHI/Public/RHIGlobals.h
+--- a/Engine/Source/Runtime/RHI/Public/RHIGlobals.h
++++ b/Engine/Source/Runtime/RHI/Public/RHIGlobals.h
+@@ -395,6 +395,11 @@ struct FRHIGlobals
+ 
+ 	/** Current texture streaming pool size, in bytes. 0 means unlimited. */
+ 	int64 TexturePoolSize = 0 * 1024 * 1024;
++	int64 GLatestTextureStreamingMemoryUsed; // [ARK]
++	int64 GLatestTextureStreamingMemoryBudgeted; // [ARK]
++	int64 GMaxTexturePoolSize; // [ARK]
++	int64 GMaxTextureStreamingMemoryUsed; // [ARK]
++	int64 GMaxTextureStreamingMemoryBudgeted; // [ARK]
+ 
+ 	/** In percent. If non-zero, the texture pool size is a percentage of TotalGraphicsMemory. */
+ 	int32 PoolSizeVRAMPercentage = 0;

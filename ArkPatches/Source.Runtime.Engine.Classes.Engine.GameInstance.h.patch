@@ -1,0 +1,44 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/GameInstance.h b/Engine/Source/Runtime/Engine/Classes/Engine/GameInstance.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/GameInstance.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/GameInstance.h
+@@ -157,6 +157,12 @@ protected:
+ 
+ 	// @todo jcf list of logged-in players?
+ 
++public:
++	ENGINE_API virtual void UnpauseCurrentMusic_Implementation(); // [ARK]
++protected:
++public:
++	ENGINE_API virtual void PauseCurrentMusic_Implementation(); // [ARK]
++protected:
+ 	ENGINE_API virtual bool HandleOpenCommand(const TCHAR* Cmd, FOutputDevice& Ar, UWorld* InWorld);
+ 	ENGINE_API virtual bool HandleDisconnectCommand(const TCHAR* Cmd, FOutputDevice& Ar, UWorld* InWorld);
+ 	ENGINE_API virtual bool HandleReconnectCommand(const TCHAR* Cmd, FOutputDevice& Ar, UWorld* InWorld);
+@@ -641,6 +647,10 @@ public:
+ 
+ 	/** Remove a referenced object, this will allow it to GC out */
+ 	ENGINE_API virtual void UnregisterReferencedObject(UObject* ObjectToReference);
++	ENGINE_API virtual void SetUIHidingSequenceDirector(ULevelSequenceDirector*); // [ARK]
++	ENGINE_API virtual void UpdateOwnedPremiumMods(const TArray<int64>&); // [ARK]
++	ENGINE_API virtual void PrimalBeginAuthenticateClientFromPlatform(UNetConnection*, const FString&); // [ARK]
++	ENGINE_API virtual void TrimMemory(); // [ARK]
+ 
+ 	/** Allows a GameInstance to override the default configured replication system for it's specific conditions. Return Default to use the configured replication system. */
+ 	ENGINE_API virtual EReplicationSystem GetDesiredReplicationSystem(FName InNetDriverDefinition) const;
+@@ -654,6 +664,9 @@ protected:
+ 
+ 	/** Called when the game instance is started either normally or through PIE. */
+ 	ENGINE_API virtual void OnStart();
++public:
++	ENGINE_API virtual FString PrimalGetPlatformAuthToken() const; // [ARK]
++protected:
+ 
+ 	/** Find a map override argument on the command-line string (the first argument without a leading '-' or -map=..., whichever comes first). */
+ 	static ENGINE_API bool GetMapOverrideName(const TCHAR* CmdLine, FString& OverrideMapName);
+@@ -661,4 +674,6 @@ protected:
+ private:
+ 
+ 	FObjectSubsystemCollection<UGameInstanceSubsystem> SubsystemCollection;
++	bool bInitializingForPIE; // [ARK]
++	int PIEInstanceBeingInitialized; // [ARK]
+ };

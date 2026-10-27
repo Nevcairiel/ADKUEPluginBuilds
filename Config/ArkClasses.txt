@@ -1,0 +1,20 @@
+# ARK-only classes generated from the devkit PDBs by Tools\New-ArkClassHeaders.ps1 into ArkHeaders\ (copied into
+# the SDK by New-ArkSdk.ps1, parsed by UHT as part of their module). These are the new base classes ARK inserted
+# into the engine's class hierarchy (AActor : UPrimalActor, UActorComponent : UPrimalActorComponent, ...): the
+# patched engine headers derive from them so that layout and vtables match the devkit.
+#
+# <header, relative to the engine root> | <module> | <includes, ';' separated> | <types, in declaration order>
+Engine\Source\Runtime\Engine\Public\Ark\MultiUseInterface.h | Engine | UObject/Interface.h | IMultiUseInterface
+Engine\Source\Runtime\Engine\Public\Ark\PrimalActor.h | Engine | UObject/Object.h;Ark/MultiUseInterface.h | UPrimalActor
+Engine\Source\Runtime\Engine\Public\Ark\PrimalActorComponent.h | Engine | UObject/Object.h;Ark/MultiUseInterface.h | UPrimalActorComponent
+Engine\Source\Runtime\Engine\Public\Ark\PrimalWorld.h | Engine | UObject/Object.h | UPrimalWorld
+Engine\Source\Runtime\Engine\Public\Ark\PrimalReplicationDriver.h | Engine | UObject/Object.h | UPrimalReplicationDriver
+Engine\Source\Runtime\Engine\Public\Ark\PrimalViewportClient.h | Engine | CoreMinimal.h | FPrimalViewportClient
+Engine\Source\Runtime\Engine\Public\Ark\PrimalController.h | Engine | GameFramework/Controller.h | APrimalController
+Engine\Source\Runtime\Engine\Public\Ark\BasePrimalWorldSettings.h | Engine | GameFramework/Info.h | ABasePrimalWorldSettings
+Engine\Source\Runtime\Engine\Public\Ark\CameraAnim.h | Engine | UObject/Object.h | UCameraAnim
+Engine\Source\Runtime\Engine\Public\Ark\PrimalTickFunctionData.h | Engine | CoreMinimal.h | FPrimalTickFunctionData
+Engine\Source\Runtime\Engine\Public\Ark\PrimalPawn.h | Engine | GameFramework/Pawn.h | APrimalPawn
+Engine\Source\Runtime\Engine\Public\Ark\PrimalPlayerController.h | Engine | GameFramework/PlayerController.h | APrimalPlayerController
+Engine\Source\Runtime\Foliage\Public\Ark\FoliageBaseType.h | Foliage | UObject/Object.h | UFoliageBaseType
+Engine\Source\Runtime\Engine\Public\Ark\MatineeAnimInterface.h | Engine | UObject/Interface.h | IMatineeAnimInterface

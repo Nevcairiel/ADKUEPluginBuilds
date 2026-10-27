@@ -1,0 +1,25 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/Volume.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/Volume.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/Volume.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/Volume.h
+@@ -38,6 +38,7 @@ public:
+ 	*/
+ 	ENGINE_API virtual void CheckForErrors() override;
+ 	virtual bool ShouldCheckCollisionComponentForErrors() const { return true; }
++	ENGINE_API virtual bool EncompassesPoint(FVector, float, float*, float*) const; // [ARK]
+ #endif // WITH_EDITOR
+ 	
+ 	ENGINE_API virtual bool IsLevelBoundsRelevant() const override;
+@@ -63,6 +64,13 @@ public:
+ 	//End UObject Interface
+ 
+ 
++	TArray<FBoxOptimization> BoxOptimization; // [ARK]
++	bool bAllowCollisionComponentWithZeroRadius; // [ARK]
++ENGINE_API virtual void Serialize(FArchive&); // [ARK]
++ENGINE_API virtual void Serialize(FStructuredArchiveRecord); // [ARK]
++ENGINE_API virtual void PreSave(FObjectPreSaveContext); // [ARK]
++ENGINE_API virtual void PreInitializeComponents(); // [ARK]
++ENGINE_API virtual void PreRegisterAllComponents(); // [ARK]
+ };
+ 
+ 

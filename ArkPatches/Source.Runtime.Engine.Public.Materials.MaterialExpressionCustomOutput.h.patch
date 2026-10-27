@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustomOutput.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustomOutput.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustomOutput.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustomOutput.h
+@@ -34,6 +34,16 @@ public:
+ 
+ 	UE_DEPRECATED(5.6, "Use GetShaderFrequency(uint32 OutputIndex) instead")
+ 	virtual EShaderFrequency GetShaderFrequency() { return SF_Pixel; }
++	virtual UE::Shader::EValueType GetCustomOutputType(int) const; // [ARK]
++	virtual bool IsOutputDirect() const; // [ARK]
++	virtual bool OutputDirectSupportsZeroOutputs() const; // [ARK]
++	virtual int CompileOutputDirect(FMaterialCompiler*, int, int); // [ARK]
++	virtual FString GetOutputDirectPrefixCode(FMaterialCompiler*, int) const; // [ARK]
++	virtual FString GetOutputDirectPostfixCode(FMaterialCompiler*, int) const; // [ARK]
++	virtual bool IsDisabled(const FStaticParameterSet*, const UMaterialFunctionInterface*) const; // [ARK]
++	virtual bool HasConditionalEnableBranch(); // [ARK]
++	virtual bool ConditionalEnableOutputDirect(); // [ARK]
++	virtual int CompileConditionalEnableBranchInput(FMaterialCompiler*); // [ARK]
+ 	
+ 	virtual EShaderFrequency GetShaderFrequency(uint32 OutputIndex)
+ 	{

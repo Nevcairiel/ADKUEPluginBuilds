@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/AudioComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/AudioComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/AudioComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/AudioComponent.h
+@@ -283,6 +283,7 @@ class UAudioComponent : public USceneComponent, public ISoundParameterController
+ 
+ 	/** Whether or not fade out was triggered. */
+ 	uint8 bIsFadingOut:1;
++	uint8 bSuppressSubmix : 1; // [ARK]
+ 
+ 	/**
+ 	* True if we should automatically attach to AutoAttachParent when Played, and detach from our parent when playback is completed.
+@@ -299,6 +300,7 @@ class UAudioComponent : public USceneComponent, public ISoundParameterController
+ private:
+ 	/** Did we auto attach during activation? Used to determine if we should restore the relative transform during detachment. */
+ 	uint8 bDidAutoAttach : 1;
++	uint8 bCreatedForALocalController : 1; // [ARK]
+ 
+ public:
+ 	/** The specific audio device to play this component on */

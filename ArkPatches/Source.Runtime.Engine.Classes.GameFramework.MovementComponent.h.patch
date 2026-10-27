@@ -1,0 +1,30 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/MovementComponent.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/MovementComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/MovementComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/MovementComponent.h
+@@ -197,7 +197,9 @@ private:
+ public:
+ 	//~ Begin ActorComponent Interface 
+ 	ENGINE_API virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
++#endif // [ARK]
+ 	ENGINE_API virtual void PostLoad() override;
+ 	ENGINE_API virtual void Deactivate() override;
+ 	ENGINE_API virtual void Serialize(FArchive& Ar) override;
+@@ -322,6 +324,7 @@ public:
+ 	 * @return The adjustment to use after a failed move, or a zero vector if no attempt should be made.
+ 	 */
+ 	ENGINE_API virtual FVector GetPenetrationAdjustment(const FHitResult& Hit) const;
++	ENGINE_API virtual bool IsMeshed(const FVector&); // [ARK]
+ 	
+ 	/**
+ 	 * Try to move out of penetration in an object after a failed move. This function should respect the plane constraint if applicable.
+@@ -459,6 +462,8 @@ public:
+ 
+ 	/** Called by owning Actor upon successful teleport from AActor::TeleportTo(). */
+ 	virtual void OnTeleported() {};
++	ENGINE_API virtual bool TryDeferEndScopedMovementUpdate(USceneComponent*, FScopedMovementUpdate*) const; // [ARK]
++	ENGINE_API virtual void RegisterComponentTickFunctions(bool, bool); // [ARK]
+ };
+ 
+ 

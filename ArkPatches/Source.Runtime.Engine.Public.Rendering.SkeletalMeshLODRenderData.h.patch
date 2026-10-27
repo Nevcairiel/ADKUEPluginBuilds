@@ -1,0 +1,30 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Rendering/SkeletalMeshLODRenderData.h b/Engine/Source/Runtime/Engine/Public/Rendering/SkeletalMeshLODRenderData.h
+--- a/Engine/Source/Runtime/Engine/Public/Rendering/SkeletalMeshLODRenderData.h
++++ b/Engine/Source/Runtime/Engine/Public/Rendering/SkeletalMeshLODRenderData.h
+@@ -175,7 +175,7 @@ public:
+ 	uint32 BuffersSize;
+ 
+ 	/** Precooked ray tracing geometry. Used as source data to build skeletal mesh instance ray tracing geometry. */
+-	FRayTracingGeometry SourceRayTracingGeometry;
++	alignas(8) uint8 SourceRayTracingGeometry[0x60]; // [ARK] FRayTracingGeometry of the devkit (excluded type), opaque
+ 
+ 	FByteBulkData StreamingBulkData;
+ 
+@@ -186,11 +186,17 @@ public:
+ 
+ #if RHI_RAYTRACING
+ 	/** Game thread reference counter of static skeletal mesh objects referencing this render data */
++#if 0 // [ARK] removed
+ 	int32 NumReferencingStaticSkeletalMeshObjects = 0;
++#endif // [ARK]
+ 	/** Same as NumReferencingStaticSkeletalMeshObjects, but on render thread to determine lifetime of resources in mesh streaming */
++#if 0 // [ARK] removed
+ 	bool bReferencedByStaticSkeletalMeshObjects_RenderThread = false;
++#endif // [ARK]
+ 	/** Static ray tracing geometry, only initialized when bRenderStatic = true on any skeletal mesh scene proxy*/
++#if 0 // [ARK] removed
+ 	FRayTracingGeometry StaticRayTracingGeometry;
++#endif // [ARK]
+ #endif
+ 
+ 	/**

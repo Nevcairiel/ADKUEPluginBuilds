@@ -9,3 +9,41 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SkinnedMeshComponen
  	/** Always Tick and Refresh BoneTransforms whether rendered or not. */
  	AlwaysTickPoseAndRefreshBones,
  	/** Always Tick, but Refresh BoneTransforms only when rendered. */
+@@ -619,6 +620,7 @@ public:
+ 	 * Called by the asset compilers (FAnimBankCompilingManager / FSkinnedAssetCompilingManager) when done to allow render state to be created.
+ 	 */
+ 	virtual void PostAssetCompilation() {};
++	ENGINE_API virtual void SkippedTickPose(); // [ARK]
+ #endif
+ 
+ #if UE_ENABLE_DEBUG_DRAWING
+@@ -2233,6 +2235,18 @@ public:
+ 
+ 	/** Animation Update Rate optimization parameters. */
+ 	struct FAnimUpdateRateParameters* AnimUpdateRateParams;
++	uint32 bForceUpdateKinematic : 1; // [ARK]
++	uint32 bChartDistanceFactor : 1; // [ARK]
++	uint32 bFreeSpaceBasesOnUnregister : 1; // [ARK]
++	uint32 bForceTickPoseWithinRange : 1; // [ARK]
++	uint32 bAlwaysUpdateMeshForShadowRendering : 1; // [ARK]
++	uint32 bAddAttachedParentBounds : 1; // [ARK]
++	uint32 bBasedPawnsTriggerChildTick : 1; // [ARK]
++	float ForceTickPoseWithinRangeSquared; // [ARK]
++	TObjectPtr<USkinnedMeshComponent> OverrideTickingVisiblityMesh; // [ARK]
++	float ShadowedRecentlyRenderedBoundsScaleMultiplier; // [ARK]
++	uint32 bHasCachedIdentityBoneTransforms : 1; // [ARK]
++	TArray<FTransform> IdentityBoneTransforms; // [ARK]
+ 
+ 	virtual bool IsPlayingRootMotion() const { return false; }
+ 	virtual bool IsPlayingNetworkedRootMotionMontage() const { return false; }
+@@ -2295,6 +2309,10 @@ public:
+ 	 * @param DelegateHandle - the handle of the delegate to remove from the list.
+ 	 */
+ 	virtual void UnregisterOnBoneTransformsFinalizedDelegate(const FDelegateHandle& /*DelegateHandle*/) {}
++	ENGINE_API virtual void RefreshBonesAndUpdateBounds(FActorComponentTickFunction*); // [ARK]
++	ENGINE_API virtual TArray<TWeakObjectPtr<USkinnedMeshComponent>>* GetFollowersSkinnedMeshComponentsForEndOfFrameUpdate(); // [ARK]
++	ENGINE_API virtual bool HasFollowersForEndOfFrameUpdate() const; // [ARK]
++	ENGINE_API virtual bool HasLeaderForEndOfFrameUpdate() const; // [ARK]
+ };
+ 
+ class FRenderStateRecreator

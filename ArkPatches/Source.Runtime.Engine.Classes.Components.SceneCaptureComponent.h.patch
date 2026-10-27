@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SceneCaptureComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/SceneCaptureComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/SceneCaptureComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/SceneCaptureComponent.h
+@@ -329,6 +329,7 @@ protected:
+ public:
+ 	/** Thread safe storage for memory statistics for a scene capture */
+ 	TRefCountPtr<FSceneCaptureMemorySize> CaptureMemorySize;
++	uint32 CaptureCount; // [ARK]
+ #endif
+ };
+ 

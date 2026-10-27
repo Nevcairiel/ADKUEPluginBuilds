@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StreamableRenderAsset.h b/Engine/Source/Runtime/Engine/Classes/Engine/StreamableRenderAsset.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/StreamableRenderAsset.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/StreamableRenderAsset.h
+@@ -293,6 +293,7 @@ protected:
+ 
+ 	UE_DEPRECATED(5.8, "HasPendingLODTransition is deprecated and no longer called. Remove any remaining uses of this function.")
+ 	virtual bool HasPendingLODTransition() const { return false; }
++	ENGINE_API virtual bool LegacyDecideIfLOD0ShouldExist(); // [ARK]
+ 
+ 	struct FLODStreamingCallbackPayload
+ 	{
+@@ -341,6 +342,8 @@ public:
+ 	/** Number of mip-levels to use for cinematic quality. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LevelOfDetail, AdvancedDisplay)
+ 	int32 NumCinematicMipLevels;
++	uint32 bConsoleDropLOD0 : 1; // [ARK]
++	uint32 bConsoleDropLOD0onLowMemPlatform : 1; // [ARK]
+ 
+ protected:
+ 	UPROPERTY()

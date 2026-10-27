@@ -1,0 +1,74 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/LocalPlayer.h b/Engine/Source/Runtime/Engine/Classes/Engine/LocalPlayer.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/LocalPlayer.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/LocalPlayer.h
+@@ -20,6 +20,7 @@
+ #include "Subsystems/LocalPlayerSubsystem.h"
+ #include "Subsystems/SubsystemCollection.h"
+ 
++#include "ConvexVolume.h" // [ARK] member type
+ #include "LocalPlayer.generated.h"
+ 
+ 
+@@ -222,6 +223,12 @@ public:
+ 
+ 	/** Whether or not we're emulating splitscreen with this player. Should only be set from screenshot functional tests. */
+ 	bool bEmulateSplitscreen = false;
++private:
++	bool bValidCachedViewFrustum; // [ARK]
++public:
++private:
++	FConvexVolume CachedViewFrustum; // [ARK]
++public:
+ 	
+ 	/** 
+ 	 * Set the connection identifier for this local user. 
+@@ -275,6 +282,7 @@ public:
+ 	// End of UObject interface
+ 
+ 	// Begin UPlayer interface
++	ENGINE_API virtual bool LocalPlayerCameraIsBasedOnDynamic(); // [ARK]
+ 	ENGINE_API virtual void ReceivedPlayerController(APlayerController* NewController) override;
+ 	// End UPlayer interface
+ 	
+@@ -316,6 +324,9 @@ protected:
+ 
+ 	/** FReply used to defer some slate operations. */
+ 	FReply SlateOperations;
++public:
++	FString PasswordToEnter; // [ARK]
++protected:
+ 
+ public:
+ 
+@@ -432,6 +443,7 @@ public:
+ 		FViewport* Viewport,
+ 		class FViewElementDrawer* ViewDrawer = NULL,
+ 		int32 StereoViewIndex = INDEX_NONE);
++	ENGINE_API virtual FSceneView* CalcSceneView(FSceneViewFamily*, FVector&, FRotator&, FViewport*, FViewElementDrawer*, int, bool, bool); // [ARK]
+ 
+ 	/**
+ 	 * Calculate the view settings for drawing from this view actor
+@@ -443,12 +455,14 @@ public:
+ 	 * @param	ViewDrawer - optional drawing in the view
+ 	 * @param	StereoViewIndex - index of the view when using stereoscopy
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual FSceneView* CalcSceneView(class FSceneViewFamily* ViewFamily,
+ 		FVector& OutViewLocation,
+ 		FRotator& OutViewRotation,
+ 		FViewport* Viewport,
+ 		class FViewElementDrawer* ViewDrawer = NULL,
+ 		int32 StereoViewIndex = INDEX_NONE);
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Called at creation time for internal setup
+@@ -632,6 +646,8 @@ public:
+ 	 * Clear cached view state.  Suitable for calling when cleaning up the world but the view state has some references objects (usually mids) owned by the world (thus preventing GC) 
+ 	 */
+ 	ENGINE_API virtual void CleanupViewState(FStringView MidParentRootPath = {});
++	ENGINE_API virtual void DisplayNotificationMessage(FString, FString, bool, bool, bool, bool, bool); // [ARK]
++	ENGINE_API virtual void TickUI(float); // [ARK]
+ 
+ 	/** Locked view state needs access to GetViewPoint. */
+ 	friend class FLockedViewState;

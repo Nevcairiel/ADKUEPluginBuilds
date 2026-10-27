@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/ForceFeedbackEffect.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/ForceFeedbackEffect.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/ForceFeedbackEffect.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/ForceFeedbackEffect.h
+@@ -56,6 +56,7 @@ struct FActiveForceFeedbackEffect
+ 
+ 	FForceFeedbackParameters Parameters;
+ 	float PlayTime;
++	float intensityMult; // [ARK]
+ 
+ 	/** The platform user that should receive this effect */
+ 	FPlatformUserId PlatformUser = PLATFORMUSERID_NONE;

@@ -1,0 +1,84 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/Pawn.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/Pawn.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/Pawn.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/Pawn.h
+@@ -91,6 +91,9 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn)
+ 	uint32 bCanAffectNavigationGeneration : 1;
++	uint32 bForceUseCustomCameraComponent : 1; // [ARK]
++	uint32 bDisableControllerDesiredRotation : 1; // [ARK]
++	uint32 bUseBPFaceRotation : 1; // [ARK]
+ 
+ private:
+ 	/** Whether this Pawn's input handling is enabled.  Pawn must still be possessed to get input even if this is true */
+@@ -258,6 +261,7 @@ public:
+ 	/** Check if this actor is currently being controlled at all (the actor has a valid Controller, which will be false for remote clients) */
+ 	UFUNCTION(BlueprintCallable, Category = Pawn)
+ 	ENGINE_API virtual bool IsPawnControlled() const;
++	ENGINE_API virtual FRotator GetControlRotation() const; // [ARK]
+ 
+ 	/** Returns controller for this actor. */
+ 	UFUNCTION(BlueprintCallable, Category=Pawn)
+@@ -274,8 +278,10 @@ public:
+ 	ENGINE_API void SetController(AController* InController);
+ 
+ 	/** Get the rotation of the Controller, often the 'view' rotation of this Pawn. */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category=Pawn)
+ 	ENGINE_API FRotator GetControlRotation() const;
++#endif // [ARK]
+ 
+ 	/** Called when Controller is replicated */
+ 	UFUNCTION()
+@@ -286,7 +292,9 @@ public:
+ 	ENGINE_API virtual void OnRep_PlayerState();
+ 
+ 	//~ Begin AActor Interface.
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual FVector GetVelocity() const override;
++#endif // [ARK]
+ 	ENGINE_API virtual void Reset() override;
+ 	ENGINE_API virtual FString GetHumanReadableName() const override;
+ 	ENGINE_API virtual bool ShouldTickIfViewportsOnly() const override;
+@@ -312,7 +320,9 @@ public:
+ 	ENGINE_API virtual void EndViewTarget(APlayerController* PC) override;
+ 	ENGINE_API virtual void EnableInput(APlayerController* PlayerController) override;
+ 	ENGINE_API virtual void DisableInput(APlayerController* PlayerController) override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void TeleportSucceeded(bool bIsATest) override;
++#endif // [ARK]
+ 	ENGINE_API virtual bool IsBasedOnActor(const AActor* Other) const override;
+ 
+ 	/** Overridden to defer to the RootComponent's CanCharacterStepUpOn setting if it is explicitly Yes or No. If set to Owner, will return Super::CanBeBaseForCharacter(). */
+@@ -460,9 +470,12 @@ public:
+ 
+ 	/** Returns true if player is viewing this Pawn in FreeCam */
+ 	ENGINE_API virtual bool InFreeCam() const;
++	ENGINE_API virtual void FaceRotation(FRotator, float, bool); // [ARK]
+ 
+ 	/** Updates Pawn's rotation to the given rotation, assumed to be the Controller's ControlRotation. Respects the bUseControllerRotation* settings. */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void FaceRotation(FRotator NewControlRotation, float DeltaTime = 0.f);
++#endif // [ARK]
+ 
+ 	/** Call this function to detach safely pawn from its controller, knowing that we will be destroyed soon.	 */
+ 	UFUNCTION(BlueprintCallable, Category=Pawn, meta=(Keywords = "Delete"))
+@@ -581,6 +594,9 @@ protected:
+ 	/** If set, then this InputComponent class will be used instead of the Input Settings' DefaultInputComponentClass */
+ 	UPROPERTY(EditDefaultsOnly, Category = "Pawn|Input")
+ 	TSubclassOf<UInputComponent> OverrideInputComponentClass;
++public:
++	FMovementTetherEvent OnMovementTetherSet; // [ARK]
++protected:
+ 
+ public:
+ 	/** Internal function meant for use only within Pawn or by a PawnMovementComponent. Adds movement input if not ignored, or if forced. */
+@@ -601,6 +617,8 @@ public:
+ 	/** Remove an Actor to ignore by Pawn's movement collision */
+ 	ENGINE_API void MoveIgnoreActorRemove(AActor* ActorToIgnore);
+ 
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
++	ENGINE_API virtual void TeleportSucceeded(bool, bool); // [ARK]
+ };
+ 
+ 

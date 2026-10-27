@@ -1,0 +1,55 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/Texture.h b/Engine/Source/Runtime/Engine/Classes/Engine/Texture.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/Texture.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/Texture.h
+@@ -1353,6 +1353,7 @@ public:
+ 	/** The maximum resolution for generated textures. A value of 0 means the maximum size for the format on each platform. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Compression, meta=(DisplayName="Maximum Texture Size", ClampMin = "0.0"), AdvancedDisplay)
+ 	int32 MaxTextureSize;
++	int MaxConsoleVirtualTextureSize; // [ARK]
+ 
+ 	/** The compression quality for generated ASTC textures (i.e. mobile platform textures). */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Compression, meta = (DisplayName = "ASTC Compression Quality"), AdvancedDisplay)
+@@ -1425,6 +1426,7 @@ public:
+ 	/** Per asset specific setting to define the mip-map generation properties like sharpening and kernel size. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=LevelOfDetail)
+ 	TEnumAsByte<enum TextureMipGenSettings> MipGenSettings;
++	bool bPrimalEnableAutoUDIMSizeReduction; // [ARK]
+ 
+ 	/**
+ 	 * Can be defined to modify the roughness based on the normal map variation (mostly from mip maps).
+@@ -1504,8 +1506,11 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	int32 LevelIndex = INDEX_NONE;
+ 
+ 	/** A bias to the index of the top mip level to use.  That is, number of mip levels to drop when cooking. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=LevelOfDetail, meta=(DisplayName="LOD Bias"), AssetRegistrySearchable)
+ 	int32 LODBias;
++#endif // [ARK]
++	FPerPlatformInt LODBias; // [ARK] type changed
+ 
+ 	/** Compression settings to use when building the texture. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Compression, AssetRegistrySearchable)
+@@ -1580,6 +1585,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	/** A flag for using the simplified legacy gamma space e.g pow(color,1/2.2) for converting from FColor to FLinearColor, if we're doing sRGB. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Texture, meta=(DisplayName="sRGB Use Legacy Gamma", EditCondition="SRGB"), AdvancedDisplay)
+ 	uint8 bUseLegacyGamma:1;
++	uint8 bEditorOnlyTexture : 1; // [ARK]
+ 
+ 	/** Texture color management settings: source encoding and color space. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Texture, AdvancedDisplay)
+@@ -1690,6 +1696,7 @@ private:
+ 	  * potential crash in the render thread.
+ 	  */
+ 	class FTextureResource* PrivateResourceRenderThread;
++	FTextureResource* PrivateResourceToDelete; // [ARK]
+ 
+ public:
+ 	ENGINE_API UTexture(FVTableHelper& Helper);
+@@ -2286,4 +2293,7 @@ protected:
+ 	 * @return  The state to be passed to FStreamableTextureResource.
+ 	 */
+ 	FStreamableRenderResourceState GetResourcePostInitState(const FTexturePlatformData* PlatformData, bool bAllowStreaming, int32 MinRequestMipCount = 0, int32 MaxMipCount = 0, bool bSkipCanBeLoaded = false) const;
++public:
++	ENGINE_API virtual bool IsEditorOnly() const; // [ARK]
++protected:
+ };

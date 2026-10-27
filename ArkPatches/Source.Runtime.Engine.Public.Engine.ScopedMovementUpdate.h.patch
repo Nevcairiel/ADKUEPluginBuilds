@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Engine/ScopedMovementUpdate.h b/Engine/Source/Runtime/Engine/Public/Engine/ScopedMovementUpdate.h
+--- a/Engine/Source/Runtime/Engine/Public/Engine/ScopedMovementUpdate.h
++++ b/Engine/Source/Runtime/Engine/Public/Engine/ScopedMovementUpdate.h
+@@ -63,7 +63,7 @@ public:
+ 		eIgnoreTransform
+ 	};
+ 
+-	enum class EOverlapState
++	enum class EOverlapState : uint8 // [ARK] 1 byte in the devkit
+ 	{
+ 		eUseParent,
+ 		eUnknown,
+@@ -186,6 +186,9 @@ protected:
+ 	* True when DeferredGroupUpdates is the type applied. See notes above.
+ 	*/
+ 	uint8 bIsGroupDeferedUpdate : 1;
++private:
++	bool bDoNotCallEndScopedMovementUpdate; // [ARK]
++protected:
+ 
+ 	friend class USceneComponent;
+ };

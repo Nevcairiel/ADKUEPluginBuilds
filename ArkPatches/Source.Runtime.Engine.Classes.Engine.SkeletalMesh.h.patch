@@ -1,0 +1,80 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h b/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMesh.h
+@@ -27,6 +27,7 @@
+ #include "UObject/Object.h"
+ #include "UObject/ObjectMacros.h"
+ 
++#include "UObject/NameTypes.h" // [ARK] member type
+ #include "SkeletalMesh.generated.h"
+ 
+ #define UE_API ENGINE_API
+@@ -1436,6 +1437,7 @@ public:
+ 	UE_DEPRECATED(4.27, "Please do not access this member directly; use USkeletalMesh::GetEnablePerPolyCollision() or USkeletalMesh::SetEnablePerPolyCollision().")
+ 	UPROPERTY(EditAnywhere, Category = Physics)
+ 	uint8 bEnablePerPolyCollision : 1;
++	uint8 bForceAllowCPUAcccess : 1; // [ARK]
+ 
+ 	static FName GetEnablePerPolyCollisionMemberName()
+ 	{
+@@ -3275,6 +3277,60 @@ private:
+ 	
+ 	UPROPERTY()
+ 	TArray<FSkeletalMeshLODInfo> LODInfo_DEPRECATED;
++public:
++	TArray<FSkeletalMeshOptimizationSettings> OptimizationSettings_DEPRECATED; // [ARK]
++private:
++public:
++	FVector ItemSlotAttachmentScaleMultiplier; // [ARK]
++private:
++public:
++	FName CloseToGroundBoneName; // [ARK]
++private:
++public:
++	FName CloseToGroundOppositeBoneName; // [ARK]
++private:
++public:
++	TArray<FGroundBoneChain> GroundBonesChains; // [ARK]
++private:
++public:
++	float DefaultTraceLength; // [ARK]
++private:
++public:
++	float TraceStartOffset; // [ARK]
++private:
++public:
++	float InterpolationSpeed; // [ARK]
++private:
++public:
++	float InterpolationSpeedUpward; // [ARK]
++private:
++public:
++	float CachedInitialSphereRadiusBounds; // [ARK]
++private:
++public:
++	uint32 bIgnoreMasterPoseLODs : 1; // [ARK]
++private:
++public:
++	uint32 bAllowParallelAnimations : 1; // [ARK]
++private:
++public:
++	uint32 bAllowLODStreaming : 1; // [ARK]
++private:
++public:
++	uint32 bFullLODStreaming : 1; // [ARK]
++private:
++public:
++	uint32 bCookRemoveLOD0 : 1; // [ARK]
++private:
++public:
++	uint32 bPreventLODStreamingOnWindows : 1; // [ARK]
++private:
++public:
++	int ConsoleDropLODNewTriangleCount; // [ARK]
++private:
++public:
++	FPerPlatformBool bRemovingLOD0FromCook; // [ARK]
++private:
+ 	
+ };
+ 

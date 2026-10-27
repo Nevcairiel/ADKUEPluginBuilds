@@ -1,0 +1,162 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h
+@@ -15,6 +15,7 @@
+ #include "Engine/LatentActionManager.h"
+ #include "SceneTypes.h"
+ #include "GameFramework/Controller.h"
++#include "Ark/CameraAnim.h" // [ARK] UCameraAnim (RPC parameters)
+ #include "UObject/TextProperty.h"
+ #include "GameFramework/PlayerMuteList.h"
+ #include "GameFramework/OnlineReplStructs.h"
+@@ -28,6 +29,7 @@
+ #include "EngineDefines.h"		// For UE_ENABLE_DEBUG_DRAWING
+ #include "InputKeyEventArgs.h"
+ 
++#include "Ark/PrimalController.h" // [ARK] base class
+ #include "PlayerController.generated.h"
+ 
+ class ACameraActor;
+@@ -259,7 +261,7 @@ struct FAsyncPhysicsTimestamp
+  * @see https://docs.unrealengine.com/latest/INT/Gameplay/Framework/Controller/PlayerController/
+  */
+ UCLASS(config=Game, BlueprintType, Blueprintable, meta=(ShortTooltip="A Player Controller is an actor responsible for controlling a Pawn used by the player."), MinimalAPI)
+-class APlayerController : public AController, public IWorldPartitionStreamingSourceProvider
++class APlayerController : public APrimalController, public IWorldPartitionStreamingSourceProvider // [ARK] bases (was : public AController, public IWorldPartitionStreamingSourceProvider)
+ {
+ 	GENERATED_BODY()
+ 
+@@ -274,6 +276,7 @@ public:
+ 	/** Used in net games so client can acknowledge it possessed a specific pawn. */
+ 	UPROPERTY()
+ 	TObjectPtr<APawn> AcknowledgedPawn;
++	TObjectPtr<UInterpTrackInstDirector> ControllingDirTrackInst; // [ARK]
+ 
+ 	/** Heads up display associated with this PlayerController. */
+ 	UPROPERTY()
+@@ -330,8 +333,11 @@ public:
+ 	bool bRenderPrimitiveComponents;
+ 
+ 	/** Used to make sure the client is kept synchronized when in a spectator state */
++#if 0 // [ARK] removed
+ 	UPROPERTY()
+ 	float LastSpectatorStateSynchTime;
++#endif // [ARK]
++	double LastSpectatorStateSynchTime; // [ARK] type changed
+ 
+ 	/** Last location synced on the server for a spectator. */
+ 	UPROPERTY(Transient)
+@@ -377,6 +383,11 @@ public:
+ 	TArray<FForceFeedbackEffectHistoryEntry> ForceFeedbackEffectHistoryEntries;
+ #endif
+ 
++protected:
++public:
++protected:
++public:
++	ENGINE_API virtual void EnableCheats(const FString); // [ARK]
+ protected:
+ 	ENGINE_API virtual void OnReplicationStartedForIris(const FOnReplicationStartedParams&) override;
+ 
+@@ -614,8 +625,10 @@ public:
+ 
+ public:
+ 	/** Run from the console to try and manually enable cheats which are disabled by default in multiplayer, games can override this */
++#if 0 // [ARK] removed
+ 	UFUNCTION(exec)
+ 	ENGINE_API virtual void EnableCheats();
++#endif // [ARK]
+ 
+ 	/** Timer used by RoundEnded and Inactive states to accept player input again */
+ 	ENGINE_API virtual void UnFreeze();
+@@ -1011,6 +1024,7 @@ public:
+ 	/** Console control commands, useful when remote debugging so you can't touch the console the normal way */
+ 	UFUNCTION(exec)
+ 	ENGINE_API virtual void ConsoleKey(FKey Key);
++	ENGINE_API virtual bool AllowConsoleUI(); // [ARK]
+ 
+ 	/** Sends a command to the console to execute if not shipping version */
+ 	UFUNCTION(exec)
+@@ -1083,8 +1097,12 @@ public:
+ 	 * @param PlaySpace - Which coordinate system to play the shake in (used for CameraAnims within the shake).
+ 	 * @param UserPlaySpaceRot - Matrix used when PlaySpace = CAPS_UserDefined
+ 	 */
++	UFUNCTION(reliable, client) // [ARK]
++	ENGINE_API void CopyStringToClipboard(const FString& S); // [ARK]
++	UFUNCTION(unreliable, client) // [ARK]
++	ENGINE_API void ClientPlayCameraAnim(class UCameraAnim* AnimToPlay, float Scale = 1.f, float Rate = 1.f, float BlendInTime = 0.f, float BlendOutTime = 0.f, bool bLoop = false, bool bRandomStartTime = false, ECameraShakePlaySpace Space = ECameraShakePlaySpace::CameraLocal, FRotator CustomPlaySpace = FRotator::ZeroRotator); // [ARK]
+ 	UFUNCTION(unreliable, client, BlueprintCallable, Category="Game|Feedback")
+-	ENGINE_API void ClientStartCameraShake(TSubclassOf<class UCameraShakeBase> Shake, float Scale = 1.f, ECameraShakePlaySpace PlaySpace = ECameraShakePlaySpace::CameraLocal, FRotator UserPlaySpaceRot = FRotator::ZeroRotator);
++	ENGINE_API void ClientStartCameraShake(TSubclassOf<class UCameraShakeBase> Shake, float Scale = 1.f, ECameraShakePlaySpace PlaySpace = ECameraShakePlaySpace::CameraLocal, FRotator UserPlaySpaceRot = FRotator::ZeroRotator, float Speed = 1.f, bool bArkUnknown = false); // [ARK] Speed, bool (name assumed)
+ 
+ 	/** 
+ 	 * Play Camera Shake localized to a given source
+@@ -1226,8 +1244,11 @@ public:
+ 	/** Removes all Camera Lens Effects. */
+ 	UFUNCTION(reliable, client, BlueprintCallable, Category="Game|Feedback")
+ 	ENGINE_API virtual void ClientClearCameraLensEffects();
++	ENGINE_API virtual void ClientPlayForceFeedback(UForceFeedbackEffect*, FForceFeedbackParameters, float); // [ARK]
+ 
+ 	/** Stop camera shake on client.  */
++	UFUNCTION(reliable, client) // [ARK]
++	ENGINE_API void ClientStopCameraAnim(class UCameraAnim* AnimToStop); // [ARK]
+ 	UFUNCTION(reliable, client, BlueprintCallable, Category="Game|Feedback")
+ 	ENGINE_API void ClientStopCameraShake(TSubclassOf<class UCameraShakeBase> Shake, bool bImmediately = true);
+ 
+@@ -1252,7 +1273,7 @@ private:
+ 	 * Cannot be named ClientPlayForceFeedback as redirector for blueprint function version to K2_... does not work in that case
+ 	 */
+ 	UFUNCTION(unreliable, client)
+-	ENGINE_API void ClientPlayForceFeedback_Internal(class UForceFeedbackEffect* ForceFeedbackEffect, FForceFeedbackParameters Params = FForceFeedbackParameters());
++	ENGINE_API void ClientPlayForceFeedback_Internal(class UForceFeedbackEffect* ForceFeedbackEffect, FForceFeedbackParameters Params = FForceFeedbackParameters(), float IntensityMultiplier = 1.f); // [ARK] third parameter (name assumed)
+ 
+ public:
+ 
+@@ -1529,7 +1550,7 @@ public:
+ 	 *
+ 	 * @param LevelVisibility	Visibility state for the level whose state changed.
+ 	 */
+-	UFUNCTION(reliable, server, WithValidation, SealedEvent)
++	UFUNCTION(reliable, server, WithValidation) // [ARK] not sealed: virtual _Implementation
+ 	ENGINE_API void ServerUpdateLevelVisibility(const FUpdateLevelVisibilityLevelInfo& LevelVisibility);
+ 
+ 	/** 
+@@ -1991,6 +2012,7 @@ protected:
+ 	FRotator AudioListenerRotationOverride;
+ 	/** Currently overridden vector used to do attenuation calculations for listener. */
+ 	FVector AudioListenerAttenuationOverride;
++	TSubclassOf<AHUD> SeamlessTravelHUDClass; // [ARK]
+ 
+ 	/** Internal. */
+ 	ENGINE_API void TickPlayerInput(const float DeltaSeconds, const bool bGamePaused);
+@@ -2219,7 +2241,10 @@ private:
+ 	TObjectPtr<ASpectatorPawn> SpectatorPawn;
+ 
+ 	/** Used to delay calling ClientRestart() again when it hasn't been appropriately acknowledged. */
++#if 0 // [ARK] removed
+ 	float		LastRetryPlayerTime;
++#endif // [ARK]
++	double LastRetryPlayerTime; // [ARK] type changed
+ 
+ 	/** Set during SpawnActor once and never again to indicate the intent of this controller instance (SERVER ONLY) */
+ 	UPROPERTY()
+@@ -2320,6 +2345,9 @@ private:
+ 
+ 	/** Time that tick offset has been desynced for since it was last in sync, used to trigger a correction */
+ 	float NetworkPhysicsTickOffsetDesyncAccumulatedTime = 0.0f;
++public:
++	bool bResetPredictionOnNextAcknowlege; // [ARK]
++private:
+ 
+ public:
+ 
+@@ -2387,6 +2415,9 @@ private:
+ 	uint32 ClientHandshakeId = 0;
+ 
+ 	int32 LocalPlayerConnectionIdentifier;
++public:
++	UFUNCTION(BlueprintNativeEvent) // [ARK] _Implementation is the first virtual of the class: declared last
++	ENGINE_API void BPPostRender(UCanvas* Canvas);
+ };
+ 
+ /** 

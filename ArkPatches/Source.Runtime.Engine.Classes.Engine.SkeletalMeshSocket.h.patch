@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMeshSocket.h b/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMeshSocket.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMeshSocket.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/SkeletalMeshSocket.h
+@@ -38,8 +38,13 @@ public:
+ 
+ 	/** If true then the hierarchy of bones this socket is attached to will always be 
+ 	    evaluated, even if it had previously been removed due to the current lod setting */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Socket Parameters")
+ 	bool bForceAlwaysAnimated = true;
++#endif // [ARK]
++	uint8 bForceAlwaysAnimated : 1; // [ARK] type changed
++	uint8 bIgnoreBoneScaling : 1; // [ARK]
++	uint8 bRotateBoneScaleForSocket : 1; // [ARK]
+ 
+ #if WITH_EDITOR
+ 	/** Change the sockets parent to a new bone. The skeleton is used to validate that the bone exists */

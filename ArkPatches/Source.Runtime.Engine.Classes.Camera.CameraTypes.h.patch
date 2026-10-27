@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Camera/CameraTypes.h b/Engine/Source/Runtime/Engine/Classes/Camera/CameraTypes.h
+--- a/Engine/Source/Runtime/Engine/Classes/Camera/CameraTypes.h
++++ b/Engine/Source/Runtime/Engine/Classes/Camera/CameraTypes.h
+@@ -111,6 +111,8 @@ struct FMinimalViewInfo
+ 	// If true, account for the field of view angle when computing which level of detail to use for meshes.
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=CameraSettings)
+ 	uint32 bUseFieldOfViewForLOD:1;
++	uint32 bUseTPVAim : 1; // [ARK]
++	FRotator AimRotation; // [ARK]
+ 
+ 	// The type of camera
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Camera)

@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/CollisionQueryParams.h b/Engine/Source/Runtime/Engine/Public/CollisionQueryParams.h
+--- a/Engine/Source/Runtime/Engine/Public/CollisionQueryParams.h
++++ b/Engine/Source/Runtime/Engine/Public/CollisionQueryParams.h
+@@ -103,6 +103,9 @@ struct FCollisionQueryParams
+ 
+ #if !(UE_BUILD_TEST || UE_BUILD_SHIPPING)
+ 	bool bDebugQuery;
++	bool bBackfaceCull; // [ARK]
++	bool bDoSort; // [ARK]
++	bool bForceReturnItemIndex; // [ARK]
+ #endif
+ 
+ private:

@@ -1,0 +1,11 @@
+diff --git a/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/PythonScriptTypes.h b/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/PythonScriptTypes.h
+--- a/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/PythonScriptTypes.h
++++ b/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/PythonScriptTypes.h
+@@ -88,6 +88,7 @@ struct FPythonCommandEx
+ 
+ 	/** The log output captured while running the command. */
+ 	TArray<FPythonLogOutputEntry> LogOutput;
++	FString PyResult; // [ARK]
+ };
+ 
+ inline const TCHAR* LexToString(EPythonLogOutputType InType)

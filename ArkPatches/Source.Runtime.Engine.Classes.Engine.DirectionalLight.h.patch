@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/DirectionalLight.h b/Engine/Source/Runtime/Engine/Classes/Engine/DirectionalLight.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/DirectionalLight.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/DirectionalLight.h
+@@ -28,6 +28,9 @@ private:
+ 	/* EditorOnly reference to the light component to allow it to be displayed in the details panel correctly */
+ 	UPROPERTY(VisibleAnywhere, Category="Light")
+ 	TObjectPtr<UDirectionalLightComponent> DirectionalLightComponent;
++public:
++	bool bAddedToArray; // [ARK]
++private:
+ #endif
+ 
+ public:
+@@ -50,4 +53,7 @@ public:
+ 	/** Returns SkyAtmosphereComponent subobject */
+ 	UDirectionalLightComponent* GetComponent() const { return DirectionalLightComponent; }
+ #endif
++ENGINE_API virtual void BeginPlay(); // [ARK]
++ENGINE_API virtual void EndPlay(const EEndPlayReason::Type); // [ARK]
++ENGINE_API virtual void Destroyed(); // [ARK]
+ };

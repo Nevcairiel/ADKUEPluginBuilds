@@ -1,0 +1,9 @@
+diff --git a/Engine/Source/Runtime/Foliage/Public/FoliageType_InstancedStaticMesh.h b/Engine/Source/Runtime/Foliage/Public/FoliageType_InstancedStaticMesh.h
+--- a/Engine/Source/Runtime/Foliage/Public/FoliageType_InstancedStaticMesh.h
++++ b/Engine/Source/Runtime/Foliage/Public/FoliageType_InstancedStaticMesh.h
+@@ -59,4 +59,5 @@ class UFoliageType_InstancedStaticMesh : public UFoliageType
+ 		UpdateBounds();
+ 	}
+ #endif
++virtual TArray<TObjectPtr<UMaterialInterface>> getOverrideMaterials(); // [ARK]
+ };

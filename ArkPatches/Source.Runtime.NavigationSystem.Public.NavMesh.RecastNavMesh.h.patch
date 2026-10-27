@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h b/Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h
+--- a/Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h
++++ b/Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h
+@@ -1640,6 +1640,7 @@ public:
+ 	/** @return true if any polygon/link has been touched */
+ 	UFUNCTION(BlueprintCallable, Category = NavMesh, meta = (DisplayName = "ReplaceAreaInTileBounds"))
+ 	NAVIGATIONSYSTEM_API bool K2_ReplaceAreaInTileBounds(FBox Bounds, TSubclassOf<UNavArea> OldArea, TSubclassOf<UNavArea> NewArea, bool ReplaceLinks = true);
++	NAVIGATIONSYSTEM_API virtual bool GetRandomReachablePointInMinMaxRadius(const FVector&, float, float, const FRandomStream&, const FVector, const float, FNavLocation&, TSharedPtr<FNavigationQueryFilter const>, const UObject*) const; // [ARK]
+ };
+ 
+ #if WITH_RECAST

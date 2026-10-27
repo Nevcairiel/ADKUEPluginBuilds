@@ -1,0 +1,52 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h
+@@ -691,6 +691,7 @@ class UMaterialInstance : public UMaterialInterface
+ 	/** Defines if ToonProfile from this instance is used or it uses the parent one. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MaterialInstance)
+ 	uint8 bOverrideToonProfile:1;
++	uint8 bOverrideDynamicCustomDataOutput : 1; // [ARK]
+ 
+ 	/** For post process materials, use BlendableLocationOverride. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MaterialInstance)
+@@ -712,8 +713,10 @@ class UMaterialInstance : public UMaterialInterface
+ 	uint8 bIsShadingModelFromMaterialExpression : 1;
+ 	uint8 bHasPixelAnimation : 1;
+ 	uint8 bEnableTessellation : 1;
++	uint8 bOverrideDynamicCustomDataOutputRowCountParam : 1; // [ARK]
+ 	uint8 bEnableDisplacementFade : 1;
+ 	uint8 bCompatibleWithLumenCardSharing : 1;
++	uint8 bUsedWithVolumetricCloud : 1; // [ARK]
+ protected:
+ 	uint8 bLoadedCachedData : 1;
+ 
+@@ -811,6 +814,8 @@ public:
+ #if WITH_EDITORONLY_DATA
+ 	UPROPERTY()
+ 	bool bOverrideBaseProperties_DEPRECATED;
++	bool bOverrideUsedWithFlags; // [ARK]
++	FMaterialInstanceUsedWithOverride UsedWithOverrides; // [ARK]
+ 
+ 	/** Array of enumeration objects for use by scalar parameter enumeration indices. */ 
+ 	UPROPERTY()
+@@ -895,6 +900,9 @@ private:
+ 	};
+ 
+ 	TArray<FTextureParameterOverride> TransientTextureParameterOverrides;
++public:
++	TObjectPtr<UMaterialInstance> FarDrawOverride; // [ARK]
++private:
+ 
+ 	// Helper for setting an override texture
+ 	void OverrideTextureParameterValue(const UTexture* InTextureToOverride, UTexture* OverrideTexture);
+@@ -1309,4 +1317,10 @@ protected:
+ 	/** Class that knows how to update MI's */
+ 	friend class FMaterialUpdateContext;
+ 	friend class FMaterialInstanceParameterUpdateContext;
++public:
++	ENGINE_API virtual bool IsUsedWithVolumetricCloud() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual UMaterialInterface* GetFarDrawOverride() const; // [ARK]
++protected:
+ };

@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/DefaultPawn.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/DefaultPawn.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/DefaultPawn.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/DefaultPawn.h
+@@ -10,6 +10,7 @@
+ #include "CoreMinimal.h"
+ #include "UObject/ObjectMacros.h"
+ #include "GameFramework/Pawn.h"
++#include "Ark/PrimalPawn.h" // [ARK] base class
+ #include "DefaultPawn.generated.h"
+ 
+ class UInputComponent;
+@@ -22,7 +23,7 @@ class UStaticMeshComponent;
+  * @see UFloatingPawnMovement
+  */
+ UCLASS(config=Game, Blueprintable, BlueprintType, MinimalAPI)
+-class ADefaultPawn : public APawn
++class ADefaultPawn : public APrimalPawn // [ARK] bases (was : public APawn)
+ {
+ 	GENERATED_UCLASS_BODY()
+ 

@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/RHI/Public/GPUProfiler.h b/Engine/Source/Runtime/RHI/Public/GPUProfiler.h
+--- a/Engine/Source/Runtime/RHI/Public/GPUProfiler.h
++++ b/Engine/Source/Runtime/RHI/Public/GPUProfiler.h
+@@ -479,7 +479,9 @@ namespace UE::RHI::GPUProfiler
+ 		FRHIDrawStatsCategory const* const DrawStatsCategory;
+ 
+ 	#if CSV_PROFILER_STATS
++#if 0 // [ARK] removed
+ 		TOptional<FCsvDeclaredStat> CsvStat;
++#endif // [ARK]
+ 	#endif
+ 
+ 	private:

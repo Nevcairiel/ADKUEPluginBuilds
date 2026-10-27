@@ -1,0 +1,57 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/PrimitiveSceneInfoData.h b/Engine/Source/Runtime/Engine/Public/PrimitiveSceneInfoData.h
+--- a/Engine/Source/Runtime/Engine/Public/PrimitiveSceneInfoData.h
++++ b/Engine/Source/Runtime/Engine/Public/PrimitiveSceneInfoData.h
+@@ -100,18 +100,25 @@ struct FPrimitiveSceneInfoData
+ {
+ 	/** The primitive's scene info. */
+ 	FPrimitiveSceneProxy* SceneProxy = nullptr;
++	double LastSubmitTime; // [ARK]
+ 
+ 	/**
+ 	 * The value of WorldSettings->TimeSeconds for the frame when this component was last rendered.  This is written
+ 	 * from the render thread, which is up to a frame behind the game thread, so you should allow this time to
+ 	 * be at least a frame behind the game thread's world time before you consider the actor non-visible.
+ 	 */
++#if 0 // [ARK] removed
+ 	UE_DEPRECATED(5.8, "Use GetLastRenderTime/SetLastRenderTime instead.")
+ 	mutable std::atomic<float> LastRenderTime = -1000.0f;
++#endif // [ARK]
++	mutable std::atomic<double> LastRenderTime = -1000.0f; // [ARK] type changed
+ 
+ 	/** Same as LastRenderTime but only updated if the component is on screen. Used by the texture streamer. */
++#if 0 // [ARK] removed
+ 	UE_DEPRECATED(5.8, "Use GetLastRenderTimeOnScreen/SetLastRenderTimeOnScreen instead.")
+ 	mutable std::atomic<float> LastRenderTimeOnScreen = -1000.0f;
++#endif // [ARK]
++	mutable std::atomic<double> LastRenderTimeOnScreen = -1000.0f; // [ARK] type changed
+ 
+ 	/**
+ 	* Incremented by the main thread before being attached to the scene, decremented
+@@ -154,14 +161,17 @@ struct FPrimitiveSceneInfoData
+ 	 * Any other user of this struct that intends to add it's own primitives in the Scene must provide the same guarantees. 
+ 	 *
+ 	 */
++#if 0 // [ARK] removed
+ 	FActorLastRenderTime* OwnerLastRenderTimePtr = nullptr;
++#endif // [ARK]
++	TSharedPtr<FActorLastRenderTime> OwnerLastRenderTimePtr = nullptr; // [ARK] type changed
+ 
+ 	ENGINE_API void SetLastRenderTime(float InLastRenderTime, bool bUpdateLastRenderTimeOnScreen) const;
+ 
+ 	float GetLastRenderTime() const
+ 	{
+ 		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+-		return LastRenderTime.load(std::memory_order_relaxed);
++		return (float)LastRenderTime.load(std::memory_order_relaxed); // [ARK] double
+ 		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	}
+ 
+@@ -175,7 +185,7 @@ struct FPrimitiveSceneInfoData
+ 	float GetLastRenderTimeOnScreen() const
+ 	{
+ 		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+-		return LastRenderTimeOnScreen.load(std::memory_order_relaxed);
++		return (float)LastRenderTimeOnScreen.load(std::memory_order_relaxed); // [ARK] double
+ 		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	}
+ 

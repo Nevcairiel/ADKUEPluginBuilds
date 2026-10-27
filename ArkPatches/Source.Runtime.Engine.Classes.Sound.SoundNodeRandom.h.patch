@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeRandom.h b/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeRandom.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeRandom.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeRandom.h
+@@ -74,6 +74,8 @@ class USoundNodeRandom : public USoundNode
+ 
+ public:
+ 	//~ Begin UObject Interface
++	virtual int ChooseNodeIndex(FActiveSound&, int&); // [ARK]
++	virtual void LoadedChild(USoundNode*); // [ARK]
+ 	virtual void PostLoad() override;
+ 	virtual void PostEditImport() override;
+ 	//~ End UObject Interface

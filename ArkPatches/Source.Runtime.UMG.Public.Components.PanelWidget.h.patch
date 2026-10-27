@@ -1,7 +1,7 @@
 diff --git a/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h b/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
 --- a/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
 +++ b/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h
-@@ -188,4 +188,16 @@ protected:
+@@ -188,4 +188,19 @@ protected:
  protected:
  	/** Can this panel allow for multiple children? */
  	bool bCanHaveMultipleChildren;
@@ -16,5 +16,8 @@ diff --git a/Engine/Source/Runtime/UMG/Public/Components/PanelWidget.h b/Engine/
 +protected:
 +public:
 +	bool bHighlightInsteadOfChild; // [ARK]
++protected:
++public:
++UMG_API virtual void SynchronizeProperties(); // [ARK]
 +protected:
  };

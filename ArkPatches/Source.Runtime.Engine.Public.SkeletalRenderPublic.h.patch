@@ -1,0 +1,53 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/SkeletalRenderPublic.h b/Engine/Source/Runtime/Engine/Public/SkeletalRenderPublic.h
+--- a/Engine/Source/Runtime/Engine/Public/SkeletalRenderPublic.h
++++ b/Engine/Source/Runtime/Engine/Public/SkeletalRenderPublic.h
+@@ -369,17 +369,33 @@ public:
+ 
+ #if RHI_RAYTRACING
+ 	/** Retrieve ray tracing geometry from the underlying mesh object */
++#if 0 // [ARK] removed
+ 	virtual FRayTracingGeometry* GetRayTracingGeometry() { return nullptr; }
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual const FRayTracingGeometry* GetRayTracingGeometry() const { return nullptr; }
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual const FRayTracingGeometry* GetStaticRayTracingGeometry() const { return nullptr; }
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual FRWBuffer* GetRayTracingDynamicVertexBuffer() { return nullptr; }
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual int32 GetRayTracingLOD() const { return GetLOD(); }
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	virtual bool ShouldUseSeparateSkinCacheEntryForRayTracing() const { return GetLOD() != GetRayTracingLOD(); }
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual FGPUSkinCacheEntry* GetSkinCacheEntryForRayTracing() const { return ShouldUseSeparateSkinCacheEntryForRayTracing() ? SkinCacheEntryForRayTracing : SkinCacheEntry; }
++#endif // [ARK]
+ 
+ 	/** Request ray tracing geometry to be updated with specified LOD Vertex Buffers */
++#if 0 // [ARK] removed
+ 	virtual void UpdateRayTracingGeometry(FRHICommandListBase& RHICmdList, FSkeletalMeshLODRenderData& LODModel, uint32 LODIndex, TArray<FBufferRHIRef>& VertexBuffers) {}
++#endif // [ARK]
+ 
+ 	/** Queue ray tracing geometry update if pending */
+ 	UE_DEPRECATED(5.6, "QueuePendingRayTracingGeometryUpdate is no longer used, but bRequiresRebuild flag on FRayTracingGeometry is used to check if ray tracing geometry needs to be updated during FRayTracingGeometry")
+@@ -445,9 +461,15 @@ public:
+ 	bool bHasBeenUpdatedAtLeastOnce;
+ 
+ #if RHI_RAYTRACING
++#if 0 // [ARK] removed
+ 	bool bSupportRayTracing;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	bool bHiddenMaterialVisibilityDirtyForRayTracing;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	int32 RayTracingMinLOD;
++#endif // [ARK]
+ #endif
+ 
+ #if UE_BUILD_SHIPPING

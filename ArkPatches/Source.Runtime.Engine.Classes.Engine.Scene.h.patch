@@ -1,0 +1,138 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/Scene.h b/Engine/Source/Runtime/Engine/Classes/Engine/Scene.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/Scene.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/Scene.h
+@@ -12,6 +12,7 @@
+ #include "Engine/BlendableInterface.h"
+ #include "SceneUtils.h"
+ #include "Engine/EngineTypes.h"
++#include "Math/Color.h" // [ARK] member type
+ #include "Scene.generated.h"
+ 
+ 
+@@ -992,6 +993,9 @@ struct FPostProcessSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Overrides, meta=(PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_LocalExposureMiddleGreyBias:1;
++	uint8 bOverride_ShadowBoostThreshold : 1; // [ARK]
++	uint8 bOverride_ShadowBoostScale : 1; // [ARK]
++	uint8 bOverride_ShadowBoostColorBias : 1; // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Overrides, meta=(PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_LensFlareIntensity:1;
+@@ -1087,6 +1091,12 @@ struct FPostProcessSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Overrides, meta=(PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_AmbientOcclusionFadeRadius:1;
++	uint8 bOverride_AmbientOcclusionMinDistance : 1; // [ARK]
++	uint8 bOverride_AmbientOcclusionNearFadeRadius : 1; // [ARK]
++	uint8 bOverride_AmbientOcclusionDirectLightingIntensity : 1; // [ARK]
++	uint8 bOverride_AmbientOcclusionIndirectLightingIntensity : 1; // [ARK]
++	uint8 bOverride_AmbientOcclusionIndirectLightingCorrect : 1; // [ARK]
++	uint8 bOverride_VirtualShadowMapBias : 1; // [ARK]
+ 
+ 	UPROPERTY()
+ 	uint8 bOverride_AmbientOcclusionDistance_DEPRECATED:1;
+@@ -1114,6 +1124,7 @@ struct FPostProcessSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_AmbientOcclusionTemporalBlendWeight : 1;
++	uint8 bOverride_BentNormalDirectLightingIntensity : 1; // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint32 bOverride_RayTracingAO : 1;
+@@ -1304,6 +1315,8 @@ struct FPostProcessSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Overrides, meta=(PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_UserFlags:1;
++	uint8 bOverride_ToonOutlineColor : 1; // [ARK]
++	uint8 bOverride_ToonDiffuseIndirectIntensity : 1; // [ARK]
+ 
+ 	// -----------------------------------------------------------------------
+ 
+@@ -1421,6 +1434,10 @@ struct FPostProcessSettings
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Overrides, meta = (PinHiddenByDefault, InlineEditConditionToggle))
+ 	uint8 bOverride_LumenSurfaceCacheResolution : 1;
++	uint8 bOverride_LumenScreenTraceColor : 1; // [ARK]
++	uint8 bOverride_LumenScreenTraceIntensity : 1; // [ARK]
++	uint8 bOverride_LumenScreenTraceScaleStartDistance : 1; // [ARK]
++	uint8 bOverride_LumenScreenTraceScaleFadeDistance : 1; // [ARK]
+ 
+ 	UE_DEPRECATED(5.8, "Field will be removed")
+ 	UPROPERTY()
+@@ -1833,6 +1850,10 @@ struct FPostProcessSettings
+ 	/** Scale factor for Lumen Surface Cache resolution.  Smaller values save GPU memory, at a cost in quality.  Defaults to 0.5 for Scene Captures if not overridden. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Global Illumination|Lumen Global Illumination", meta = (ClampMin = ".5", ClampMax = "1", editcondition = "bOverride_LumenSurfaceCacheResolution"))
+ 	float LumenSurfaceCacheResolution;
++	FLinearColor LumenScreenTraceColor; // [ARK]
++	float LumenScreenTraceIntensity; // [ARK]
++	float LumenScreenTraceScaleStartDistance; // [ARK]
++	float LumenScreenTraceScaleFadeDistance; // [ARK]
+ 
+ 	/** Chooses the Reflection method. Not compatible with Forward Shading. */
+ 	UPROPERTY(interp, EditAnywhere, BlueprintReadWrite, Category = "Reflections", meta = (editcondition = "bOverride_ReflectionMethod", DisplayName = "Method"))
+@@ -2113,6 +2134,9 @@ struct FPostProcessSettings
+ 	 */
+ 	UPROPERTY(interp, BlueprintReadWrite, Category = "Lens|Local Exposure", AdvancedDisplay, meta = (UIMin = "-15.0", UIMax = "15.0", editcondition = "bOverride_LocalExposureMiddleGreyBias", DisplayName = "Middle Grey Bias"))
+ 	float LocalExposureMiddleGreyBias;
++	float ShadowBoostThreshold; // [ARK]
++	float ShadowBoostScale; // [ARK]
++	FLinearColor ShadowBoostColorBias; // [ARK]
+ 
+ 	/** Brightness scale of the image cased lens flares (linear) */
+ 	UPROPERTY(interp, BlueprintReadWrite, Category="Lens|Lens Flares", meta=(UIMin = "0.0", UIMax = "16.0", editcondition = "bOverride_LensFlareIntensity", DisplayName = "Intensity"))
+@@ -2242,6 +2266,14 @@ struct FPostProcessSettings
+ 	/** >0, in unreal units, how many units before AmbientOcclusionFadeOutDistance it starts fading out */
+ 	UPROPERTY(interp, BlueprintReadWrite, Category="Rendering Features|Ambient Occlusion", AdvancedDisplay, meta=(ClampMin = "0.0", UIMax = "20000.0", editcondition = "bOverride_AmbientOcclusionFadeRadius", DisplayName = "Fade Out Radius"))
+ 	float AmbientOcclusionFadeRadius;
++	float AmbientOcclusionMinDistance; // [ARK]
++	float AmbientOcclusionNearFadeRadius; // [ARK]
++	float AmbientOcclusionDirectLightingIntensity; // [ARK]
++	float AmbientOcclusionIndirectLightingIntensity; // [ARK]
++	uint32 AmbientOcclusionIndirectLightingCorrect : 1; // [ARK]
++	float VirtualShadowMapBiasOverride; // [ARK]
++	float VirtualShadowMapBiasOverrideTarget; // [ARK]
++	float VirtualShadowMapBiasOverrideRange; // [ARK]
+ 
+ 	/** >0, in unreal units, how wide the ambient occlusion effect should affect the geometry (in depth), will be removed - only used for non normal method which is not exposed */
+ 	UPROPERTY()
+@@ -2274,6 +2306,7 @@ struct FPostProcessSettings
+ 	/** How much to blend the current frame with previous frames when using GTAO with temporal accumulation */
+ 	UPROPERTY(interp, BlueprintReadWrite, Category = "Rendering Features|Ambient Occlusion", AdvancedDisplay, meta = (ClampMin = "0.0", UIMax = "0.5", editcondition = "bOverride_AmbientOcclusionTemporalBlendWeight", DisplayName = "Temporal Blend Weight"))
+ 	float AmbientOcclusionTemporalBlendWeight;
++	float BentNormalDirectLightingIntensity; // [ARK]
+ 
+ 	/** Enables ray tracing ambient occlusion. */
+ 	UPROPERTY(interp, EditAnywhere, BlueprintReadWrite, Category = "Rendering Features|Ray Tracing Ambient Occlusion", meta = (editcondition = "bOverride_RayTracingAO", DisplayName = "Enabled"))
+@@ -2415,6 +2448,8 @@ struct FPostProcessSettings
+ 	/** The minimum projected screen radius for a primitive to be drawn in the velocity pass, percentage of screen width. smaller numbers cause more draw calls, default: 4% */
+ 	UPROPERTY(interp, BlueprintReadWrite, Category="Rendering Features|Motion Blur", meta=(ClampMin = "0.0", UIMax = "100.0", editcondition = "bOverride_MotionBlurPerObjectSize", DisplayName = "Per Object Size"))
+ 	float MotionBlurPerObjectSize;
++	FLinearColor ToonOutlineColor; // [ARK]
++	float ToonDiffuseIndirectIntensity; // [ARK]
+ 
+ 	UPROPERTY()
+ 	float LPVIntensity_DEPRECATED;
+@@ -2585,6 +2620,22 @@ struct FPostProcessSettings
+ 	// for backwards compatibility
+ 	UPROPERTY()
+ 	TArray<TObjectPtr<UObject>> Blendables_DEPRECATED;
++	TArray<FPostProcessSettingsMaterialAdjuster> PostProcessSettingsMaterialAdjusters; // [ARK]
++	TObjectPtr<USoundBase> PostProcessAmbientSound; // [ARK]
++	uint32 bOverride_ClutterLayers : 1; // [ARK]
++	uint32 bOverride_MinExposureFilmToeAmount : 1; // [ARK]
++	uint32 bOverride_MinFilmToeAmount : 1; // [ARK]
++	uint32 bOverride_MaxExposureFilmToeAmount : 1; // [ARK]
++	uint32 bOverride_MaxFilmToeAmount : 1; // [ARK]
++	TArray<FOverrideClutterLayer> OverrideClutterLayers; // [ARK]
++	TArray<FClutterPropertyOverride> ClutterPropertyOverrides; // [ARK]
++	uint32 bOverride_DirLightIntensityMultiplier : 1; // [ARK]
++	float DirLightIntensityMultiplier; // [ARK]
++	float MinExposureFilmToeAmount; // [ARK]
++	float MinFilmToeAmount; // [ARK]
++	float MaxExposureFilmToeAmount; // [ARK]
++	float MaxFilmToeAmount; // [ARK]
++	TMap<FName,UE::Math::TVector4<double>> ExtraParams; // [ARK]
+ 
+ 	// for backwards compatibility
+ 	void OnAfterLoad()

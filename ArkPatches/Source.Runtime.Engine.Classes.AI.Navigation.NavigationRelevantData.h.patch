@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavigationRelevantData.h b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavigationRelevantData.h
+--- a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavigationRelevantData.h
++++ b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavigationRelevantData.h
+@@ -1,4 +1,4 @@
+-﻿// Copyright Epic Games, Inc. All Rights Reserved.
++// Copyright Epic Games, Inc. All Rights Reserved.
+ 
+ #pragma once
+ 
+@@ -68,6 +68,7 @@ struct FNavigationRelevantData : public TSharedFromThis<FNavigationRelevantData,
+ 	/** UObject these data represents */
+ 	UE_DEPRECATED(5.5, "Use SourceElement instead.")
+ 	TWeakObjectPtr<UObject> SourceObject;
++	double LastRelevantTime; // [ARK]
+ #endif // WITH_EDITORONLY_DATA
+ 
+ 	/** Navigation element this data represents */

@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/ChildActorComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/ChildActorComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/ChildActorComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/ChildActorComponent.h
+@@ -208,6 +208,7 @@ public:
+ 	ENGINE_API void ApplyComponentInstanceData(FChildActorComponentInstanceData* ComponentInstanceData, const ECacheApplyPhase CacheApplyPhase);
+ 
+ 	/** Create the child actor */
++	ENGINE_API virtual void CreateChildActor(); // [ARK]
+ 	ENGINE_API virtual void CreateChildActor(TFunction<void(AActor*)> CustomizerFunc = nullptr);
+ 
+ 	DECLARE_EVENT_OneParam(UChildActorComponent, FOnChildActorCreated, AActor*);

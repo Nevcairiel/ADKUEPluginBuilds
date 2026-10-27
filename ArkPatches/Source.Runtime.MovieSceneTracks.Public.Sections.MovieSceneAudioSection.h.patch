@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/MovieSceneTracks/Public/Sections/MovieSceneAudioSection.h b/Engine/Source/Runtime/MovieSceneTracks/Public/Sections/MovieSceneAudioSection.h
+--- a/Engine/Source/Runtime/MovieSceneTracks/Public/Sections/MovieSceneAudioSection.h
++++ b/Engine/Source/Runtime/MovieSceneTracks/Public/Sections/MovieSceneAudioSection.h
+@@ -305,6 +305,7 @@ private:
+ 	/** The offset into the beginning of the audio clip */
+ 	UPROPERTY(EditAnywhere, Category="Audio", meta=(UIFrameDisplayAs="NonMusical|Position"))
+ 	FFrameNumber StartFrameOffset;
++	bool bForceNeverStopTrack; // [ARK]
+ 
+ 	/** The offset into the beginning of the audio clip */
+ 	UPROPERTY()

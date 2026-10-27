@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/DirectionalLightComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/DirectionalLightComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/DirectionalLightComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/DirectionalLightComponent.h
+@@ -221,6 +221,9 @@ class UDirectionalLightComponent : public ULightComponent
+ 	 */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = AtmosphereAndCloud, AdvancedDisplay, meta = (UIMin = "1", ClampMin = "1"))
+ 	float CloudShadowExtent;
++	float CloudShadowMinDistance; // [ARK]
++	float CloudShadowFadeRadius; // [ARK]
++	float MinimumLightSourceAngle; // [ARK]
+ 	/**
+ 	 * Scale the cloud shadow map resolution, base resolution is 512. The resolution is still clamped to 'r.VolumetricCloud.ShadowMap.MaxResolution'.
+ 	 */

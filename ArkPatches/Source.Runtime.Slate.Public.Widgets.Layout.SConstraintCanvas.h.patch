@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SConstraintCanvas.h b/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SConstraintCanvas.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SConstraintCanvas.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Layout/SConstraintCanvas.h
+@@ -121,6 +121,7 @@ public:
+ 		}
+ 
+ 		SLATE_SLOT_ARGUMENT( FSlot, Slots)
++		SLATE_ATTRIBUTE(FLinearColor, ColorAndOpacity) // [ARK]
+ 
+ 	SLATE_END_ARGS()
+ 
+@@ -180,6 +181,7 @@ private:
+ protected:
+ 
+ 	/** The ConstraintCanvas widget's children. */
++	TAttribute<FLinearColor> ColorAndOpacity; // [ARK]
+ 	TPanelChildren< FSlot > Children;
+ };
+ 

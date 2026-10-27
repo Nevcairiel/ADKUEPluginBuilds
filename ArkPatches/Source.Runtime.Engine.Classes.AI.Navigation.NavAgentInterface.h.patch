@@ -1,0 +1,10 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAgentInterface.h b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAgentInterface.h
+--- a/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAgentInterface.h
++++ b/Engine/Source/Runtime/Engine/Classes/AI/Navigation/NavAgentInterface.h
+@@ -51,5 +51,6 @@ class INavAgentInterface
+ 
+ 	/** Retrieves PathFollowingAgent for this NavAgent */
+ 	virtual IPathFollowingAgentInterface* GetPathFollowingAgent() const { return nullptr; }
++	ENGINE_API virtual bool IsFollowingFinalPathSegment() const; // [ARK]
+ };
+ 

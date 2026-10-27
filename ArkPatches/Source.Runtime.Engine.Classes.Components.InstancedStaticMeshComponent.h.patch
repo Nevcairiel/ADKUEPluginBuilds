@@ -1,0 +1,239 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/InstancedStaticMeshComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/InstancedStaticMeshComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/InstancedStaticMeshComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/InstancedStaticMeshComponent.h
+@@ -41,8 +41,11 @@ struct FInstancedStaticMeshInstanceData
+ {
+ 	GENERATED_USTRUCT_BODY()
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, Category=Instances)
+ 	FMatrix Transform;
++#endif // [ARK]
++	UE::Math::TMatrix<float> Transform; // [ARK] type changed
+ 
+ 	FInstancedStaticMeshInstanceData()
+ 		: Transform(FMatrix::Identity)
+@@ -161,6 +164,8 @@ class UInstancedStaticMeshComponent : public UStaticMeshComponent, public ISMIns
+ 
+ 	/** Needs implementation in InstancedStaticMesh.cpp to compile UniquePtr for forward declared class */
+ 	ENGINE_API UInstancedStaticMeshComponent(FVTableHelper& Helper);
++	ENGINE_API virtual void MulticastShowInstances_Implementation(const TArray<uint16>&, bool); // [ARK]
++	ENGINE_API virtual void ClientSetHealthPercentageForInstance_Implementation(int, float); // [ARK]
+ 	ENGINE_API virtual ~UInstancedStaticMeshComponent();
+ 	
+ 	/** Array of instances, bulk serialized. */
+@@ -169,8 +174,11 @@ class UInstancedStaticMeshComponent : public UStaticMeshComponent, public ISMIns
+ 	
+ 	// TODO: KevinO cleanup
+ 	/** Array of prev instance transforms. Must match the length of PerInstanceSMData or have 0 elements */
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient)
+ 	TArray<FMatrix> PerInstancePrevTransform;
++#endif // [ARK]
++	TArray<UE::Math::TMatrix<float>> PerInstancePrevTransform; // [ARK] type changed
+ 
+ 	/** Main transform stored to be able to send updates when component's transform changed. */
+ 	UPROPERTY(Transient)
+@@ -196,6 +204,8 @@ class UInstancedStaticMeshComponent : public UStaticMeshComponent, public ISMIns
+ 	/** Additional random seeds ranges. Each seed entry will be applied from AdditionalRandomSeeds[i].StartInstanceIndex to AdditionalRandomSeeds[i+1].StartInstanceIndex -1 */
+ 	UPROPERTY()
+ 	TArray<FInstancedStaticMeshRandomSeed> AdditionalRandomSeeds;
++	uint8 bIgnoreAutomaticBoundsWPODisableDistance : 1; // [ARK]
++	uint8 bIgnoreWPODisableDistanceScaling : 1; // [ARK]
+ 
+ 	/** 
+ 	 * Scale applied to change the computation of LOD distances when using the StaticMesh screen sizes. 
+@@ -253,6 +263,18 @@ private:
+ 	 *  Cleared in OnAsyncCreatePhysicsStateEnd_GameThread. In cooked, BodySetup is immutable
+ 	 *  post-PostLoad and the worker read is uncontested, so this flag is unneeded. */
+ 	uint8 bWalkableSlopeOverrideCachedGT : 1;
++public:
++	uint8 bSupportPerInstanceCustomFlags : 1; // [ARK]
++private:
++public:
++	uint8 bSupportGPUMessageInstanceId : 1; // [ARK]
++private:
++public:
++	int PerInstanceCustomFlagDataIndex; // [ARK]
++private:
++public:
++	int InstanceIdDataIndex; // [ARK]
++private:
+ #endif
+ 
+ public:
+@@ -325,6 +347,8 @@ public:
+ 	/** Update number of custom data entries per instance. This applies to all instances and will reallocate the full custom data buffer and reset all values to 0 */
+ 	UFUNCTION(BlueprintCallable, Category = "Components|InstancedStaticMesh")
+ 	ENGINE_API virtual void SetNumCustomDataFloats(int32 InNumCustomDataFloats);
++	ENGINE_API virtual void UpdateExtraPerInstanceCustomFloats(bool); // [ARK]
++	ENGINE_API virtual void UpdateGPUMessageInstanceIds(int, int); // [ARK]
+ 
+ 	/** Per Instance Custom Data */
+ 	ENGINE_API virtual bool SetCustomData(int32 InstanceIndex, TArrayView<const float> CustomDataFloats, bool bMarkRenderStateDirty = false);
+@@ -411,10 +435,13 @@ public:
+ 	ENGINE_API virtual bool BatchUpdateInstancesTransform(int32 StartInstanceIndex, int32 NumInstances, const FTransform& NewInstancesTransform, bool bWorldSpace=false, bool bMarkRenderStateDirty=false, bool bTeleport=false);
+ 
+ 	ENGINE_API virtual bool BatchUpdateInstancesData(int32 StartInstanceIndex, int32 NumInstances, FInstancedStaticMeshInstanceData* StartInstanceData, bool bMarkRenderStateDirty = false, bool bTeleport = false);
++	ENGINE_API virtual bool RemoveInstance(int, const FVector&, float, float); // [ARK]
+ 
+ 	/** Remove the instance specified. Returns True on success. */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category = "Components|InstancedStaticMesh")
+ 	ENGINE_API virtual bool RemoveInstance(int32 InstanceIndex);
++#endif // [ARK]
+ 
+ 	/** Remove the instances specified. Returns True on success. */
+ 	UFUNCTION(BlueprintCallable, Category = "Components|InstancedStaticMesh")
+@@ -794,6 +821,15 @@ protected:
+ 
+ 	UE_DEPRECATED(5.7, "Please use BuildComponentInstanceData with EShaderPlatform argument and not ERHIFeatureLevel::Type")
+ 	ENGINE_API virtual void BuildComponentInstanceData(ERHIFeatureLevel::Type FeatureLevel, FInstanceUpdateComponentDesc& OutData);
++public:
++	ENGINE_API virtual void ShowInstance(int); // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool RequiresCPUAccess() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual void LoadedComponentFromSaveGame(); // [ARK]
++protected:
+ 	ENGINE_API virtual void BuildComponentInstanceData(EShaderPlatform InShaderPlatform, FInstanceUpdateComponentDesc& OutData);
+ 
+ 	//~ ISMInstanceManager interface
+@@ -825,6 +861,135 @@ private:
+ 
+ 	UPROPERTY()
+ 	mutable FBoundsCacheElement CachedBounds[(int)EBoundsCacheType::Count];
++public:
++	FAttachedInstancedHelper InstanceAttachedComponents; // [ARK]
++private:
++public:
++	TArray<TObjectPtr<UActorComponent>> ReferencedAttachedComponentObjects; // [ARK]
++private:
++public:
++	int CurrentAttachedIndex; // [ARK]
++private:
++public:
++	float AttachedComponentScaleFactor; // [ARK]
++private:
++public:
++	TObjectPtr<UFoliageBaseType> FoliageTypeReference; // [ARK]
++private:
++public:
++	float MaxScaleForAttachedComponent; // [ARK]
++private:
++public:
++	float MinScaleForAttachedComponent; // [ARK]
++private:
++public:
++	TArray<uint32> InstancesVisibility; // [ARK]
++private:
++public:
++	float OverrideWalkableFloorZ; // [ARK]
++private:
++public:
++	float PlayerOverrideWalkableFloorZ; // [ARK]
++private:
++public:
++	uint32 bIgnoreVisibilityCheck : 1; // [ARK]
++private:
++public:
++	uint32 bReplicateThisComponent : 1; // [ARK]
++private:
++public:
++	uint32 bTickOnlyCheckFoliageClipping : 1; // [ARK]
++private:
++public:
++	uint32 bIsFallingTree : 1; // [ARK]
++private:
++public:
++	uint32 bPostNetReceiveHide : 1; // [ARK]
++private:
++public:
++	uint32 bDidFirstPostNetReceive : 1; // [ARK]
++private:
++public:
++	uint32 bInstanceRequiresPhysXCollision : 1; // [ARK]
++private:
++public:
++	uint32 bDontScaleAttachedComponent : 1; // [ARK]
++private:
++public:
++	TSubclassOf<UActorComponent> AttachedComponentClass; // [ARK]
++private:
++public:
++	TArray<TObjectPtr<UMaterialInterface>> OverrideDestructionMaterials; // [ARK]
++private:
++public:
++	TSubclassOf<AActor> DestroyedMeshActorClass; // [ARK]
++private:
++public:
++	TObjectPtr<UStaticMesh> TreeStumpMesh; // [ARK]
++private:
++public:
++	TObjectPtr<USoundBase> OverrideTreeHarvestSound; // [ARK]
++private:
++public:
++	TObjectPtr<USoundBase> OverrideTreeGroundImpactSound; // [ARK]
++private:
++public:
++	float DistanceAlongTreeToSpawnImpactSound; // [ARK]
++private:
++public:
++	float ScaleMaxX; // [ARK]
++private:
++public:
++	float ScaleMinX; // [ARK]
++private:
++public:
++	float MeshUnscaledBounds; // [ARK]
++private:
++public:
++	TArray<uint8> InstanceBodyData; // [ARK]
++private:
++public:
++	ENGINE_API virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&) const; // [ARK]
++private:
++public:
++	ENGINE_API virtual void ValidateGeneratedRepEnums(const TArray<FRepRecord>&) const; // [ARK]
++private:
++public:
++	ENGINE_API virtual int GetRenderIndexForDynamicCustomData(int) const; // [ARK]
++private:
++public:
++	ENGINE_API virtual float GetWorldPositionOffsetDisableDistance() const; // [ARK]
++private:
++public:
++	ENGINE_API virtual float GetPerInstanceDynamicCustomDataOutDisableDistance() const; // [ARK]
++private:
++public:
++	ENGINE_API virtual void GetMultiUseEntries(APlayerController*, TArray<FMultiUseEntry>&, int); // [ARK]
++private:
++public:
++	ENGINE_API virtual bool TryMultiUse(APlayerController*, int, int); // [ARK]
++private:
++public:
++	ENGINE_API virtual bool BaseGetInstanceVisibility(int) const; // [ARK]
++private:
++public:
++	ENGINE_API virtual void MulticastHideInstance_Implementation(int, FVector, float, float, bool); // [ARK]
++private:
++public:
++	ENGINE_API virtual void MulticastShowInstance_Implementation(int); // [ARK]
++private:
++public:
++	ENGINE_API virtual void ReceiveComponentDamage(float, const FDamageEvent&, AController*, AActor*); // [ARK]
++private:
++public:
++	ENGINE_API virtual void PostNetReceive(); // [ARK]
++private:
++public:
++	ENGINE_API virtual void OnComponentDestroyed(bool); // [ARK]
++private:
++public:
++	ENGINE_API virtual void TickComponent(float, ELevelTick, FActorComponentTickFunction*); // [ARK]
++private:
+ };
+ 
+ /** InstancedStaticMeshInstance hit proxy */

@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/SoundClass.h b/Engine/Source/Runtime/Engine/Classes/Sound/SoundClass.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/SoundClass.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/SoundClass.h
+@@ -58,6 +58,7 @@ struct FSoundClassProperties
+ 	/** Volume multiplier. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = "0.0"), Category = General)
+ 	float Volume;
++	float DynamicVolume; // [ARK]
+ 
+ 	/** Pitch multiplier. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = General)
+@@ -117,6 +118,7 @@ struct FSoundClassProperties
+ 	/** Whether or not sounds referencing this class send to the reverb submix */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Submix, meta = (DisplayName = "Send to Master Reverb Submix"))
+ 	uint8 bReverb:1;
++	uint8 bIsGamepadSoundClass : 1; // [ARK]
+ 
+ 	/** Send amount to master reverb effect for referencing unattenuated (2D) sounds. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Submix)

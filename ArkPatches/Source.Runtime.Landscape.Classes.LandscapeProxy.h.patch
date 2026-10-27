@@ -1,0 +1,75 @@
+diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeProxy.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeProxy.h
+--- a/Engine/Source/Runtime/Landscape/Classes/LandscapeProxy.h
++++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeProxy.h
+@@ -23,6 +23,7 @@
+ #include "WorldPartition/WorldPartitionHandle.h"
+ #endif
+ 
++#include "Delegates/IDelegateInstance.h" // [ARK] member type
+ #include "LandscapeProxy.generated.h"
+ 
+ class ALandscape;
+@@ -297,7 +298,10 @@ struct FCachedLandscapeFoliage
+ 		TWeakObjectPtr<ULandscapeComponent> BasedOn;
+ 		// We store both the GrassName and GrassType in the key, since they're not entirely synonymous anymore : 
+ 		//  A given grass type can be used by 2 different grass names now. They will be treated as 2 separate entries in the foliage cache
++#if 0 // [ARK] removed
+ 		TWeakObjectPtr<ULandscapeGrassType> GrassType;
++#endif // [ARK]
++		TWeakObjectPtr<ULandscapeGrassType const> GrassType; // [ARK] type changed
+ 		FName GrassName;
+ 		int32 SqrtSubsections;
+ 		int32 CachedMaxInstancesPerComponent;
+@@ -305,6 +309,7 @@ struct FCachedLandscapeFoliage
+ 		int32 SubsectionY;
+ 		int32 NumVarieties;
+ 		int32 VarietyIndex;
++		int SliceIdx; // [ARK]
+ 
+ 		FGrassCompKey()
+ 			: SqrtSubsections(0)
+@@ -947,6 +952,15 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ #if WITH_EDITORONLY_DATA
+ 	UPROPERTY(EditAnywhere, Category=Landscape, meta = (LandscapeOverridable))
+ 	int32 MaxPaintedLayersPerComponent; // 0 = disabled
++	int MaxLandscapeGrassSliceCount; // [ARK]
++	bool bAllowStaticMeshGrass; // [ARK]
++	bool bAllowDownFacingGrassSlices; // [ARK]
++	bool bPerSliceAutoZOffset; // [ARK]
++	bool bPerSliceCompression; // [ARK]
++	bool bPerSliceRuntimeGrassComponents; // [ARK]
++	bool bIgnoreGrassZBounds; // [ARK]
++	bool bRestrictStaticMeshGrassTypes; // [ARK]
++	bool bIncludeWPOInGrassHeight; // [ARK]
+ #endif // WITH_EDITORONLY_DATA
+ 
+ 	/** Flag whether or not this Landscape's surface can be used for culling hidden triangles **/
+@@ -961,6 +975,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	/** Specify the texture size to use for the HLOD mesh if HLODTextureSizePolicy is set to SpecificSize. Specifying an HLOD Material Override will disable this option as no texture will be baked. */
+ 	UPROPERTY(EditAnywhere, Category = HLOD, meta = (DisplayName = "HLOD Texture Size", LandscapeOverridable, EditCondition = "HLODMaterialOverride == nullptr && HLODTextureSizePolicy == ELandscapeHLODTextureSizePolicy::SpecificSize", ClampMin = "16", ClampMax = "8192"))
+ 	int32 HLODTextureSize;
++	TObjectPtr<UMaterialInterface> HLODFlattenMaterialOverride; // [ARK]
+ 
+ 	/** Specify a custom HLOD material to apply to the HLOD mesh. Specifying an HLOD Material Override will result in no texture being baked for the HLOD mesh. */
+ 	UPROPERTY(EditAnywhere, Category = HLOD, meta = (DisplayName = "HLOD Material Override", LandscapeOverridable))
+@@ -973,6 +988,10 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	/** Specify which LOD to use for the HLOD mesh if HLODMeshSourceLODPolicy is set to SpecificLOD. */
+ 	UPROPERTY(EditAnywhere, Category = HLOD, meta = (DisplayName = "HLOD Mesh Source LOD", LandscapeOverridable, EditCondition = "HLODMeshSourceLODPolicy == ELandscapeHLODMeshSourceLODPolicy::SpecificLOD", ClampMin = "0"))
+ 	int32 HLODMeshSourceLOD;
++	bool bHLODMergeMeshes; // [ARK]
++	float HLODNaniteTrimRelativeError; // [ARK]
++	ENaniteFallbackTarget HLODNaniteFallbackTarget; // [ARK]
++	float HLODNaniteFallbackRelativeError; // [ARK]
+ #endif
+ 
+ 	UE_DEPRECATED(5.7, "Non-edit layer landscapes are deprecated, all landscapes use the edit layer system now.")
+@@ -1681,6 +1700,9 @@ private:
+ 	
+ 	UPROPERTY(Category = "Target Layers", VisibleAnywhere, meta = (NoResetToDefault, LandscapeInherited) )
+ 	TMap<FName, FLandscapeTargetLayerSettings> TargetLayers;
++	FDelegateHandle OnLevelActorMovedDelegateHandle; // [ARK]
++	FDelegateHandle OnLevelActorDeletedDelegateHandle; // [ARK]
++	FDelegateHandle OnPropertyChangedDelegateHandle; // [ARK]
+ 	
+ 	/** Returns Grass Update interval */
+ 	FORCEINLINE int32 GetGrassUpdateInterval() const 

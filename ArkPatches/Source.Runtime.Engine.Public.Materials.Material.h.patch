@@ -1,0 +1,75 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/Material.h b/Engine/Source/Runtime/Engine/Public/Materials/Material.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/Material.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/Material.h
+@@ -389,6 +389,7 @@ public:
+ 	 */
+ 	UPROPERTY()
+ 	FScalarMaterialInput Refraction;
++	FScalarMaterialInput ToonOutlineWidth; // [ARK]
+ 
+ 	/**
+ 	 * These inputs are evaluated in the vertex shader and allow artists to do arbitrary vertex shader operations and access them in the pixel shader.
+@@ -547,10 +548,13 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, Category=Translucency, meta=(DisplayName = "Responsive AA"), AdvancedDisplay)
+ 	uint8 bEnableResponsiveAA : 1;
++	uint8 bScreenSpaceReflections_DEPRECATED : 1; // [ARK]
+ 
+ 	/** SSR on translucency */
++#if 0 // [ARK] removed
+ 	UPROPERTY(EditAnywhere, Category=Translucency, meta=(DisplayName = "Screen Space Reflections"))
+ 	uint8 bScreenSpaceReflections : 1;
++#endif // [ARK]
+ 
+ 	/** Contact shadows on translucency */
+ 	UPROPERTY(EditAnywhere, Category = Translucency, meta = (DisplayName = "Contact Shadows"))
+@@ -563,6 +567,7 @@ public:
+ 	/** Indicates that the material should be rendered as a thin surface (i.e., without inner volume). Only used by Substrate materials. Enabling ThinSurface will disable subsurface profiles. */
+ 	UPROPERTY(EditAnywhere, Category = Material)
+ 	uint8 bIsThinSurface : 1;
++	uint32 bUsedWithCustomDepths : 1; // [ARK]
+ 
+ 	/** Whether meshes rendered with the material should support dithered LOD transitions. */
+ 	UPROPERTY(EditAnywhere, Category = Material, AdvancedDisplay, meta = (DisplayName = "Dithered LOD Transition"))
+@@ -589,6 +594,7 @@ public:
+ 	/** Enables fading out and disabling of dynamic displacement in the distance, as displacement becomes unnoticeable */
+ 	UPROPERTY(EditAnywhere, Category=Nanite, meta=(EditCondition="bEnableTessellation", InlineEditConditionToggle))
+ 	uint8 bEnableDisplacementFade : 1;
++	uint8 bToonOutlineWidthInWorldUnits : 1; // [ARK]
+ 
+ 	/**
+ 	 * Specifies the separate pass in which to render translucency.
+@@ -604,6 +610,8 @@ public:
+ 	/** Indicates that the translucent material should not be affected by bloom or DOF. (Note: Depth testing is not available) */
+ 	UPROPERTY(EditAnywhere, Category = Translucency, meta = (DisplayName = "Mobile Separate Translucency"), AdvancedDisplay)
+ 	uint8 bEnableMobileSeparateTranslucency : 1;
++	uint8 bAllowAdditionalSkyLightMultiplier : 1; // [ARK]
++	uint8 bAllowFullSceneColorTranslucentPath : 1; // [ARK]
+ 
+ 	/** Number of customized UV inputs to display.  Unconnected customized UV inputs will just pass through the vertex UVs. */
+ 	UPROPERTY(EditAnywhere, Category = Material, AdvancedDisplay, meta = (ClampMin = 0))
+@@ -1309,6 +1317,7 @@ public:
+ 	ENGINE_API virtual bool GetUsageByFlag(EMaterialUsage Usage) const override;
+ 	ENGINE_API virtual bool SetMaterialUsage(EMaterialUsage Usage) override;
+ 	ENGINE_API virtual FMaterialResource* AllocateResource();
++	ENGINE_API virtual bool IsComputeMaterial() const; // [ARK]
+ 	ENGINE_API virtual FMaterialResource* GetMaterialResource(EShaderPlatform InShaderPlatform, EMaterialQualityLevel::Type QualityLevel = EMaterialQualityLevel::Num) override;
+ 	ENGINE_API virtual const FMaterialResource* GetMaterialResource(EShaderPlatform InShaderPlatform, EMaterialQualityLevel::Type QualityLevel = EMaterialQualityLevel::Num) const override;
+ 	ENGINE_API virtual bool GetMaterialLayers(FMaterialLayersFunctions& OutLayers, TMicRecursionGuard RecursionGuard = TMicRecursionGuard()) const override;
+@@ -2215,7 +2224,16 @@ private:
+ 
+ 	UPROPERTY()
+ 	FSubstrateMaterialInput FrontMaterial_DEPRECATED;
++public:
++	int SSRQuality; // [ARK]
++private:
++public:
++	FString CustomMainCode; // [ARK]
++private:
+ #endif // WITH_EDITORONLY_DATA
++public:
++ENGINE_API virtual bool IsUsedWithVolumetricCloud() const; // [ARK]
++private:
+ };
+ 
+ 

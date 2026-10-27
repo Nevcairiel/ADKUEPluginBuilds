@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/AI/NavigationSystemHelpers.h b/Engine/Source/Runtime/Engine/Public/AI/NavigationSystemHelpers.h
+--- a/Engine/Source/Runtime/Engine/Public/AI/NavigationSystemHelpers.h
++++ b/Engine/Source/Runtime/Engine/Public/AI/NavigationSystemHelpers.h
+@@ -31,8 +31,11 @@ struct FNavigableGeometryExport
+ 	virtual void ExportChaosHeightFieldSlice(const FNavHeightfieldSamples& PrefetchedHeightfieldSamples, const int32 NumRows, const int32 NumCols, const FTransform& LocalToWorld, const FBox& SliceBox) = 0;
+ 	virtual void ExportRigidBodySetup(UBodySetup& BodySetup, const FTransform& LocalToWorld) = 0;
+ 	virtual void ExportCustomMesh(const FVector* VertexBuffer, int32 NumVerts, const int32* IndexBuffer, int32 NumIndices, const FTransform& LocalToWorld) = 0;
++	virtual void AddNavModifiers(FCompositeNavModifier&&) = 0; // [ARK]
+ 	
++#if 0 // [ARK] removed
+ 	virtual void AddNavModifiers(const FCompositeNavModifier& Modifiers) = 0;
++#endif // [ARK]
+ 
+ 	// Optional delegate for geometry per instance transforms
+ 	virtual void SetNavDataPerInstanceTransformDelegate(const FNavDataPerInstanceTransformDelegate& InDelegate) = 0;

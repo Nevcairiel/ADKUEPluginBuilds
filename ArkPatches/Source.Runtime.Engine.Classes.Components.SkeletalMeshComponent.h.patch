@@ -1,0 +1,473 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/SkeletalMeshComponent.h
+@@ -675,6 +675,10 @@ public:
+ 	/** Used to scale speed of all animations on this skeletal mesh. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=Animation, meta=(EditCondition = bEnableAnimation, ClampMin = 0.f))
+ 	float GlobalAnimRateScale;
++	uint8 bAllowKinematicUpdateStaggering : 1; // [ARK]
++	uint8 bDoNotStaggerKimematicUpdates : 1; // [ARK]
++	int KinematicUpdateStaggerModulus; // [ARK]
++	int LastUpdateKinematicBonesToAnimFrame; // [ARK]
+ 	
+ 	/** If we are running physics, should we update non-simulated bones based on the animation bone positions. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=SkeletalMesh)
+@@ -687,6 +691,8 @@ public:
+ 	/** whether we need to teleport cloth. */
+ 	UPROPERTY(Interp, Transient, BlueprintReadOnly, VisibleAnywhere,  Category=Clothing) // This property is explicitly hidden from the details panel inside FSkeletalMeshComponentDetails::UpdatePhysicsCategory
+ 	EClothingTeleportMode ClothTeleportMode;
++	TEnumAsByte<ECollisionEnabled::Type> PreSleepingKinematicsCollisionType; // [ARK]
++	TSoftObjectPtr<USkeletalMesh> PrimalSoftAssetReference; // [ARK]
+ 
+ protected:
+ 	/** Whether to use Animation Blueprint or play Single Animation Asset. */
+@@ -923,6 +929,7 @@ public:
+ 	/** Prevent notify events from being dispatched for this mesh. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SkeletalMesh)
+ 	uint8 bSuppressNotifyEventDispatch : 1;
++	uint8 bPreventDediServerAutoUnregistration : 1; // [ARK]
+ 
+ protected:
+ 
+@@ -1027,6 +1034,7 @@ private:
+ 	 */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=Animation, meta= (DisplayName = "Post-Process AnimBP LOD Threshold", AllowPrivateAccess = "true"))
+ 	int32 PostProcessAnimBPLODThreshold = INDEX_NONE;
++	uint8 bAllowAlwaysEvaluatePostProcessAnimBP : 1; // [ARK]
+ 
+ public:
+ 	/** Notification when constraint is broken. */
+@@ -1950,7 +1958,9 @@ protected:
+ 	ENGINE_API virtual void OnCreatePhysicsState() override;
+ 	ENGINE_API virtual void OnDestroyPhysicsState() override;
+ 	ENGINE_API virtual void SendRenderDynamicData_Concurrent() override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
++#endif // [ARK]
+ public:
+ 	ENGINE_API virtual bool AllowsAsyncPhysicsStateCreation() const override;
+ 	ENGINE_API virtual bool AllowsAsyncPhysicsStateDestruction() const override;
+@@ -1972,6 +1982,7 @@ public:
+ 
+ 	//Handle registering our end physics tick function
+ 	ENGINE_API virtual void RegisterEndPhysicsTick(bool bRegister);
++	ENGINE_API virtual void ControlRigNotify(FName, FName, const FHitResult&, const FVector&); // [ARK]
+ 
+ 	ENGINE_API virtual bool RequiresPreEndOfFrameSync() const override;
+ 	ENGINE_API virtual void OnPreEndOfFrameSync() override;
+@@ -2658,6 +2669,15 @@ protected:
+ 	/** Notify called just before syncing physics update, called only if bNotifySyncComponentToRBPhysics flag is set */
+ 	virtual void OnSyncComponentToRBPhysics() { }
+ 
++public:
++	bool bLockBodyScaleXY : 1; // [ARK]
++protected:
++public:
++	bool bSwapBodyScaleXZ : 1; // [ARK]
++protected:
++public:
++	uint32 bUseBPControlRigNotify : 1; // [ARK]
++protected:
+ 	FSkeletalMeshComponentEndPhysicsTickFunction EndPhysicsTickFunction;
+ 
+ private:
+@@ -2738,6 +2758,9 @@ protected:
+ 
+ 	// Returns whether we need to run the Cloth Tick or not
+ 	ENGINE_API virtual bool ShouldRunClothTick() const;
++public:
++	ENGINE_API virtual void BPSetBoneModifiers(const TArray<FBoneModifierNamed>&); // [ARK]
++protected:
+ 
+ private:
+ 	/** Override USkinnedMeshComponent */
+@@ -2814,6 +2837,9 @@ private:
+ 	// Default setting for playrate of SequenceToPlay to play. 
+ 	UPROPERTY()
+ 	float DefaultPlayRate_DEPRECATED;
++public:
++	double PreventSoundCuesTime; // [ARK]
++private:
+ #endif
+ 
+ 	/*
+@@ -2960,6 +2986,345 @@ private:
+ 	TArray<FBodyInstance*> AsyncDestroyPhysicsStatePayload;
+ 	TArray<FConstraintInstance*> AsyncDestroyConstraintsPayload;
+ 	FPhysicsAggregateHandle AggregatePayload;
++public:
++	FVector CachedTwoLegVirtualHitLocationWS; // [ARK]
++private:
++public:
++	FVector CachedTwoLegVirtualHitLocationCS; // [ARK]
++private:
++public:
++	FQuat CurrentGroundSlope; // [ARK]
++private:
++public:
++	TArray<FIKLegInfo> LastCachedIKLegInfos; // [ARK]
++private:
++public:
++	int LastIKCalculationFrame; // [ARK]
++private:
++public:
++	FVector LastIKPosition; // [ARK]
++private:
++public:
++	float LastRootZ; // [ARK]
++private:
++public:
++	float DinoIKAnimationLegZOffsetingMultiplier; // [ARK]
++private:
++public:
++	float DinoIKDelayedTraceFreezeDurationMultiplier; // [ARK]
++private:
++public:
++	float DinoIKSlopeMatchingRootHeightOffset; // [ARK]
++private:
++public:
++	float DistanceFromGroundToStartIK; // [ARK]
++private:
++public:
++	float DistanceFromGroundToStartIKBias; // [ARK]
++private:
++public:
++	float FeetAlignmentLimit; // [ARK]
++private:
++public:
++	float ForceUpdateValuesTimeLimit; // [ARK]
++private:
++public:
++	float IkFabrikInterpSpeed; // [ARK]
++private:
++public:
++	float IkFeetAlignmentInterpSpeed; // [ARK]
++private:
++public:
++	float IkGroundPlaneInterpSpeed; // [ARK]
++private:
++public:
++	float IkInterpSpeed; // [ARK]
++private:
++public:
++	float IkInterpSpeedUp; // [ARK]
++private:
++public:
++	FVector IkRootLocationOffset; // [ARK]
++private:
++public:
++	FRotator IkRootRotationOffset; // [ARK]
++private:
++public:
++	float IkRootOffsetInterpSpeed; // [ARK]
++private:
++public:
++	float IkRootOffsetInterpSpeedUp; // [ARK]
++private:
++public:
++	float IkRootWorldOffsetInterpSpeed; // [ARK]
++private:
++public:
++	float IkRootWorldOffsetInterpSpeedUp; // [ARK]
++private:
++public:
++	float LegLimitRatioFromCylinderHeight; // [ARK]
++private:
++public:
++	float MatchSlopeRotationSpeed; // [ARK]
++private:
++public:
++	float RootPitchRotationLimit; // [ARK]
++private:
++public:
++	float RootRollRotationLimit; // [ARK]
++private:
++public:
++	int MaxIterations; // [ARK]
++private:
++public:
++	FVector TwoLegVirtualHitLocationWS; // [ARK]
++private:
++public:
++	FVector TwoLegVirtualHitLocationWSTarget; // [ARK]
++private:
++public:
++	FVector TwoLegVirtualHitLocationCS; // [ARK]
++private:
++public:
++	float RootOffset; // [ARK]
++private:
++public:
++	FRotator RootRotationOffset; // [ARK]
++private:
++public:
++	uint32 bForceTickDisabled : 1; // [ARK]
++private:
++public:
++	uint32 bFreezeGroundPlaneIK : 1; // [ARK]
++private:
++public:
++	uint32 bSuppressAnimNotifies : 1; // [ARK]
++private:
++public:
++	uint32 UseWorldSpaceFeetAlignment : 1; // [ARK]
++private:
++public:
++	uint32 bRotateFeetToAlignWithGround : 1; // [ARK]
++private:
++public:
++	uint32 bEnableMultiFabrik : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKUseExperimentalInvalidTraceZeroing : 1; // [ARK]
++private:
++public:
++	uint32 bAlignRootOnlyToGround : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKAnimationLegZOffseting : 1; // [ARK]
++private:
++public:
++	uint32 bIKRotationEnabled : 1; // [ARK]
++private:
++public:
++	uint32 bMovedLastFrame : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKLerpFeet : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKLerpLegs : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKRootWorldSpaceLerpZ : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKSmoothGroundPlaneLerping : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKSlopeMatchingRootHeightOffsetMultiplier : 1; // [ARK]
++private:
++public:
++	uint32 bDinoIKUseLegLimits : 1; // [ARK]
++private:
++public:
++	uint32 bEnableIkOnlyWhenIdle : 1; // [ARK]
++private:
++public:
++	uint32 bEnableSimpleIK : 1; // [ARK]
++private:
++public:
++	uint32 bForceSimpleIK : 1; // [ARK]
++private:
++public:
++	uint32 bSetAttachmentMasterPoseComponent : 1; // [ARK]
++private:
++public:
++	uint32 bInterpolateRootPhys : 1; // [ARK]
++private:
++public:
++	FVector InterpolatedRootLocation; // [ARK]
++private:
++public:
++	FRotator InterpolatedRootRotation; // [ARK]
++private:
++public:
++	TArray<float> OriginalBonesOffsets; // [ARK]
++private:
++public:
++	TArray<FIKLegInfo> IkLegs; // [ARK]
++private:
++public:
++	TArray<FIKGroundPlaneOverrideInfo> IkGroundPlaneOverrides; // [ARK]
++private:
++public:
++	TArray<FIKRootAdjustmentInfo> IkRootAdjustmentPoints; // [ARK]
++private:
++public:
++	float MinHitNormalZForFeetAlignment; // [ARK]
++private:
++public:
++	float ComponentMassScale; // [ARK]
++private:
++public:
++	float GroundBoneInstantSyncTillTime; // [ARK]
++private:
++public:
++	float MinLinearDamping; // [ARK]
++private:
++public:
++	float MinAngularDamping; // [ARK]
++private:
++public:
++	float CachedFootZDiff; // [ARK]
++private:
++public:
++	uint32 bOnlyTickWhenRenderedDontDisableOnDedicatedServer : 1; // [ARK]
++private:
++public:
++	uint32 bSkipUpdateTransformIfBlendedPhysics : 1; // [ARK]
++private:
++public:
++	uint32 AnimationFrozen : 1; // [ARK]
++private:
++public:
++	uint32 bInitOffset : 1; // [ARK]
++private:
++public:
++	uint32 bUpdatedKinematics : 1; // [ARK]
++private:
++public:
++	uint32 bUpdatedKinematicsOnce : 1; // [ARK]
++private:
++public:
++	uint32 bSetKinematicsSleeping : 1; // [ARK]
++private:
++public:
++	uint32 bNeverTickOnDediServer : 1; // [ARK]
++private:
++public:
++	uint32 bAlwaysTeleportKinematic : 1; // [ARK]
++private:
++public:
++	uint32 bForceDisablePhysicsOnDediServer : 1; // [ARK]
++private:
++public:
++	uint32 bForceDisablePhysicsOnDediServerAllowRagdoll : 1; // [ARK]
++private:
++public:
++	uint32 bSleepKinematicsWhenNotRefreshingBones : 1; // [ARK]
++private:
++public:
++	uint32 bPhysicsRequiredOnDediServer : 1; // [ARK]
++private:
++public:
++	uint32 bAlwaysForceUpdateKinematicsOnDedicatedServer : 1; // [ARK]
++private:
++public:
++	uint32 bRotateToMatchWalkingSlope : 1; // [ARK]
++private:
++public:
++	uint32 bFootZDiffIsCached : 1; // [ARK]
++private:
++public:
++	uint32 bShouldCacheFootZDiff : 1; // [ARK]
++private:
++public:
++	uint32 bEnableIKTraceFreezing : 1; // [ARK]
++private:
++public:
++	uint8 bPreventFootOffset : 1; // [ARK]
++private:
++public:
++	uint32 bModifyBoneAnimNodeUseCurrentBoneModifiers : 1; // [ARK]
++private:
++public:
++	uint32 bCurrentBoneModifiers_DontDoLegCheckRootModifier : 1; // [ARK]
++private:
++public:
++	uint32 bHumanIKUseBoneModiferLegScalars : 1; // [ARK]
++private:
++public:
++	uint32 bApplyGroundBoneModifiers : 1; // [ARK]
++private:
++public:
++	uint32 bNeedsUpdateToCachedLegInfos : 1; // [ARK]
++private:
++public:
++	uint32 bUsingFrozenIK : 1; // [ARK]
++private:
++public:
++	uint8 bEnableIKCartGroundConforming : 1; // [ARK]
++private:
++public:
++	FRotator RotOffset; // [ARK]
++private:
++public:
++	uint32 bUseRotOffset : 1; // [ARK]
++private:
++public:
++	uint32 bUseItemSlotAttachmentTranformOffsets : 1; // [ARK]
++private:
++public:
++	uint32 bInitializedArticulated : 1; // [ARK]
++private:
++public:
++	uint32 bIsPreviewComponent : 1; // [ARK]
++private:
++public:
++	double TimeToStopUpdatingLegCaches; // [ARK]
++private:
++public:
++	float BoneModifiersLegLengthPercentage; // [ARK]
++private:
++public:
++	TArray<FBoneModifier> BoneModifiers; // [ARK]
++private:
++public:
++	TArray<FBoneModifier> BoneModifiers_Female; // [ARK]
++private:
++public:
++	double LastStartedRenderingTime; // [ARK]
++private:
++public:
++	double LastIkUpdateTime; // [ARK]
++private:
++public:
++	double ForceIkUpdateTime; // [ARK]
++private:
++public:
++	double IKFirstFrozenUpdatedTime; // [ARK]
++private:
++public:
++	double LastIKFrozenStartTime; // [ARK]
++private:
++public:
++	TDelegate<void()> TickPoseDelegate; // [ARK]
++private:
++public:
++	float ForcedBlueprintBlendCurrentWeight; // [ARK]
++private:
++public:
++	float ForcedBlueprintBlendDuration; // [ARK]
++private:
++public:
++	TArray<FTransform> ForcedBlueprintBlendCachedBones; // [ARK]
++private:
+ 
+ public:
+ 	ENGINE_API void ConditionallyDispatchQueuedAnimEvents();
+@@ -2975,6 +3340,33 @@ public:
+ 
+ private:
+ 	bool bBoneTransformsInitialized = false;
++public:
++	ENGINE_API virtual void SkippedTickPose(); // [ARK]
++private:
++protected:
++	ENGINE_API virtual void RegisterComponentTickFunctions(bool, bool); // [ARK]
++private:
++public:
++	ENGINE_API virtual void SetCollisionEnabled(ECollisionEnabled::Type); // [ARK]
++private:
++public:
++	ENGINE_API virtual FTransform CalcNewComponentToWorld(const FTransform&, const USceneComponent*, FName) const; // [ARK]
++private:
++public:
++	ENGINE_API virtual FVector GetMeshScaleMultiplier() const; // [ARK]
++private:
++public:
++	ENGINE_API virtual void UpdateComponentToWorld(EUpdateTransformFlags, ETeleportType); // [ARK]
++private:
++public:
++	ENGINE_API virtual void DestroyPhysicsState(); // [ARK]
++private:
++public:
++	ENGINE_API virtual bool IsSkeletalMeshComponent() const; // [ARK]
++private:
++public:
++	ENGINE_API virtual void RefreshBonesAndUpdateBounds(FActorComponentTickFunction*); // [ARK]
++private:
+ };
+ 
+ #if WITH_EDITOR

@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/SoundWave.h b/Engine/Source/Runtime/Engine/Classes/Sound/SoundWave.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/SoundWave.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/SoundWave.h
+@@ -769,11 +769,16 @@ public:
+    	/** How much audio to add to First Audio Chunk (in seconds) */
+ 	UPROPERTY(EditAnywhere, Category = "Memory", meta = (UIMin = 0, UIMax = 10, EditCondition = "LoadingBehavior == ESoundWaveLoadingBehavior::RetainOnLoad || LoadingBehavior == ESoundWaveLoadingBehavior::PrimeOnLoad", EditConditionHides), DisplayName="Size of First Audio Chunk (seconds)")
+    	FPerPlatformFloat SizeOfFirstAudioChunkInSeconds = 0.0f;
++   	FString SpokenText; // [ARK]
++   	TArray<FLocalizedSpokenText> LocalizedSpokenTexts; // [ARK]
++   	uint8 SubtitleColorIndex; // [ARK]
+ #endif //WITH_EDITOR_ONLY_DATA
+ 
+ 	/** A localized version of the text that is actually spoken phonetically in the audio. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(meta = (DeprecatedProperty, DeprecationMessage = "Use Subtitles instead."))
+ 	FString SpokenText_DEPRECATED;
++#endif // [ARK]
+ 
+ 	/** The priority of the subtitle. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Info|Subtitles")

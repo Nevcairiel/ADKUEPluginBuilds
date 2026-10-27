@@ -1,0 +1,54 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/WorldSettings.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/WorldSettings.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/WorldSettings.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/WorldSettings.h
+@@ -13,6 +13,7 @@
+ #include "UObject/ConstructorHelpers.h"
+ #include "WorldGridPreviewer.h"
+ #include "WorldPartition/WorldPartitionEditorPerProjectUserSettings.h"
++#include "Ark/BasePrimalWorldSettings.h" // [ARK] base class
+ #include "WorldSettings.generated.h"
+ 
+ class UWorldPartition;
+@@ -360,7 +361,7 @@ struct FDynamicLoadingRangeScaling
+  * Actor containing all script accessible world properties.
+  */
+ UCLASS(config=game, hidecategories=(Actor, Advanced, Display, Events, Object, Attachment, Info, Input, Blueprint, Layers, Tags, Replication, LevelInstance), showcategories=(Rendering, WorldPartition, "Input|MouseInput", "Input|TouchInput"), notplaceable, MinimalAPI)
+-class AWorldSettings : public AInfo, public IInterface_AssetUserData
++class AWorldSettings : public ABasePrimalWorldSettings, public IInterface_AssetUserData // [ARK] bases (was : public AInfo, public IInterface_AssetUserData)
+ {
+ 	GENERATED_UCLASS_BODY()
+ 
+@@ -404,6 +405,11 @@ class AWorldSettings : public AInfo, public IInterface_AssetUserData
+ 	/** If true, enables CheckStillInWorld checks */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=World, AdvancedDisplay)
+ 	uint8 bEnableWorldBoundsChecks:1;
++	uint32 bUse3DWorldCompStreaming : 1; // [ARK]
++	uint32 bForceLoadAllLevelsOnDediServer : 1; // [ARK]
++	TArray<FName> LevelsToForceInvisibleWhenExcluded; // [ARK]
++	TArray<FName> LevelsToAbsolutelyNotLoadOnDediServer; // [ARK]
++	TArray<FName> AlwaysVisibleLevelNames; // [ARK]
+ 
+ protected:
+ 	/** if set to false navigation system will not get created (and all 
+@@ -662,6 +668,7 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, config, Category=Rendering, meta=(UIMin = "0", UIMax = "1"))
+ 	float DynamicIndirectShadowsSelfShadowingIntensity;
++	uint8 bEnableCapsuleIndirectShadows : 1; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	/************************************/
+@@ -852,6 +859,7 @@ public:
+ 	 * @return Z component of current world gravity.
+ 	 */
+ 	ENGINE_API virtual float GetGravityZ() const;
++	ENGINE_API virtual void InitializePrimalGameDataForWorld(); // [ARK]
+ 
+ 	/**
+ 	 * Multiplies all time dilation sources together and returns the effective overall time dilation. When bAllowTimeDilation is
+@@ -1087,4 +1095,5 @@ private: //DEPRECATED
+ 	UPROPERTY(meta=(DeprecatedProperty, DeprecationMessage="As of UE 5.1 all worlds are large. Set UE_USE_UE4_WORLD_MAX in EngineDefines.h to alter this."))
+ 	uint8 bEnableLargeWorlds_DEPRECATED:1;
+ #endif
++ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
+ };

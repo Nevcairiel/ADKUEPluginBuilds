@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotify.h b/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotify.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotify.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotify.h
+@@ -128,4 +128,10 @@ protected:
+ private:
+ 	/* The mesh we're currently triggering a UAnimNotify for (so we can retrieve per instance information) */
+ 	class USkeletalMeshComponent* MeshContext;
++public:
++	bool bIgnoreOnDediServer; // [ARK]
++private:
++public:
++	bool bCanClobberEventReference; // [ARK]
++private:
+ };

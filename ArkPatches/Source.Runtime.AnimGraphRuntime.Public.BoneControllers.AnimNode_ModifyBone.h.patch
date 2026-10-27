@@ -1,0 +1,23 @@
+diff --git a/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_ModifyBone.h b/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_ModifyBone.h
+--- a/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_ModifyBone.h
++++ b/Engine/Source/Runtime/AnimGraphRuntime/Public/BoneControllers/AnimNode_ModifyBone.h
+@@ -71,6 +71,11 @@ struct FAnimNode_ModifyBone : public FAnimNode_SkeletalControlBase
+ 	/** Reference frame to apply Scale in. */
+ 	UPROPERTY(EditAnywhere, Category=Scale)
+ 	TEnumAsByte<enum EBoneControlSpace> ScaleSpace;
++	FTransform BoneTransform; // [ARK]
++	bool bUseRotationTransform; // [ARK]
++	bool bIgnoreOnDedicatedServer; // [ARK]
++	bool bAllowUpdatingOutsideOfGameWorld; // [ARK]
++	bool bADontApplyBoneModifiersAfterwards; // [ARK]
+ 
+ 	ANIMGRAPHRUNTIME_API FAnimNode_ModifyBone();
+ 
+@@ -87,4 +92,7 @@ private:
+ 	// FAnimNode_SkeletalControlBase interface
+ 	ANIMGRAPHRUNTIME_API virtual void InitializeBoneReferences(const FBoneContainer& RequiredBones) override;
+ 	// End of FAnimNode_SkeletalControlBase interface
++public:
++	ANIMGRAPHRUNTIME_API virtual void EvaluateComponentSpace_AnyThread(FComponentSpacePoseContext&); // [ARK]
++private:
+ };

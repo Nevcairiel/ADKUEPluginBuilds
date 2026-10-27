@@ -1,0 +1,55 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/PainCausingVolume.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/PainCausingVolume.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/PainCausingVolume.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/PainCausingVolume.h
+@@ -13,6 +13,7 @@
+ #include "Engine/EngineTypes.h"
+ #include "GameFramework/PhysicsVolume.h"
+ #include "GameFramework/DamageType.h"
++#include "UObject/NameTypes.h" // [ARK] member type
+ #include "PainCausingVolume.generated.h"
+ 
+ /**
+@@ -42,10 +43,17 @@ class APainCausingVolume : public APhysicsVolume
+ 	/** if bPainCausing, cause pain when something enters the volume in addition to damage each second */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=PainCausingVolume)
+ 	uint32 bEntryPain:1;
++	uint32 bPainWalkingOnly : 1; // [ARK]
++	uint32 bTriggerUndermeshDetection : 1; // [ARK]
++	uint32 bContainsMultipleOverlapComponents : 1; // [ARK]
++	uint32 bIgnoreWildDinos : 1; // [ARK]
+ 
+ 	/** Checkpointed bPainCausing value */
+ 	UPROPERTY()
+ 	uint32 BACKUP_bPainCausing:1;
++	TArray<TSoftClassPtr<AActor>> ActorClassesToExclude; // [ARK]
++	TArray<TSoftClassPtr<AActor>> ActorClassesToInclude; // [ARK]
++	FName IgnoreActorsWithTag; // [ARK]
+ 
+ 	/** Controller that gets credit for any damage caused by this volume */
+ 	UPROPERTY()
+@@ -53,6 +61,7 @@ class APainCausingVolume : public APhysicsVolume
+ 
+ 	/** Damage overlapping actors if pain-causing. */
+ 	ENGINE_API virtual void PainTimer();
++	ENGINE_API virtual bool CausePainTo(AActor*); // [ARK]
+ 
+ #if WITH_EDITOR
+ 	//Begin AVolume Interface
+@@ -74,12 +83,17 @@ class APainCausingVolume : public APhysicsVolume
+ 	//End PhysicsVolume Interface
+ 
+ 	/** damage overlapping actors if pain causing. */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void CausePainTo(class AActor* Other);
++#endif // [ARK]
+ 
+ protected:
+ 
+ 	/** Handle for efficient management of OnTimerTick timer */
+ 	FTimerHandle TimerHandle_PainTimer;
++public:
++	ENGINE_API virtual void PreLoadSaveGame(); // [ARK]
++protected:
+ };
+ 
+ 

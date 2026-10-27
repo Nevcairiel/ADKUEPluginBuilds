@@ -1,7 +1,7 @@
 diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h b/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
 --- a/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
 +++ b/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressBar.h
-@@ -204,5 +204,22 @@ private:
+@@ -204,5 +204,25 @@ private:
  	TWeakPtr<FActiveTimerHandle> ActiveTimerHandle;
  
  	bool bNeedsMarqueeTimerUpdate;
@@ -21,6 +21,9 @@ diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Notifications/SProgressB
 +private:
 +public:
 +	int PercentInterpolationKey; // [ARK]
++private:
++public:
++SLATE_API virtual void Tick(const FGeometry&, const double, const float); // [ARK]
 +private:
  };
  

@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInterface.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInterface.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInterface.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInterface.h
+@@ -1288,6 +1288,8 @@ public:
+ 	ENGINE_API virtual bool IsTessellationEnabled() const;
+ 	ENGINE_API virtual bool HasSubstrateRoughnessTracking() const;
+ 	ENGINE_API virtual bool IsCompatibleWithLumenCardSharing() const;
++	ENGINE_API virtual bool IsUsedWithVolumetricCloud() const; // [ARK]
++	ENGINE_API virtual bool HasPerInstanceDynamicCustomDataOutput() const; // [ARK]
+ 
+ 	/**
+ 	 * Force the streaming system to disregard the normal logic for the specified duration and
+@@ -1572,6 +1574,9 @@ protected:
+ 
+ 	/* returns whether valid compilation output exists. Outputs all default textures used by the material, based on the compilation output. */
+ 	virtual bool TryGetUsedTexturesInCookCache(TArray<TObjectPtr<UObject>>& OutTextures) PURE_VIRTUAL(UMaterialInterface::TryGetUsedTexturesInCookCache, return false;);
++public:
++	ENGINE_API virtual UMaterialInterface* GetFarDrawOverride() const; // [ARK]
++protected:
+ 	
+ 	/** @return All FMaterialResources created during the cooking process. */
+ 	TArray<const FMaterialResource*, TInlineAllocator<4>> GetCookedCacheMaterialResources() const;

@@ -1,0 +1,38 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/SkeletalMeshActor.h b/Engine/Source/Runtime/Engine/Classes/Animation/SkeletalMeshActor.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/SkeletalMeshActor.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/SkeletalMeshActor.h
+@@ -5,6 +5,7 @@
+ #include "UObject/ObjectMacros.h"
+ #include "Engine/EngineTypes.h"
+ #include "GameFramework/Actor.h"
++#include "Ark/MatineeAnimInterface.h" // [ARK] base class
+ #include "SkeletalMeshActor.generated.h"
+ 
+ class UAnimMontage;
+@@ -19,7 +20,7 @@ class UAnimSequence;
+  * @see USkeletalMesh
+  */
+ UCLASS(ClassGroup=ISkeletalMeshes, Blueprintable, ComponentWrapperClass, ConversionRoot, meta=(ChildCanTick), MinimalAPI)
+-class ASkeletalMeshActor : public AActor
++class ASkeletalMeshActor : public AActor, public IMatineeAnimInterface // [ARK] bases (was : public AActor)
+ {
+ 	GENERATED_UCLASS_BODY()
+ 
+@@ -90,7 +91,16 @@ private:
+ 
+ public:
+ 	/** Returns SkeletalMeshComponent subobject **/
+-	class USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
++	virtual /* [ARK] */ class USkeletalMeshComponent* GetSkeletalMeshComponent() const { return SkeletalMeshComponent; }
++	ENGINE_API virtual void PreviewBeginAnimControl(UInterpGroup*); // [ARK]
++	ENGINE_API virtual void PreviewSetAnimPosition(FName, int, UAnimSequence*, float, bool, bool, float); // [ARK]
++	ENGINE_API virtual void PreviewSetAnimWeights(TArray<FAnimSlotInfo>&); // [ARK]
++	ENGINE_API virtual void PreviewFinishAnimControl(UInterpGroup*); // [ARK]
++	ENGINE_API virtual void GetAnimControlSlotDesc(TArray<FAnimSlotDesc>&); // [ARK]
++	ENGINE_API virtual void SetAnimWeights(const TArray<FAnimSlotInfo>&); // [ARK]
++	ENGINE_API virtual void BeginAnimControl(UInterpGroup*); // [ARK]
++	ENGINE_API virtual void SetAnimPosition(FName, int, UAnimSequence*, float, bool, bool); // [ARK]
++	ENGINE_API virtual void FinishAnimControl(UInterpGroup*); // [ARK]
+ };
+ 
+ 

@@ -1,0 +1,46 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Particles/ParticlePerfStats.h b/Engine/Source/Runtime/Engine/Classes/Particles/ParticlePerfStats.h
+--- a/Engine/Source/Runtime/Engine/Classes/Particles/ParticlePerfStats.h
++++ b/Engine/Source/Runtime/Engine/Classes/Particles/ParticlePerfStats.h
+@@ -277,18 +277,42 @@ struct FParticlePerfStats
+ 
+ 	//Cached CSV Stat names for this system.
+ #if WITH_PARTICLE_PERF_CSV_STATS
++#if 0 // [ARK] removed
+ 	FName CSVStat_Count = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_Total = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_GTOnly = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_InstAvgGT = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_RT = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_InstAvgRT = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_GPU = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_InstAvgGPU = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_Activation = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_Waits = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_Culled = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_MemoryKB = NAME_None;
++#endif // [ARK]
+ 
+ 	void PopulateStatNames(const FName InName);
+ 	void ResetStatNames();

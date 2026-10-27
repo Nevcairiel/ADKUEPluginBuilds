@@ -1,0 +1,16 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustom.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustom.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustom.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionCustom.h
+@@ -20,7 +20,11 @@ enum ECustomMaterialOutputType : int
+ 	CMOT_Float3,
+ 	CMOT_Float4,
+ 	CMOT_MaterialAttributes,
+-	CMOT_MAX,
++	CMOT_LWCScalar = 5, // [ARK]
++	CMOT_LWCVector2 = 6, // [ARK]
++	CMOT_LWCVector3 = 7, // [ARK]
++	CMOT_LWCVector4 = 8, // [ARK]
++	CMOT_MAX = 9 /* [ARK] */,
+ };
+ 
+ USTRUCT()

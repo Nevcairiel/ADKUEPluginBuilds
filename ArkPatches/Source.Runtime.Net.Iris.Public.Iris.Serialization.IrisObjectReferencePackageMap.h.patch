@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Net/Iris/Public/Iris/Serialization/IrisObjectReferencePackageMap.h b/Engine/Source/Runtime/Net/Iris/Public/Iris/Serialization/IrisObjectReferencePackageMap.h
+--- a/Engine/Source/Runtime/Net/Iris/Public/Iris/Serialization/IrisObjectReferencePackageMap.h
++++ b/Engine/Source/Runtime/Net/Iris/Public/Iris/Serialization/IrisObjectReferencePackageMap.h
+@@ -74,7 +74,7 @@ public:
+ 	GENERATED_BODY()
+ 
+ 	// We override SerializeObject in order to be able to capture object references
+-	virtual bool SerializeObject(FArchive& Ar, UClass* InClass, UObject*& Obj, FNetworkGUID* OutNetGUID) override;
++	virtual bool SerializeObject(FArchive& Ar, UClass* InClass, UObject*& Obj, FNetworkGUID* OutNetGUID, bool bArkUnknown) override; // [ARK] extra bool (UPackageMap::SerializeObject, ShooterGameEditor-IrisCore.pdb)
+ 
+ 	// Override SerializeName in order to be able to capture name and serialize them with iris instead.
+ 	virtual bool SerializeName(FArchive& Ar, FName& InName);

@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Core/Public/Misc/ConfigCacheIni.h b/Engine/Source/Runtime/Core/Public/Misc/ConfigCacheIni.h
+--- a/Engine/Source/Runtime/Core/Public/Misc/ConfigCacheIni.h
++++ b/Engine/Source/Runtime/Core/Public/Misc/ConfigCacheIni.h
+@@ -1392,7 +1392,7 @@ public:
+ 	
+ 	CORE_API TArray<FString> GetFilenames();
+ 
+-	CORE_API bool Flush(bool bRemoveFromCache, const FString& Filename=TEXT(""));
++	CORE_API bool Flush(bool bRemoveFromCache, const FString& Filename=TEXT(""), bool bArkUnknown=false); // [ARK] bool (name assumed)
+ 
+ 	CORE_API void LoadFile( const FString& InFilename, const FConfigFile* Fallback = NULL, const TCHAR* PlatformString = NULL );
+ 	CORE_API void SetFile( const FString& InFilename, const FConfigFile* NewConfigFile );

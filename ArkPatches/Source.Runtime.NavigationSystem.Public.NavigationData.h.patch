@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/NavigationSystem/Public/NavigationData.h b/Engine/Source/Runtime/NavigationSystem/Public/NavigationData.h
+--- a/Engine/Source/Runtime/NavigationSystem/Public/NavigationData.h
++++ b/Engine/Source/Runtime/NavigationSystem/Public/NavigationData.h
+@@ -497,6 +497,7 @@ protected:
+ 	/** indicates whether at any point GoalActor was a valid Actor. Used as
+ 	 *	an optimization in FNavigationPath::TickPathObservation */
+ 	uint32 bObservingGoalActor : 1;
++	uint32 bKeepRepathingUsingDirectMove : 1; // [ARK]
+ 
+ 	/** navigation data used to generate this path */
+ 	TWeakObjectPtr<ANavigationData> NavigationDataUsed;
+@@ -1047,6 +1048,9 @@ protected:
+ 
+ 	/** get ID to assign for newly added area */
+ 	NAVIGATIONSYSTEM_API virtual int32 GetNewAreaID(const UClass* AreaClass) const;
++public:
++	NAVIGATIONSYSTEM_API virtual bool GetRandomReachablePointInMinMaxRadius(const FVector&, float, float, const FRandomStream&, const FVector, const float, FNavLocation&, TSharedPtr<FNavigationQueryFilter const>, const UObject*) const; // [ARK]
++protected:
+ 	
+ protected:
+ 	/** Navigation data versioning. */

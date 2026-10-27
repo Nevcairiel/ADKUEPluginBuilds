@@ -1,0 +1,260 @@
+diff --git a/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/BehaviorTreeComponent.h b/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/BehaviorTreeComponent.h
+--- a/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/BehaviorTreeComponent.h
++++ b/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/BehaviorTreeComponent.h
+@@ -106,7 +106,9 @@ class UBehaviorTreeComponent : public UBrainComponent
+ 	GENERATED_UCLASS_BODY()
+ 
+ 	// UActorComponent overrides
++#if 0 // [ARK] removed
+ 	AIMODULE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
++#endif // [ARK]
+ 	AIMODULE_API virtual void SetComponentTickEnabled(bool bEnabled) override;
+ 
+ 	// Begin UBrainComponent overrides
+@@ -298,7 +300,7 @@ public:
+ 
+ #if CSV_PROFILER_STATS
+ 	/** Set a custom CSV tick stat name, must point to a static string */
+-	void SetCSVTickStatName(const char* InCSVTickStatName) { CSVTickStatName = InCSVTickStatName; }
++	void SetCSVTickStatName(const char* InCSVTickStatName) { /* [ARK] no CSVTickStatName */ }
+ #endif
+ 
+ 	static AIMODULE_API void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+@@ -401,119 +403,195 @@ protected:
+ 
+ 	/** push behavior tree instance on execution stack
+ 	 *	@NOTE: should never be called out-side of BT execution, meaning only BT tasks can push another BT instance! */
++public: // [ARK] was protected
+ 	AIMODULE_API bool PushInstance(UBehaviorTree& TreeAsset);
++protected:
+ 
+ 	/** add unique Id of newly created subtree to KnownInstances list and return its index */
++public: // [ARK] was protected
+ 	AIMODULE_API uint8 UpdateInstanceId(UBehaviorTree* TreeAsset, const UBTNode* OriginNode, int32 OriginInstanceIdx);
++protected:
+ 
+ 	/** remove instanced nodes, known subtree instances and safely clears their persistent memory */
++public: // [ARK] was protected
+ 	AIMODULE_API void RemoveAllInstances();
++protected:
+ 
+ 	/** copy memory block from running instances to persistent memory */
++public: // [ARK] was protected
+ 	AIMODULE_API void CopyInstanceMemoryToPersistent();
++protected:
+ 
+ 	/** copy memory block from persistent memory to running instances (rollback) */
++public: // [ARK] was protected
+ 	AIMODULE_API void CopyInstanceMemoryFromPersistent();
++protected:
+ 
+ 	/** called when tree runs out of nodes to execute */
++public: // [ARK] was protected
+ 	AIMODULE_API virtual void OnTreeFinished();
++protected:
+ 
+ 	/** apply pending node updates from SearchData */
++public: // [ARK] was protected
+ 	AIMODULE_API void ApplySearchData(UBTNode* NewActiveNode);
++protected:
+ 
+ 	/** apply pending node updates required for discarded search */
++public: // [ARK] was protected
+ 	AIMODULE_API void ApplyDiscardedSearch();
++protected:
+ 
+ 	/** apply updates from specific list */
++public: // [ARK] was protected
+ 	UE_DEPRECATED(5.4, "This function is deprecated. Please use ApplyAllSearchUpdates instead.")
+ 	AIMODULE_API void ApplySearchUpdates(const TArray<FBehaviorTreeSearchUpdate>& UpdateList, int32 NewNodeExecutionIndex, bool bPostUpdate = false);
++protected:
+ 
+ 	/** 
+ 	 * Apply updates and post update from specified UpdateList.
+ 	 * @param bDoPostUpdate if true the post updates will also be processed.
+ 	 * @param bAllowTaskUpdates If false Task node updates will not be processed from the UpdateList.
+ 	 */
++public: // [ARK] was protected
+ 	AIMODULE_API void ApplyAllSearchUpdates(const TArray<FBehaviorTreeSearchUpdate>& UpdateList, int32 NewNodeExecutionIndex, bool bDoPostUpdate = true, bool bAllowTaskUpdates = true);
++protected:
+ 
+ 	/** abort currently executed task */
++public: // [ARK] was protected
+ 	AIMODULE_API void AbortCurrentTask();
++protected:
+ 
+ 	/** execute new task */
++public: // [ARK] was protected
+ 	AIMODULE_API void ExecuteTask(UBTTaskNode* TaskNode);
++protected:
+ 
+ 	/** deactivate all nodes up to requested one */
++public: // [ARK] was protected
+ 	AIMODULE_API bool DeactivateUpTo(const UBTCompositeNode* Node, uint16 NodeInstanceIdx, EBTNodeResult::Type& NodeResult, int32& OutLastDeactivatedChildIndex);
++protected:
+ 
+ 	/** returns true if execution was waiting on latent aborts and they are all finished;  */
++public: // [ARK] was protected
+ 	AIMODULE_API bool TrackPendingLatentAborts();
++protected:
+ 
+ 	/** tracks if there are new tasks using latent abort in progress */
++public: // [ARK] was protected
+ 	AIMODULE_API void TrackNewLatentAborts();
++protected:
+ 
+ 	/** return true if the current or any parallel task has a latent abort in progress */
++public: // [ARK] was protected
+ 	AIMODULE_API bool HasActiveLatentAborts() const;
++protected:
+ 
+ 	/** apply pending execution from last task search */
++public: // [ARK] was protected
+ 	AIMODULE_API void ProcessPendingExecution();
++protected:
+ 
+ 	/** apply pending tree initialization */
++public: // [ARK] was protected
+ 	AIMODULE_API void ProcessPendingInitialize();
++protected:
+ 
+ 	/** restore state of tree to state before search */
++public: // [ARK] was protected
+ 	AIMODULE_API void RollbackSearchChanges();
++protected:
+ 
+ 	/** make a snapshot for debugger */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerExecutionStep(EBTExecutionSnap::Type SnapType);
++protected:
+ 
+ 	/** make a snapshot for debugger from given subtree instance */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerInstance(FBehaviorTreeDebuggerInstance& InstanceInfo, uint16 InstanceIdx, EBTExecutionSnap::Type SnapType) const;
++protected:
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerRemovedInstance(uint16 InstanceIdx) const;
++protected:
+ 
+ 	/** store search step for debugger */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerSearchStep(const UBTNode* Node, uint16 InstanceIdx, EBTNodeResult::Type NodeResult) const;
++protected:
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerSearchStep(const UBTNode* Node, uint16 InstanceIdx, bool bPassed) const;
++protected:
+ 
+ 	/** store restarting node for debugger */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerRestart(const UBTNode* Node, uint16 InstanceIdx, bool bAllowed);
++protected:
+ 
+ 	/** describe blackboard's key values */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerBlackboard(TMap<FName, FString>& BlackboardValueDesc) const;
++protected:
+ 
+ 	/** gather nodes runtime descriptions */
++public: // [ARK] was protected
+ 	AIMODULE_API void StoreDebuggerRuntimeValues(TArray<FString>& RuntimeDescriptions, UBTNode* RootNode, uint16 InstanceIdx) const;
++protected:
+ 
+ 	/** update runtime description of given task node in latest debugger's snapshot */
++public: // [ARK] was protected
+ 	AIMODULE_API void UpdateDebuggerAfterExecution(const UBTTaskNode* TaskNode, uint16 InstanceIdx) const;
++protected:
+ 
+ 	/** check if debugger is currently running and can gather data */
++public: // [ARK] was protected
+ 	static AIMODULE_API bool IsDebuggerActive();
++protected:
+ 
+ 	/** Return NodeA's relative priority in regards to NodeB */
++public: // [ARK] was protected
+ 	AIMODULE_API EBTNodeRelativePriority CalculateRelativePriority(const UBTNode* NodeA, const UBTNode* NodeB) const;
++protected:
+ 
+ 	/** Evaluate a branch as current active node is finished */
++public: // [ARK] was protected
+ 	AIMODULE_API void EvaluateBranch(EBTNodeResult::Type LastResult);
++protected:
+ 
+ 	/** Evaluate a branch as the decorator conditions have changed */
++public: // [ARK] was protected
+ 	AIMODULE_API void EvaluateBranch(const UBTDecorator& RequestedBy);
++protected:
+ 
+ 	/** Activate a branch as the decorator conditions are now passing */
++public: // [ARK] was protected
+ 	AIMODULE_API void ActivateBranch(const UBTDecorator& RequestedBy, bool bRequestEvenIfNotExecuting);
++protected:
+ 
+ 	/** Deactivate a branch as the decorator conditions are not passing anymore */
++public: // [ARK] was protected
+ 	AIMODULE_API void DeactivateBranch(const UBTDecorator& RequestedBy);
++protected:
+ 
+ 	/** Suspend any branch actions and queue them to be processed later by ResumeBranchActions() */
++public: // [ARK] was protected
+ 	AIMODULE_API void SuspendBranchActions(EBTBranchAction BranchActions = EBTBranchAction::All);
++protected:
+ 
+ 	/** Resume branch actions and execute all the queued up ones */
++public: // [ARK] was protected
+ 	AIMODULE_API void ResumeBranchActions();
++protected:
+ 
++public: // [ARK] was protected
+ 	UE_DEPRECATED(5.1, "This function is deprecated. Please use SuspendBranchActions instead.")
+ 	void SuspendBranchDeactivation() { SuspendBranchActions(); }
++protected:
+ 
++public: // [ARK] was protected
+ 	UE_DEPRECATED(5.1, "This function is deprecated. Please use ResumeBranchActions instead.")
+ 	void ResumeBranchDeactivation() { ResumeBranchActions(); }
++protected:
+ 
+ 	struct FBTSuspendBranchActionsScoped
+ 	{
+@@ -529,7 +607,9 @@ protected:
+ 		UBehaviorTreeComponent& BTComp;
+ 	};
+ 
++public: // [ARK] was protected
+ 	void TickNewlyAddedAuxNodesHelper();
++protected:
+ 
+ 	UE_DEPRECATED(5.1, "This struct is deprecated. Please use FBTSuspendBranchActionsScoped instead.")
+ 	typedef FBTSuspendBranchActionsScoped FBTSuspendBranchDeactivationScoped;
+@@ -565,11 +645,31 @@ protected:
+ 
+ 	/** GameTime of the last DeltaTime request, used for debugging to output warnings about ticking */
+ 	double LastRequestedDeltaTimeGameTime = 0;
++public:
++	int TickingModulus; // [ARK]
++protected:
++public:
++	int LowQualityTickingModulus; // [ARK]
++protected:
++public:
++	bool bIsTicking; // [ARK]
++protected:
+ 
+ #if CSV_PROFILER_STATS
+ 	/** CSV tick stat name. Can be changed but must point to a static string */
++#if 0 // [ARK] removed
+ 	const char* CSVTickStatName = "BehaviorTreeTick";
++#endif // [ARK]
+ #endif
++public:
++AIMODULE_API virtual void RegisterComponentTickFunctions(bool, bool); // [ARK]
++protected:
++public:
++AIMODULE_API virtual bool IsComponentTickEnabled() const; // [ARK]
++protected:
++public:
++AIMODULE_API virtual void OnRegister(); // [ARK]
++protected:
+ };
+ 
+ //////////////////////////////////////////////////////////////////////////

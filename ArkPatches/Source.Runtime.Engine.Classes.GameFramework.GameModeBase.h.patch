@@ -1,0 +1,31 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h
+@@ -197,6 +197,8 @@ public:
+ 
+ 	/** Returns true if the game is paused */
+ 	ENGINE_API virtual bool IsPaused() const;
++	ENGINE_API virtual void UpdateStructureStasisGrid(float); // [ARK]
++	ENGINE_API virtual bool IsAllowedToCheat(const FUniqueNetId&); // [ARK]
+ 
+ 	/**
+ 	 * Overridable function to determine whether an Actor should have Reset called when the game has Reset called on it.
+@@ -483,6 +485,10 @@ public:
+ 
+ 	/** Used in the editor to spawn a PIE player after the game has already started */
+ 	ENGINE_API virtual bool SpawnPlayerFromSimulate(const FVector& NewLocation, const FRotator& NewRotation);
++	ENGINE_API virtual void ActorStasised(AActor*); // [ARK]
++	ENGINE_API virtual void ActorDestroyed(AActor*); // [ARK]
++	ENGINE_API virtual void ActorUnstasised(AActor*); // [ARK]
++	ENGINE_API virtual bool ExtraPreLoginChecksBeforeWelcomePlayer(UNetConnection*); // [ARK]
+ 
+ 	//~ Begin AActor Interface
+ 	ENGINE_API virtual void PreInitializeComponents() override;
+@@ -601,6 +607,7 @@ protected:
+ private:
+ 	// Hidden functions that don't make sense to use on this class.
+ 	HIDE_ACTOR_TRANSFORM_FUNCTIONS();
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
+ };
+ 
+ /** GameModeBase events, particularly for use by plugins */

@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/EditableTextBox.h b/Engine/Source/Runtime/UMG/Public/Components/EditableTextBox.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/EditableTextBox.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/EditableTextBox.h
+@@ -44,6 +44,7 @@ public:
+ 	/** A bindable delegate to allow logic to drive the text of the widget */
+ 	UPROPERTY()
+ 	FGetText TextDelegate;
++	bool bCanSanitizeText; // [ARK]
+ 
+ public:
+ 
+@@ -103,6 +104,7 @@ public:
+ 	/** Whether the context menu can be opened */
+ 	UPROPERTY(EditAnywhere, Category=Behavior, AdvancedDisplay)
+ 	bool AllowContextMenu;
++	bool ShouldHandleEscape; // [ARK]
+ 
+ 	/** If we're on a platform that requires a virtual keyboard, what kind of keyboard should this widget use? */
+ 	UPROPERTY(EditAnywhere, Category=Behavior, AdvancedDisplay)

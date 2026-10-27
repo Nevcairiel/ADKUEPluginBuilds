@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Editor/UnrealEd/Public/EditorLevelUtils.h b/Engine/Source/Editor/UnrealEd/Public/EditorLevelUtils.h
+--- a/Engine/Source/Editor/UnrealEd/Public/EditorLevelUtils.h
++++ b/Engine/Source/Editor/UnrealEd/Public/EditorLevelUtils.h
+@@ -308,6 +308,7 @@ public:
+ 
+ 		/** Optional function to call after the ULevelStreaming gets created. */
+ 		TFunction<void(ULevelStreaming*)> LevelStreamingCreatedCallback = nullptr;
++		bool bTransient; // [ARK]
+ 	};
+ 
+ 	static UNREALED_API ULevelStreaming* AddLevelToWorld(UWorld* InWorld, const FAddLevelToWorldParams& InParams);

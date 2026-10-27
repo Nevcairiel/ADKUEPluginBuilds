@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/PrimitiveViewRelevance.h b/Engine/Source/Runtime/Engine/Public/PrimitiveViewRelevance.h
+--- a/Engine/Source/Runtime/Engine/Public/PrimitiveViewRelevance.h
++++ b/Engine/Source/Runtime/Engine/Public/PrimitiveViewRelevance.h
+@@ -48,6 +48,7 @@ struct FPrimitiveViewRelevance : public FMaterialRelevance
+ 	uint32 bTranslucentSelfShadow : 1;
+ 	/** Whether the primitive should be rendered in the second stage depth only pass. */
+ 	uint32 bRenderInSecondStageDepthPass : 1;
++	uint32 bHasPerInstanceDynamicCustomDataOutput : 1; // [ARK]
+ 
+ 	/** 
+ 	 * Whether this primitive view relevance has been initialized this frame.  

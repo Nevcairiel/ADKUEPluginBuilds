@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionFunctionInput.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionFunctionInput.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionFunctionInput.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionFunctionInput.h
+@@ -30,9 +30,10 @@ enum EFunctionInputType : int
+ 	FunctionInput_TextureExternal UMETA(DisplayName = "TextureExternal"),
+ 	FunctionInput_Bool UMETA(DisplayName = "Bool"),
+ 	FunctionInput_Substrate UMETA(DisplayName = "Substrate"),
++	FunctionInput_AuxSceneTexture, // [ARK]
+ 	FunctionInput_MAX UMETA(DisplayName = "NULL"),
+ };
+-#define EXPECTED_NUM_INPUT_TYPES 13
++#define EXPECTED_NUM_INPUT_TYPES 14 // [ARK]
+ 
+ /** Supported input types */
+ UENUM()

@@ -1,0 +1,24 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCellData.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCellData.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCellData.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCellData.h
+@@ -41,7 +41,10 @@ class UWorldPartitionRuntimeCellData : public UObject
+ 	ENGINE_API virtual FBox GetStreamingBounds() const;	
+ 
+ 	virtual bool IsDebugShown() const { return true; }
++	ENGINE_API virtual FString Primal_GetHumanReadableName() const; // [ARK]
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual FString GetDebugName() const;
++#endif // [ARK]
+ 
+ 	// Minimum affecting source priority
+ 	mutable uint8 CachedMinSourcePriority;
+@@ -82,6 +85,9 @@ class UWorldPartitionRuntimeCellData : public UObject
+ 
+ 	UPROPERTY()
+ 	int32 HierarchicalLevel;
++	FString Primal_HumanReadableName; // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	FStringTest DebugName;
++#endif // [ARK]
+ };

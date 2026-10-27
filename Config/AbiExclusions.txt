@@ -1,168 +1,67 @@
 # Types whose ARK ABI changes are intentionally NOT reproduced in the SDK headers.
 #
-# These are gameplay / rendering types of the Engine, RenderCore and RHI modules. ARK changed several of them
-# deeply (new ARK base classes UPrimalActor, UPrimalActorComponent, UPrimalWorld, APrimalController,
-# FPrimalViewportClient; renamed members used by inline engine code), which cannot be reconstructed from the
-# PDBs alone. BlueprintAssist only handles them as opaque pointers (casts, StaticClass(), null checks).
+# Everything else is patched to the devkit's layout (Tools\Test-ArkAbi.ps1 -Patch), including the gameplay classes
+# that ARK re-based onto its own classes (AActor : UPrimalActor, UActorComponent : UPrimalActorComponent, ...; the
+# ARK-only bases are generated from the PDBs, see Config\ArkClasses.txt). What is listed here cannot be reproduced
+# in headers or does not exist in a plugin's code.
 #
-# This is verified mechanically by Build\Tools\Test-LayoutIndependence.ps1: the plugin is compiled a second time
-# with a probe data member and a probe virtual function injected at the start of every class listed here, and
-# the generated machine code of all object files must be identical. Any dependency of the plugin's code on the
-# layout or vtable of these types would change the code.
+# This is verified mechanically by Tools\Test-LayoutIndependence.ps1: the plugin is compiled a second time with a
+# probe data member and a probe virtual function injected at the start of every class listed here, and the
+# generated machine code of all object files must be identical. Any dependency of the plugin's code on the layout
+# or vtable of these types would change the code.
 #
 # One type name per line (as printed by PdbLayout), '#' starts a comment.
 
-# --- gameplay framework
-AActor
-AController
-APlayerController
-APlayerCameraManager
-UPlayer
-ULocalPlayer
-UGameInstance
-UGameViewportClient
-UPendingNetGame
-UWorld
-ULevel
-ULevelStreaming
-FActorSpawnParameters
-FWorldCachedViewInfo
-FActorLastRenderTime
-FUpdateLevelVisibilityLevelInfo
-FWorldTileLayer
-INavAgentInterface
-FInputKeyEventArgs
-FMinimalViewInfo
-
-# --- components, ticking, collision, physics
-UActorComponent
-USceneComponent
-UPrimitiveComponent
-UMeshComponent
-USkinnedMeshComponent
-USkeletalMeshComponent
-UChildActorComponent
-EMoveComponentFlags
-FTickFunction
-FTickFunction::FInternalData
-FActorTickFunction
-FActorComponentTickFunction
-FHitResult
-FCollisionQueryParams
-FCollisionResponseContainer
-FCustomChannelSetup
-ECollisionChannel
-FBodyInstance
-FScopedMovementUpdate
-
-# --- animation
-UAnimInstance
-UAnimNotify
-FAnimNotifyEvent
-FAnimUpdateRateParameters
-FFIRFilterTimeBased
-
-# --- rendering, materials, meshes, textures
-FPostProcessSettings
-FEngineShowFlags
-UMaterial
-UMaterialEditorOnlyData
-UMaterialInterface
-FMaterial
-FMaterialCompilationOutput
-FMaterialExternalTextureParameterInfo
-FMaterialShaderParametersBase
-FTextureSamplingInfo
-EMaterialShadingModel
-UTexture
-UStaticMesh
-FStaticMeshSourceModel
-UStreamableRenderAsset
-FMeshBuildSettings
-FMeshUVChannelInfo
-FPrimitiveSceneInfoData
-FGPUSkinPassThroughFactoryLooseParameters
-FParticlePerfStats
-FShaderMapResource
-UE::RHI::GPUProfiler::FGPUStat
-FRHIGlobals
-
-# --- sound
-USoundCue
-USoundWave
-
-# --- not ABI relevant for the plugin
-# viewport clients get an additional ARK base FPrimalViewportClient; the plugin does not use viewport clients
-FViewportClient
 # RHI command templates are named after a source line number string; rendering only
 FRHICommandDispatchComputeShaderBundle
 FRHICommandDispatchGraphicsShaderBundle
-# thread-local cleanup helper inside a header template: every DLL instantiates its own private copy
-TBlockAllocationCache<65536,FAlignedAllocator>::FTLSCleanup
-# consequences of excluded types: containers sized by FHitResult / FOverlapInfo, and the UHT-generated
-# replication index enums of the excluded actor classes
-TSizedInlineAllocator<2,32,TSizedDefaultAllocator<32> >::ForElementType<FHitResult>
-TSizedInlineAllocator<3,32,TSizedDefaultAllocator<32> >::ForElementType<FOverlapInfo>
+FRHICommandSetStaticUniformBuffers
+# thread-local cleanup helper inside a header template: every DLL instantiates its own private copy (not probed by
+# Tools\Test-LayoutIndependence.ps1: the plugin uses its own copy, whose layout it compiles itself)
+TBlockAllocationCache<65536,FAlignedAllocator>::FTLSCleanup   # [no probe]
+# UHT-generated replication index enums: generated from the (patched) headers, their values only matter to the
+# devkit's own GetLifetimeReplicatedProps
 AActor::ENetFields_Private
+UPrimalActor::ENetFields_Private
 AController::ENetFields_Private
 APlayerController::ENetFields_Private
-
-# Added for GitSourceControl: types that only reach its compile through the UnrealEd shared PCH
-# (SharedPch.h). The plugin does not use them; verified by Test-LayoutIndependence.ps1 GitSourceControl.
-# The enums are network / debug-view constants (MAX_PACKET_*, MaxSequenceHistoryLength, DVSM_*) that the plugin
-# sources do not reference.
+AAudioVolume::ENetFields_Private
+APawn::ENetFields_Private
+AWorldSettings::ENetFields_Private
+ACharacter::ENetFields_Private
+APrimalPawn::ENetFields_Private
+# shader parameter structs: declared by BEGIN_*SHADER_PARAMETER_STRUCT macros (no class body to patch); rendering only
+FViewUniformShaderParameters
+FInstancedViewUniformShaderParameters
+FPrimitiveUniformShaderParameters
+FGPUSkinPassThroughFactoryLooseParameters
+# renderer / RHI resources whose ARK changes break vanilla inline code (members renamed or removed) and that no
+# gameplay type embeds by value (scene proxies and render data are referenced through pointers)
+FShaderMapResource
+FRayTracingGeometry
+FMeshBatch
+FPrimitiveSceneProxy
+FMaterialShaderParametersBase
+FStaticMeshInstanceData
+FStaticMeshRenderData
+# network driver internals (the gameplay classes only hold pointers to connections and drivers)
+FNetPacketNotify
+FNetPacketNotify::FSentAckData
+FNetPacketNotify::FNotificationHeader
+FOutBunch
+UChannel
+UNetConnection
+UChildConnection
+UNetDriver
+UReplicationDriver
+UReplicationConnectionDriver
+UPendingNetGame
+# Chaos physics solver internals (physics scene, referenced through pointers)
+Chaos::FPhysicsSolverBase
+# network protocol constants (MAX_PACKET_*, MaxSequenceHistoryLength) that no plugin references
 <unnamed-enum-MAX_PACKET_HEADER_BITS>
 <unnamed-enum-MAX_PACKET_RELIABLE_SEQUENCE_HEADER_BITS>
-AAudioVolume::ENetFields_Private
-APawn
-APawn::ENetFields_Private
-APostProcessVolume
-AVolume
-AWorldSettings
-AWorldSettings::ENetFields_Private
-Chaos::FPhysicsSolverBase
-EDebugViewShaderMode
-FActiveForceFeedbackEffect
-FAnimMontageInstance
-FBlendParameter
-FCameraShakeBaseStartParams
-FCameraShakePatternUpdateParams
-FEditorViewportClient
-FFinalPostProcessSettings
-FInstancedViewUniformShaderParameters
-FMaterialInstanceBasePropertyOverrides
-FMeshBatch
-FNetPacketNotify
 FNetPacketNotify::<unnamed-enum-MaxSequenceHistoryLength>
 FNetPacketNotify::<unnamed-enum-SequenceNumberBits>
-FNetPacketNotify::FNotificationHeader
-FNetPacketNotify::FSentAckData
-FOutBunch
-FPostProcessVolumeProperties
-FPrimitiveSceneProxy
-FPrimitiveUniformShaderParameters
-FPrimitiveViewRelevance
-FRayTracingGeometry
-FSceneInterface
-FSceneViewStateInterface
-FSkeletalMeshLODInfo
-FSlateUser
-FStaticMeshLODResources
-FStaticMeshRenderData
-FViewUniformShaderParameters
-IInterface_PostProcessVolume
-TSparseArray<TSparseSetElement<TTuple<FName,FUpdateLevelVisibilityLevelInfo> >,TSparseArrayAllocator<TSizedDefaultAllocator<32>,FDefaultBitArrayAllocator> >
-UAnimMontage
-UCameraShakeBase
-UChannel
-UDamageType
-UMaterialInstance
-UNetConnection
-UNetDriver
-UPhysicalMaterial
-UReplicationConnectionDriver
-UReplicationDriver
-USkeletalMesh
-USkeleton
-USkinnedAsset
-UStaticMeshComponent
+# Windows SDK struct (winnt.h): a field renamed between SDK versions (Identifier -> SpareWORD), same layout
+_RTL_CRITICAL_SECTION_DEBUG

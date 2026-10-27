@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
+--- a/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
++++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
+@@ -371,7 +371,7 @@ public:
+ 	 *  requires LandscapeActor to be loaded
+ 	 *  Does not work in World composition mode!
+ 	 */
+-	LANDSCAPE_API void FixupProxiesTransform(bool bDirty = false);
++	LANDSCAPE_API void FixupProxiesTransform(bool bDirty = false, bool bArkUnknown = false); // [ARK] bool (name assumed)
+ 	
+ 	// Update per-component layer allow list to include the currently painted layers
+ 	LANDSCAPE_API void UpdateComponentLayerAllowList();

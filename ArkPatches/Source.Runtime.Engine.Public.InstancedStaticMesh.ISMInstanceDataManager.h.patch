@@ -1,0 +1,35 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/InstancedStaticMesh/ISMInstanceDataManager.h b/Engine/Source/Runtime/Engine/Public/InstancedStaticMesh/ISMInstanceDataManager.h
+--- a/Engine/Source/Runtime/Engine/Public/InstancedStaticMesh/ISMInstanceDataManager.h
++++ b/Engine/Source/Runtime/Engine/Public/InstancedStaticMesh/ISMInstanceDataManager.h
+@@ -177,7 +177,9 @@ public:
+ 	void ReadCookedRenderData(FArchive& Ar);
+ 
+ private:
++public: // [ARK] was private
+ 	static bool ShouldUsePrecomputed();
++private:
+ 
+ 	using EChangeFlag = FInstanceAttributeTracker::EFlag;
+ 
+@@ -186,13 +188,21 @@ private:
+ 	template<EChangeFlag Flag>
+ 	inline void MarkChangeHelper(FPrimitiveInstanceId InstanceId);
+ 
++public: // [ARK] was private
+ 	void MarkComponentRenderInstancesDirty();
++private:
+ 
++public: // [ARK] was private
+ 	bool HasIdentityMapping() const;
++private:
+ 
++public: // [ARK] was private
+ 	void FreeInstanceId(FPrimitiveInstanceId InstanceId);
++private:
+ 
++public: // [ARK] was private
+ 	void InitChangeSet(const union FChangeDesc &ChangeDesc, const FInstanceUpdateComponentDesc &ComponentData, FISMInstanceUpdateChangeSet &ChangeSet);
++private:
+ 
+ #if WITH_EDITOR
+ 	/**

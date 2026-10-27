@@ -1,0 +1,9 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/ActorDescContainerInstance.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/ActorDescContainerInstance.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/ActorDescContainerInstance.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/ActorDescContainerInstance.h
+@@ -216,4 +216,5 @@ protected:
+ 	bool														bRegisteredDelegates;
+ 	bool														bCreateChildContainerHierarchy;
+ #endif
++ENGINE_API virtual void BeginDestroy(); // [ARK]
+ };

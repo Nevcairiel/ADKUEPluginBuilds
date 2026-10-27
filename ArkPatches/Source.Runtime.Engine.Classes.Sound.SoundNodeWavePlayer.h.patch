@@ -1,0 +1,16 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeWavePlayer.h b/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeWavePlayer.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeWavePlayer.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/SoundNodeWavePlayer.h
+@@ -46,6 +46,12 @@ private:
+ 	// This only occurs if ClearAssetReferences() was called and we still tried to play this wave player,
+ 	// likely because the quality level was changed.
+ 	FThreadSafeBool bAsyncLoadRequestPending;
++public:
++	uint32 bForceSoftLoad : 1; // [ARK]
++private:
++public:
++	TObjectPtr<USoundNodeRandom> SoftLoadParent; // [ARK]
++private:
+ 
+ public:
+ 

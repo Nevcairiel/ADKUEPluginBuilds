@@ -1,0 +1,47 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/MeshComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/MeshComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/MeshComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/MeshComponent.h
+@@ -30,6 +30,8 @@ public:
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category=Rendering, Meta=(ToolTip="Material overrides."))
+ 	TArray<TObjectPtr<class UMaterialInterface>> OverrideMaterials;
+ 
++	ENGINE_API virtual void MulticastShowInstance_Implementation(int); // [ARK]
++	ENGINE_API virtual void MulticastHideInstance_Implementation(int, FVector, float, float, bool); // [ARK]
+ 	UFUNCTION(BlueprintCallable, Category="Rendering|Material")
+ 	ENGINE_API virtual TArray<class UMaterialInterface*> GetMaterials() const;
+ 
+@@ -46,6 +48,7 @@ public:
+ 	/** The max draw distance for overlay material. A distance of 0 indicates that overlay will be culled using primitive max distance. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay, Category=Rendering)
+ 	float OverlayMaterialMaxDrawDistance;
++	uint8 bDisablePerPixelPainting : 1; // [ARK]
+ 
+ 	/** Get the overlay material used by this instance. If GetMaterialSlot is enabled, the relative slot material is returned. */
+ 	UFUNCTION(BlueprintCallable, Category="Rendering|Material")
+@@ -247,6 +250,15 @@ protected:
+ 	
+ 	/** Get the default overlay material max draw distance */
+ 	virtual float GetDefaultOverlayMaterialMaxDrawDistance() const { return 0.f; };
++public:
++	ENGINE_API virtual void MulticastHideInstance(int, FVector, float, float, bool); // [ARK]
++protected:
++public:
++	ENGINE_API virtual void MulticastShowInstance(int); // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool BaseGetInstanceVisibility(int) const; // [ARK]
++protected:
+ 
+ 	/** Retrieves all the (scalar/vector-)parameters from within the used materials on the SkeletalMesh, and stores material index vs parameter names */
+ 	ENGINE_API void CacheMaterialParameterNameIndices();
+@@ -284,4 +296,10 @@ protected:
+ 
+ 	TSortedMap<FName, FMaterialParameterCache, FDefaultAllocator, FNameFastLess> MaterialParameterCache;
+ 	TSortedMap<FName, FMaterialParameterCache, FDefaultAllocator, FNameFastLess> MaterialSlotsOverlayMaterialParameterCache;
++public:
++	TSubclassOf<AActor> DamageFXActorToSpawn; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool IsMeshComponent() const; // [ARK]
++protected:
+ };

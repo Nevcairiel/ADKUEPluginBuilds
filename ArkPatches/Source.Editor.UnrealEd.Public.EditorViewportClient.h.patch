@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Editor/UnrealEd/Public/EditorViewportClient.h b/Engine/Source/Editor/UnrealEd/Public/EditorViewportClient.h
+--- a/Engine/Source/Editor/UnrealEd/Public/EditorViewportClient.h
++++ b/Engine/Source/Editor/UnrealEd/Public/EditorViewportClient.h
+@@ -671,12 +671,16 @@ public:
+ 	 * @param HitY			The Y location of the mouse
+ 	 */
+ 	UNREALED_API virtual void ProcessClick(FSceneView& View, HHitProxy* HitProxy, FKey Key, EInputEvent Event, uint32 HitX, uint32 HitY);
++	UNREALED_API virtual void SummonContextMenu(const FTypedElementHandle&, UMaterialInterface*, UActorComponent*); // [ARK]
++	UNREALED_API virtual void PickMaterial(UMaterialInterface*); // [ARK]
+ 
+ 	/**
+ 	 * Override to specify what should happen when a context menu is requested
+ 	 * @param HitProxyElement the clicked element
+ 	 */
++#if 0 // [ARK] removed
+ 	virtual void SummonContextMenu(const FTypedElementHandle& HitProxyElement = FTypedElementHandle()) {}
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Called when mouse movement tracking begins

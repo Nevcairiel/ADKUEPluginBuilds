@@ -1,0 +1,86 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/StaticMeshComponent.h
+@@ -156,6 +156,8 @@ public:
+ 	**/
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = Rendering)
+ 	int32 WorldPositionOffsetDisableDistance = 0;
++	int PerInstanceDynamicCustomDataOutDisableDistance; // [ARK]
++	uint8 bForceDisablePerInstanceDynamicCustomDataOut : 1; // [ARK]
+ 
+ 	/** Forces this component to always use Nanite for masked materials, even if FNaniteSettings::bAllowMaskedMaterials=false */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = Rendering)
+@@ -189,6 +191,8 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = RayTracing)
+ 	uint8 bEvaluateWorldPositionOffsetInRayTracing : 1;
++	uint8 GDFLightPortal : 1; // [ARK]
++	uint8 bUsePrimitiveDataForCustomFlags : 1; // [ARK]
+ 
+ protected:
+ 	/** Initial value of bEvaluateWorldPositionOffset when BeginPlay() was called. Can be useful if we want to reset to initial state. */
+@@ -397,6 +401,7 @@ public:
+ 	/** Useful for reducing self shadowing from distance field methods when using world position offset to animate the mesh's vertices. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=Lighting)
+ 	float DistanceFieldSelfShadowBias;
++	ETwoSidedDistanceFieldSetting DistanceFieldMostlyTwoSidedOverride; // [ARK]
+ 
+ 	/**
+ 	 * Allows adjusting the desired streaming distance of streaming textures that uses UV 0.
+@@ -468,6 +473,10 @@ public:
+ 	 * Returns true if the component has valid Nanite render data.
+ 	 */
+ 	ENGINE_API virtual bool HasValidNaniteData() const;
++	ENGINE_API virtual float GetWorldPositionOffsetDisableDistance() const; // [ARK]
++	ENGINE_API virtual float GetPerInstanceDynamicCustomDataOutDisableDistance() const; // [ARK]
++	ENGINE_API virtual bool CopyPerInstanceDynamicCustomData(const UStaticMeshComponent*, int, int, int) const; // [ARK]
++	ENGINE_API virtual bool AffectsGrassHeightMap() const; // [ARK]
+ 
+ 	/** Determines if we use the nanite overrides from any materials */
+ 	ENGINE_API virtual bool UseNaniteOverrideMaterials() const override;
+@@ -488,10 +497,12 @@ public:
+ 	UFUNCTION(BlueprintCallable, Category = "Rendering|LOD")
+ 	ENGINE_API void SetWorldPositionOffsetDisableDistance(int32 NewValue);
+ 
++#if 0 // [ARK] removed
+ 	int32 GetWorldPositionOffsetDisableDistance() const
+ 	{
+ 		return WorldPositionOffsetDisableDistance;
+ 	}
++#endif // [ARK]
+ 
+ 	bool EvaluateWorldPositionOffsetInRayTracing() const
+ 	{
+@@ -822,6 +833,7 @@ public:
+ 
+ 	UE_DEPRECATED(5.7, "Please use SupportsDitheredLODTransitions with EShaderPlatform argument and not ERHIFeatureLevel::Type")
+ 	ENGINE_API virtual bool SupportsDitheredLODTransitions(ERHIFeatureLevel::Type FeatureLevel);
++	ENGINE_API virtual int GetRenderIndexForDynamicCustomData(int) const; // [ARK]
+ 
+ 	/** Whether we can support dithered LOD transitions (default behavior checks all materials). Used for HISMC LOD. */
+ 	ENGINE_API virtual bool SupportsDitheredLODTransitions(EShaderPlatform ShaderPlatform);
+@@ -951,6 +963,24 @@ private:
+ 	FOnStaticMeshChanged OnStaticMeshChangedEvent;
+ #endif
+ 	FOnGetNaniteResources OnGetNaniteResourcesEvent;
++public:
++	uint32 bUseDirectionalShadowDistanceLimit : 1; // [ARK]
++private:
++public:
++	uint32 bProjectLandscapeGrass : 1; // [ARK]
++private:
++public:
++	uint32 bIgnoreMaterialGrassOutput : 1; // [ARK]
++private:
++public:
++	uint32 bIncludeWPOInGrassHeight : 1; // [ARK]
++private:
++public:
++	uint8 GrassSliceIndex; // [ARK]
++private:
++public:
++	float DirectionalShadowDistanceLimit; // [ARK]
++private:
+ 
+ 	friend class FStaticMeshComponentDetails;
+ 	friend class FStaticMeshComponentRecreateRenderStateContext;

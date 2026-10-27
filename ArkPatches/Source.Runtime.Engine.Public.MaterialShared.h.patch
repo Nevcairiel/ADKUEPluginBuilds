@@ -1,0 +1,107 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/MaterialShared.h b/Engine/Source/Runtime/Engine/Public/MaterialShared.h
+--- a/Engine/Source/Runtime/Engine/Public/MaterialShared.h
++++ b/Engine/Source/Runtime/Engine/Public/MaterialShared.h
+@@ -609,6 +609,7 @@ public:
+ 	LAYOUT_FIELD(FGuid, ExternalTextureGuid);
+ 	LAYOUT_FIELD(int32, SourceTextureIndex);
+ 	LAYOUT_FIELD_EDITORONLY(EShaderFrequencyMask, ShaderFrequencyMask);
++	uint8 AuxSceneTextureFlags; // [ARK]
+ };
+ 
+ class FUniformParameterOverrides
+@@ -1005,6 +1006,8 @@ public:
+ 
+ 	/** Bitfield of the EPathTracingBufferTextureId used */
+ 	LAYOUT_FIELD(uint8, UsedPathTracingBufferTextures);
++	LAYOUT_FIELD(uint32, AuxTexturesRead); // [ARK]
++	LAYOUT_FIELD(uint32, AuxTexturesWrite); // [ARK]
+ 
+ 	/** Number of times SampleTexture is called, excludes custom nodes. */
+ 	LAYOUT_FIELD_EDITORONLY(uint16, EstimatedNumTextureSamplesVS);
+@@ -1068,6 +1071,8 @@ public:
+ 
+ 	/** true if the material uses per-instance custom data */
+ 	LAYOUT_BITFIELD(uint8, bUsesPerInstanceCustomData, 1);
++	LAYOUT_BITFIELD(uint8, bUsesPerInstanceDynamicCustomData, 1); // [ARK]
++	LAYOUT_BITFIELD(uint8, bUsesComputeMaterialSplatData, 1); // [ARK]
+ 
+ 	/** true if the material uses vertex interpolator */
+ 	LAYOUT_BITFIELD(uint8, bUsesVertexInterpolator, 1);
+@@ -2426,12 +2431,16 @@ public:
+ 	virtual	bool ShouldDisableDepthTest() const { return false; }
+ 	virtual	bool ShouldWriteOnlyAlpha() const { return false; }
+ 	virtual	bool ShouldEnableResponsiveAA() const { return false; }
++	ENGINE_API virtual int GetSSRQuality() const; // [ARK]
++#if 0 // [ARK] removed
+ 	virtual bool ShouldDoSSR() const { return false; }
++#endif // [ARK]
+ 	virtual bool ShouldDoContactShadows() const { return false; }
+ 	virtual	bool HasPixelAnimation() const { return false; }
+ 	virtual	bool UsesTemporalResponsiveness() const { return false; }
+ 	virtual	bool UsesMotionVectorWorldOffset() const { return false; }
+ 	virtual bool IsLightFunction() const = 0;
++	ENGINE_API virtual bool IsCompute() const; // [ARK]
+ 	virtual bool IsUsedWithEditorCompositing() const { return false; }
+ 	virtual bool IsDeferredDecal() const = 0;
+ 	virtual bool IsUIMaterial() const = 0;
+@@ -2486,6 +2495,7 @@ public:
+ 	virtual bool IsMasked() const = 0;
+ 	virtual bool IsDitherMasked() const { return false; }
+ 	virtual bool AllowNegativeEmissiveColor() const { return false; }
++	ENGINE_API virtual bool IsToonOutlineWidthInWorldUnits() const; // [ARK]
+ 	virtual enum EBlendMode GetBlendMode() const = 0;
+ 	ENGINE_API virtual enum ERefractionMode GetRefractionMode() const;
+ 	UE_DEPRECATED(5.7, "This is not longer valid since even when not plugged in, the default value on the root node can be used")
+@@ -2575,6 +2585,11 @@ public:
+ 	virtual bool IsTessellationEnabled() const { return false; }
+ 	virtual bool HasRenderTracePhysicalMaterialOutputs() const { return false; }
+ 	virtual uint16 GetPreshaderGap() const { return 0; }
++	ENGINE_API virtual bool HasPerInstanceDynamicCustomDataOutput() const; // [ARK]
++	ENGINE_API virtual uint32 GetNumDynamicCustomDataOutputFloatsPerRow() const; // [ARK]
++	ENGINE_API virtual uint32 GetNumDynamicCustomDataOutputRowsPerInstance(const FMaterialRenderContext&) const; // [ARK]
++	ENGINE_API virtual bool HasGPUMessageOutput() const; // [ARK]
++	ENGINE_API virtual bool OutputsGrassWeights() const; // [ARK]
+ 	virtual EMaterialShadingRate GetShadingRate() const { return MSR_1x1; }
+ 	virtual int32 GetNeuralProfileId() const { return INDEX_NONE; }
+ 	virtual bool IsVariableRateShadingAllowed() const { return true; }
+@@ -3262,7 +3277,9 @@ public:
+ 	ENGINE_API virtual bool ShouldDisableDepthTest() const override;
+ 	ENGINE_API virtual bool ShouldWriteOnlyAlpha() const override;
+ 	ENGINE_API virtual bool ShouldEnableResponsiveAA() const override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual bool ShouldDoSSR() const override;
++#endif // [ARK]
+ 	ENGINE_API virtual bool ShouldDoContactShadows() const override;
+ 	ENGINE_API virtual bool HasPixelAnimation() const override;
+ 	ENGINE_API virtual bool UsesTemporalResponsiveness() const override;
+@@ -3471,6 +3488,30 @@ protected:
+ 	/** Useful for debugging. */
+ 	ENGINE_API virtual FString GetBaseMaterialPathName() const override;
+ 	ENGINE_API virtual FString GetDebugName() const override;
++public:
++	ENGINE_API virtual int GetSSRQuality() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool IsCompute() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool IsToonOutlineWidthInWorldUnits() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool HasPerInstanceDynamicCustomDataOutput() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual uint32 GetNumDynamicCustomDataOutputFloatsPerRow() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual uint32 GetNumDynamicCustomDataOutputRowsPerInstance(const FMaterialRenderContext&) const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool HasGPUMessageOutput() const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool OutputsGrassWeights() const; // [ARK]
++protected:
+ };
+ 
+ /**

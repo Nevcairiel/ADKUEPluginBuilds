@@ -1,0 +1,50 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/ScrollBox.h b/Engine/Source/Runtime/UMG/Public/Components/ScrollBox.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/ScrollBox.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/ScrollBox.h
+@@ -10,6 +10,7 @@
+ #include "Widgets/Layout/SScrollBox.h"
+ #include "Components/PanelWidget.h"
+ #include "Containers/Ticker.h"
++#include "Layout/Margin.h" // [ARK] member type
+ #include "ScrollBox.generated.h"
+ 
+ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScrollBoxFocusReceivedEvent);
+@@ -384,5 +385,38 @@ protected:
+ 
+ #if WITH_EDITOR
+ 	FTSTicker::FDelegateHandle TickHandle;
++public:
++	int NumPreviewWidgets; // [ARK]
++protected:
++public:
++	int NumWidgetsBeforeWrapping; // [ARK]
++protected:
++public:
++	FVector2D WidgetSize; // [ARK]
++protected:
++public:
++	FVector2D WidgetPadding; // [ARK]
++protected:
++public:
++	TEnumAsByte<EHorizontalAlignment> WidgetHorizontalAlignment; // [ARK]
++protected:
++public:
++	TEnumAsByte<EVerticalAlignment> WidgetVerticalAlignment; // [ARK]
++protected:
++public:
++	bool UseWidgetPaddingAsMargin; // [ARK]
++protected:
++public:
++	FMargin WidgetMargin; // [ARK]
++protected:
++public:
++	bool bGamepadMovementMovesScrollBox; // [ARK]
++protected:
++public:
++	bool bPrimalAllowRightSpecialStickScroll; // [ARK]
++protected:
++public:
++	bool bForceAllowGamepadHighlight; // [ARK]
++protected:
+ #endif //WITH_EDITOR
+ };

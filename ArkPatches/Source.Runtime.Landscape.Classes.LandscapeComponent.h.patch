@@ -1,0 +1,54 @@
+diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeComponent.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeComponent.h
+--- a/Engine/Source/Runtime/Landscape/Classes/LandscapeComponent.h
++++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeComponent.h
+@@ -220,20 +220,34 @@ struct FLandscapeComponentGrassData
+ 
+ 	// Variable used to detect when grass data needs to be regenerated:
+ 	uint32 GenerationHash = 0;
++	FString ComponentName; // [ARK]
+ #endif
+ 
+ #if WITH_EDITORONLY_DATA
+ 	// Height data for LODs 1+, keyed on LOD index
+ 	TMap<int32, TArray<uint16>> HeightMipData;
++	bool bOutOfDate; // [ARK]
++	bool bIsDirty; // [ARK]
+ #endif // WITH_EDITORONLY_DATA
+ 	
+ 	static constexpr int32 UnknownNumElements = -1;
+ 	// Elements per contiguous array: for validation and also to indicate whether the grass data is valid (NumElements >= 0, meaning 0 elements is valid but the grass data is all zero and 
+ 	//  therefore empty) or not known yet (== UnknownNumElements)
++#if 0 // [ARK] removed
+ 	int32 NumElements = UnknownNumElements;
++#endif // [ARK]
+ 	// Serialized in one block to prevent Slack waste
++#if 0 // [ARK] removed
+ 	TMap<FName, int32> WeightOffsets;
++#endif // [ARK]
++	TMap<TObjectPtr<ULandscapeGrassType>,int> WeightOffsets; // [ARK] type changed
++	FIntPoint SliceSizeInElements; // [ARK]
++	TArray<FGrassSliceOffsetData> SliceOffsetData; // [ARK]
++	TArray<uint8> CompressedHWData; // [ARK]
++	bool bPerSliceCompression; // [ARK]
++#if 0 // [ARK] removed
+ 	TArray<uint8> HeightWeightData;
++#endif // [ARK]
+ 
+ 	// Note: We need to explicitly disable warnings on these constructors/operators for clang to be happy with deprecated variables
+     PRAGMA_DISABLE_DEPRECATION_WARNINGS
+@@ -607,6 +621,7 @@ public:
+ 		double MaxInstanceDiscardDistance = DBL_MAX;
+ 	};
+ 	FGrassTypeSummary GrassTypeSummary;
++	float GrassMapZScale; // [ARK]
+ 	inline bool IsGrassTypeSummaryValid() { return !GrassTypeSummary.bInvalid; }
+ 
+ 	/** Invalidate the grass type summary.  Call whenever grass types are changed to indicate that the summary values are out of date. */
+@@ -746,6 +761,7 @@ public:
+ 	};
+ 	TArray<FExcludeBox> ActiveExcludedBoxes;
+ 	uint32 ChangeTag;
++	alignas(8) uint8 ActiveExcludedBoxesChangedDelegate[24]; // [ARK]
+ 
+ #if WITH_EDITOR
+ 	/** Physical material update task */

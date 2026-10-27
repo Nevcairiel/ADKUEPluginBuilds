@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/RenderCore/Public/RenderGraphEvent.h b/Engine/Source/Runtime/RenderCore/Public/RenderGraphEvent.h
+--- a/Engine/Source/Runtime/RenderCore/Public/RenderGraphEvent.h
++++ b/Engine/Source/Runtime/RenderCore/Public/RenderGraphEvent.h
+@@ -275,7 +275,10 @@ struct FRDGScope
+ #endif
+ 	> FStorage;
+ 	
++#if 0 // [ARK] removed
+ 	FStorage Impl;
++#endif // [ARK]
++	FRDGScope::TStorage<FRDGScope_Budget,FRDGScope_RHI> Impl; // [ARK] type changed
+ 
+ 	template <typename TScopeType>
+ 	static constexpr uint32 GetTypeMask()

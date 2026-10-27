@@ -1,0 +1,393 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h
+@@ -29,6 +29,7 @@
+ 
+ #include "WorldPartition/WorldPartitionActorDescType.h"
+ 
++#include "Ark/PrimalActor.h" // [ARK] base class
+ #include "Actor.generated.h"
+ 
+ class AActor;
+@@ -135,8 +136,12 @@ enum class UE_DEPRECATED(5.0, "EActorGridPlacement is deprecated.") EActorGridPl
+ /** Helper struct that allows UPrimitiveComponent and FPrimitiveSceneInfo write to the Actor's LastRenderTime member */
+ struct FActorLastRenderTime
+ {
++#if 0 // [ARK] removed
+ 	UE_DEPRECATED(5.6, "Use GetLastRenderTime/SetLastRenderTime instead.")
+ 	std::atomic<float> LastRenderTime;
++#endif // [ARK]
++	std::atomic<double> LastRenderTime; // [ARK] type changed
++	std::atomic<double> LastRenderTimeOnScreen; // [ARK]
+ 
+ 	void SetLastRenderTime(float InLastRenderTime)
+ 	{
+@@ -148,7 +153,7 @@ struct FActorLastRenderTime
+ 	float GetLastRenderTime() const
+ 	{
+ 		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+-		return LastRenderTime.load(std::memory_order_relaxed);
++		return (float)LastRenderTime.load(std::memory_order_relaxed); // [ARK] double
+ 		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	}
+ 
+@@ -279,7 +284,7 @@ struct TIsContiguousContainer<TInlineComponentArray<T, NumElements>>
+  * @see UActorComponent
+  */
+ UCLASS(BlueprintType, Blueprintable, config=Engine, meta=(ShortTooltip="An Actor is an object that can be placed or spawned in the world."), MinimalAPI)
+-class AActor : public UObject
++class AActor : public UPrimalActor // [ARK] bases (was : public UObject)
+ {
+ 	GENERATED_BODY()
+ 
+@@ -303,6 +308,24 @@ private:
+ 
+ public:
+ 	/** Returns the properties used for network replication, this needs to be overridden by all actor classes with native replicated properties */
++	ENGINE_API virtual void MulticastDrawDebugLineTraceHitResult_Implementation(const FHitResult, FVector, FVector, FLinearColor, FLinearColor, float, float, bool, FLinearColor, float, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugCamera_Implementation(const ACameraActor*, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugString_Implementation(const FVector, const FString&, AActor*, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugCapsuleWithExtents_Implementation(const FVector, const FVector, float, FLinearColor, float, bool, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugCapsule_Implementation(const FVector, float, float, const FRotator, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugCylinder_Implementation(const FVector, const FVector, float, int, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugCoordinateSystem_Implementation(const FVector, const FRotator, float, float, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugPlane_Implementation(const UE::Math::TPlane<double>, const FVector, float, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugBox_Implementation(const FVector, FVector, FLinearColor, const FRotator, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugArrow_Implementation(const FVector, const FVector, float, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugPoint_Implementation(const FVector, float, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugSphere_Implementation(const FVector, float, int, FLinearColor, float, bool); // [ARK]
++	ENGINE_API virtual void MulticastDrawDebugLine_Implementation(const FVector, const FVector, FLinearColor, float, float, bool); // [ARK]
++	ENGINE_API virtual void ActorPlaySoundUnreliable_Implementation(USoundBase*, bool, FName, FVector); // [ARK]
++	ENGINE_API virtual void ActorPlaySound_Implementation(USoundBase*, bool, FName, FVector); // [ARK]
++	ENGINE_API virtual void NetActorSpawnActorUnreliable_Implementation(TSubclassOf<AActor>, FVector, FRotator, bool, USceneComponent*, FName, AActor*); // [ARK]
++	ENGINE_API virtual void NetActorSpawnActor_Implementation(TSubclassOf<AActor>, FVector, FRotator, bool, USceneComponent*, FName, AActor*); // [ARK]
++	ENGINE_API virtual void ReceiveAnyDamage_Implementation(float, const UDamageType*, AController*, AActor*); // [ARK]
+ 	ENGINE_API virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+ 
+ 	/** Called when this actor begins replicating to initialize the state of custom property conditions */
+@@ -515,6 +538,8 @@ public:
+ 	 */
+ 	UPROPERTY(EditDefaultsOnly, Category=Tick)
+ 	uint8 bAllowTickBeforeBeginPlay:1;
++	uint8 bForceHighQualityViewerReplication : 1; // [ARK]
++	uint8 bActorPreventPhysicsSceneRegistration : 1; // [ARK]
+ 
+ private:
+ 	/** If true then destroy self when "finished", meaning all relevant components report that they are done and no timelines or timers are in flight. */
+@@ -561,9 +586,11 @@ public:
+ 	/** Whether this actor is editor-only. Use with care, as if this actor is referenced by anything else that reference will be NULL in cooked builds */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, Category=Cooking)
+ 	uint8 bIsEditorOnlyActor:1;
++	uint8 bEditorOnlyActorShowInPIE : 1; // [ARK]
+ 
+ 	/** Indicates the actor was pulled through a seamless travel.  */
+ 	uint8 bActorSeamlessTraveled:1;
++	uint8 bDisableRigidBodyAnimNodes : 1; // [ARK]
+ 
+ 	/**
+ 	 * Does this actor have an owner responsible for replication? (APlayerController typically)
+@@ -655,6 +682,12 @@ private:
+ 
+ 	/** Set true just before PostRegisterAllComponents() is called and false just before PostUnregisterAllComponents() is called */
+ 	uint8 bHasRegisteredAllComponents:1;
++protected:
++	uint8 bDeferredBeginPlay : 1; // [ARK]
++private:
++protected:
++	uint8 bPrimalDeferredConstruction : 1; // [ARK]
++private:
+ 
+ 	/**
+ 	 * Enables any collision on this actor.
+@@ -697,6 +730,9 @@ protected:
+ 	/** Whether to use use the async physics tick with this actor. */
+ 	UPROPERTY(EditAnywhere, Category=Physics)
+ 	uint8 bAsyncPhysicsTickEnabled : 1;
++public:
++	uint8 bIsInvincible : 1; // [ARK]
++protected:
+ 	
+ 	/**
+ 	 * Condition for calling UpdateOverlaps() to initialize overlap state when loaded in during level streaming.
+@@ -746,6 +782,9 @@ private:
+ 	/** Describes how much control the remote machine has over the actor. */
+ 	UPROPERTY(Replicated, Transient, VisibleInstanceOnly, Category=Networking)
+ 	TEnumAsByte<enum ENetRole> RemoteRole;
++public:
++	int LastForceNetUpdateFrame; // [ARK]
++private:
+ 
+ public:
+ 	/**
+@@ -796,6 +835,7 @@ public:
+ 	/** Allow each actor to run at a different time speed. The DeltaTime for a frame is multiplied by the global TimeDilation (in WorldSettings) and this CustomTimeDilation for this actor's tick.  */
+ 	UPROPERTY(BlueprintReadWrite, AdvancedDisplay, Category=Actor)
+ 	float CustomTimeDilation;
++	TWeakObjectPtr<AKillZVolume> DelayedFellOutOfWorldKillZVolume; // [ARK]
+ 	
+ private:
+ 	/** The RayTracingGroupId this actor and its components belong to. (For components that did not specify any) */
+@@ -884,7 +924,10 @@ public:
+ 	 * The time this actor was created, relative to World->GetTimeSeconds().
+ 	 * @see UWorld::GetTimeSeconds()
+ 	 */
++#if 0 // [ARK] removed
+ 	float CreationTime;
++#endif // [ARK]
++	double CreationTime; // [ARK] type changed
+ 
+ 	/** Component that handles input for this actor, if input is enabled. */
+ 	UPROPERTY(DuplicateTransient)
+@@ -949,7 +992,10 @@ private:
+ 	 * from the render thread, which is up to a frame behind the game thread, so you should allow this time to
+ 	 * be at least a frame behind the game thread's world time before you consider the actor non-visible.
+ 	 */
++#if 0 // [ARK] removed
+ 	FActorLastRenderTime LastRenderTime;
++#endif // [ARK]
++	TSharedPtr<FActorLastRenderTime> LastRenderTime; // [ARK] type changed
+ 
+ 	friend struct FActorLastRenderTime;
+ 
+@@ -1342,6 +1388,7 @@ public:
+ 	/** Array of tags that can be used for grouping and categorizing. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category=Actor)
+ 	TArray<FName> Tags;
++	int CachedStasisGridIndex; // [ARK]
+ 
+ 
+ 	//~==============================================================================================
+@@ -1609,14 +1656,17 @@ public:
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Collision", meta=(DisplayName = "Get Actor Bounds"))
+ 	ENGINE_API virtual void GetActorBounds(bool bOnlyCollidingComponents, FVector& Origin, FVector& BoxExtent, bool bIncludeFromChildActors = false) const;
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
+ 
+ 	/** Returns the RootComponent of this Actor */
+ 	UFUNCTION(BlueprintGetter)
+ 	USceneComponent* K2_GetRootComponent() const;
+ 
+ 	/** Returns velocity (in cm/s (Unreal Units/second) of the rootcomponent if it is either using physics or has an associated MovementComponent */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category="Transformation")
+ 	ENGINE_API virtual FVector GetVelocity() const;
++#endif // [ARK]
+ 
+ 	/** 
+ 	 * Move the actor instantly to the specified location. 
+@@ -2309,6 +2359,7 @@ public:
+ 	/** Get the remaining lifespan of this actor. If zero is returned the actor lives forever. */
+ 	UFUNCTION(BlueprintCallable, Category="Actor", meta=(Keywords = "delete destroy"))
+ 	ENGINE_API virtual float GetLifeSpan() const;
++	ENGINE_API virtual bool Destroy(bool bNetForce = false, bool bShouldModifyLevel = true); // [ARK]
+ 
+ 	/**
+ 	 * Construction script, the place to spawn components and do other setup.
+@@ -2324,7 +2375,9 @@ public:
+ 	 * @param	bShouldModifyLevel		[opt] If true, Modify() the level before removing the actor.  Default is true.	
+ 	 * @returns	true if destroyed or already marked for destruction, false if indestructible.
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API bool Destroy(bool bNetForce = false, bool bShouldModifyLevel = true );
++#endif // [ARK]
+ 
+ 	/** Called when the actor has been explicitly destroyed. */
+ 	UFUNCTION(BlueprintImplementableEvent, meta = (Keywords = "delete", DisplayName = "Destroyed"))
+@@ -2717,7 +2770,9 @@ public:
+ 	 * Function that gets called from within Map_Check to allow this actor to check itself
+ 	 * for any potential errors and register them with map check dialog.
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void CheckForErrors();
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Function that gets called from within Map_Check to allow this actor to check itself
+@@ -3109,6 +3164,7 @@ public:
+ 	 * @return bool - true if this actor should be considered the owner
+ 	 */
+ 	ENGINE_API virtual bool IsRelevancyOwnerFor(const AActor* ReplicatedActor, const AActor* ActorOwner, const AActor* ConnectionActor) const;
++	ENGINE_API virtual void PostSpawnInitialize(const FTransform&, AActor*, APawn*, bool, bool, bool, bool, bool, ESpawnActorScaleMethod); // [ARK]
+ 
+ 	/** Called after the actor is spawned in the world.  Responsible for setting up actor for play. */
+ 	ENGINE_API void PostSpawnInitialize(FTransform const& SpawnTransform, AActor* InOwner, APawn* InInstigator, bool bRemoteOwned, bool bNoFail, bool bDeferConstruction, ESpawnActorScaleMethod TransformScaleMethod = ESpawnActorScaleMethod::MultiplyWithRoot);
+@@ -3254,6 +3310,7 @@ public:
+ 
+ 	/** Will reregister all components on this actor. Does a lot of work - should only really be used in editor, generally use UpdateComponentTransforms or MarkComponentsRenderStateDirty. */
+ 	ENGINE_API virtual void ReregisterAllComponents();
++	ENGINE_API virtual bool Primal_IncrementalUnregisterAllComponents(bool); // [ARK]
+ 
+ 	/** Finish initializing the component and register tick functions and beginplay if it's the proper time to do so. */
+ 	ENGINE_API void HandleRegisterComponentWithWorld(UActorComponent* Component);
+@@ -3324,6 +3381,9 @@ public:
+ 	 * @return true if the actor has been successfully moved, or false if it couldn't fit.
+ 	 */
+ 	ENGINE_API virtual bool TeleportTo( const FVector& DestLocation, const FRotator& DestRotation, bool bIsATest=false, bool bNoCheck=false );
++	ENGINE_API virtual FVector DoSetActorLocation(const FVector&, ETeleportType); // [ARK]
++	ENGINE_API virtual void TeleportSucceeded(bool, bool); // [ARK]
++	ENGINE_API virtual void StartMeshTeleportInterp(float, const FVector&); // [ARK]
+ 
+ 	/**
+ 	 * Teleport this actor to a new location. If the actor doesn't fit exactly at the location specified, tries to slightly move it out of walls and such.
+@@ -3336,7 +3396,9 @@ public:
+ 	ENGINE_API bool K2_TeleportTo( FVector DestLocation, FRotator DestRotation );
+ 
+ 	/** Called from TeleportTo() when teleport succeeds */
++#if 0 // [ARK] removed
+ 	virtual void TeleportSucceeded(bool bIsATest) {}
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Trace a ray against the Components of this Actor and return the first blocking hit
+@@ -3393,6 +3455,7 @@ public:
+ 	 * @return true if this Actor is attached on Other Actor
+ 	 */
+ 	ENGINE_API virtual bool IsAttachedTo( const AActor* Other ) const;
++	ENGINE_API virtual bool AllowRegisterComponentWithWorld(UActorComponent*); // [ARK]
+ 
+ 	/** Get the extent used when placing this actor in the editor, used for 'pulling back' hit. */
+ 	ENGINE_API FVector GetPlacementExtent() const;
+@@ -3443,6 +3506,8 @@ public:
+ 	 * @param	Transform			The transform the actor was constructed at.
+ 	 */
+ 	virtual void OnConstruction(const FTransform& Transform) {}
++	ENGINE_API virtual UActorComponent* CreateComponentFromTemplate(UActorComponent*, const FName); // [ARK]
++	ENGINE_API virtual UActorComponent* CreateComponentFromTemplateData(const FBlueprintCookedComponentInstancingData*, const FName); // [ARK]
+ 
+ 	/**
+ 	 * Helper function to register the specified component, and add it to the serialized components array
+@@ -3451,8 +3516,12 @@ public:
+ 	ENGINE_API void FinishAndRegisterComponent(UActorComponent* Component);
+ 
+ 	/**  Util to create a component based on a template	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API UActorComponent* CreateComponentFromTemplate(UActorComponent* Template, const FName InName = NAME_None );
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	ENGINE_API UActorComponent* CreateComponentFromTemplateData(const struct FBlueprintCookedComponentInstancingData* TemplateData, const FName InName = NAME_None);
++#endif // [ARK]
+ 
+ 	/** Destroys the constructed components. */
+ 	ENGINE_API void DestroyConstructedComponents();
+@@ -3498,6 +3567,7 @@ protected:
+ 	*/
+ 	UE_DEPRECATED(5.7, "This is being deprecated as part of iris beta. Override OnStopReplicationForIris instead.")
+ 	virtual void EndReplication(EEndPlayReason::Type EndPlayReason) {}
++	ENGINE_API virtual void RegisterActorTickFunctions(bool, bool); // [ARK]
+ 
+ 	/**
+ 	* Helper to BeginReplication passing on additional parameters to the ReplicationSystem, typically called from code overriding normal BeginReplication()
+@@ -3528,7 +3598,9 @@ protected:
+ 	 * Virtual call chain to register all tick functions for the actor class hierarchy
+ 	 * @param bRegister - true to register, false, to unregister
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void RegisterActorTickFunctions(bool bRegister);
++#endif // [ARK]
+ 
+ 	/** Runs UserConstructionScript, delays component registration until it's complete. */
+ 	ENGINE_API void ProcessUserConstructionScript();
+@@ -3576,13 +3648,16 @@ public:
+ 
+ 	/** Called when the Actor is outside the hard limit on world bounds */
+ 	ENGINE_API virtual void OutsideWorldBounds();
++	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const; // [ARK]
+ 
+ 	/** 
+ 	 * Returns the world space bounding box of all components in this Actor.
+ 	 * @param bNonColliding Indicates that you want to include non-colliding components in the bounding box
+ 	 * @param bIncludeFromChildActors If true then recurse in to ChildActor components and find components of the appropriate type in those Actors as well
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false) const;
++#endif // [ARK]
+ 
+ 	/** 
+ 	 * Calculates the actor space bounding box of all components in this Actor.  This is slower than GetComponentsBoundingBox(), because the local bounds of the components are not cached -- they are recalculated every time this function is called.
+@@ -3697,6 +3772,7 @@ public:
+ 
+ 	/** Reset actor to initial state - used when restarting level without reloading. */
+ 	ENGINE_API virtual void Reset();
++	ENGINE_API virtual double GetLastRenderTime(bool) const; // [ARK]
+ 
+ 	/** Event called when this Actor is reset to its initial state - used when restarting level without reloading. */
+ 	UFUNCTION(BlueprintImplementableEvent, Category=Actor, meta=(DisplayName="OnReset", ScriptName="OnReset"))
+@@ -3713,14 +3789,19 @@ public:
+ 	ENGINE_API bool WasRecentlyRendered(float Tolerance = 0.2f) const;
+ 
+ 	/** Returns the most recent time any of this actor's components were rendered */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual float GetLastRenderTime() const;
++#endif // [ARK]
+ 
+ 	/** Forces this actor to be net relevant if it is not already by default	 */
+ 	ENGINE_API virtual void ForceNetRelevant();
++	ENGINE_API virtual void ForceNetUpdate(bool, bool, bool); // [ARK]
+ 
+ 	/** Force actor to be updated to clients/demo net drivers */
++#if 0 // [ARK] removed
+ 	UFUNCTION( BlueprintCallable, Category="Networking")
+ 	ENGINE_API virtual void ForceNetUpdate();
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Calls PrestreamTextures() for all the actor's meshcomponents.
+@@ -4411,6 +4492,22 @@ public:
+ 	 *							[out]	Y position on Canvas for the last line drawn by this function.
+ 	 */
+ 	ENGINE_API virtual void DisplayDebug(class UCanvas* Canvas, const class FDebugDisplayInfo& DebugDisplay, float& YL, float& YPos);
++private:
++	ENGINE_API virtual void SetNetworkSpatializationParent(AActor*); // [ARK]
++public:
++private:
++	ENGINE_API virtual void ClearNetworkSpatializationParent(); // [ARK]
++public:
++	ENGINE_API virtual APlayerController* GetOwnerController() const; // [ARK]
++	ENGINE_API virtual FVector GetAttackingFromLocation(); // [ARK]
++	ENGINE_API virtual float GetRepGraphRelevantDistanceSq(); // [ARK]
++	ENGINE_API virtual bool NetExecCommand(FName, const FNetExecParams&); // [ARK]
++	ENGINE_API virtual void SendExecCommand(FName, const FNetExecParams&, bool, bool); // [ARK]
++	ENGINE_API virtual bool ServerHandleNetExecCommand(APlayerController*, FName, const FBPNetExecParams&); // [ARK]
++	ENGINE_API virtual void ServerSendExecCommandToPlayer(APrimalPlayerController*, FName, const FBPNetExecParams&, bool, bool, bool, bool); // [ARK]
++	ENGINE_API virtual void ServerSendExecCommandToEveryone(FName, const FBPNetExecParams&, bool, bool, bool, bool); // [ARK]
++	ENGINE_API virtual void ServerSendSimpleExecCommandToEveryone(FName, bool, bool, bool, bool); // [ARK]
++	ENGINE_API virtual bool LocalExecCommand(FName, const FBPNetExecParams&); // [ARK]
+ 
+ 	/** Retrieves actor's name used for logging, or string "NULL" if Actor is null */
+ 	static FString GetDebugName(const AActor* Actor) { return Actor ? Actor->GetName() : TEXT("NULL"); }
+@@ -4673,6 +4770,11 @@ public:
+ 	}
+ 	
+ 	//~ End Methods for Replicated Members.
++	ENGINE_API virtual void Stasis(); // [ARK]
++	ENGINE_API virtual void Unstasis(); // [ARK]
++	ENGINE_API virtual bool IsInOrOwnedBy(const UObject*) const; // [ARK]
++	ENGINE_API virtual void RealtimeThrottledTick_Implementation(double); // [ARK]
++	ENGINE_API virtual void CheckForErrors(); // [ARK]
+ };
+ 
+ /** Internal struct used by level code to mark actors as destroyed */
+@@ -4703,12 +4805,12 @@ private:
+ 
+ inline void FActorLastRenderTime::Set(AActor* InActor, float LastRenderTime)
+ {
+-	InActor->LastRenderTime.SetLastRenderTime(LastRenderTime);
++	if (InActor->LastRenderTime) { InActor->LastRenderTime->SetLastRenderTime(LastRenderTime); } // [ARK] TSharedPtr
+ }
+ 
+ inline FActorLastRenderTime* FActorLastRenderTime::GetPtr(AActor* InActor)
+ {
+-	return (InActor ? &InActor->LastRenderTime : nullptr);
++	return (InActor ? InActor->LastRenderTime.Get() : nullptr); // [ARK] TSharedPtr
+ }
+ 
+ /** Accessor use by Level for Actor pre-pregistration. */
+@@ -5047,7 +5149,7 @@ DEFINE_ACTORDESC_TYPE(AActor, FWorldPartitionActorDesc);
+ 	bool SetActorLocationAndRotation(FVector NewLocation, FRotator NewRotation, bool bSweep=false, FHitResult* OutSweepHitResult=nullptr, ETeleportType Teleport = ETeleportType::None) { return Super::SetActorLocationAndRotation(NewLocation, NewRotation, bSweep, OutSweepHitResult, Teleport); } \
+ 	bool SetActorLocationAndRotation(FVector NewLocation, const FQuat& NewRotation, bool bSweep=false, FHitResult* OutSweepHitResult=nullptr, ETeleportType Teleport = ETeleportType::None) { return Super::SetActorLocationAndRotation(NewLocation, NewRotation, bSweep, OutSweepHitResult, Teleport); } \
+ 	virtual bool TeleportTo( const FVector& DestLocation, const FRotator& DestRotation, bool bIsATest, bool bNoCheck ) override { return Super::TeleportTo(DestLocation, DestRotation, bIsATest, bNoCheck); } \
+-	virtual FVector GetVelocity() const override { return Super::GetVelocity(); } \
++	/* [ARK] no GetVelocity override */ \
+ 	float GetHorizontalDistanceTo(AActor* OtherActor)  { return Super::GetHorizontalDistanceTo(OtherActor); } \
+ 	float GetVerticalDistanceTo(AActor* OtherActor)  { return Super::GetVerticalDistanceTo(OtherActor); } \
+ 	float GetDotProductTo(AActor* OtherActor) { return Super::GetDotProductTo(OtherActor); } \

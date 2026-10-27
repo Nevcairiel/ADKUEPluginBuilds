@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/RuntimeVirtualTextureComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/RuntimeVirtualTextureComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/RuntimeVirtualTextureComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/RuntimeVirtualTextureComponent.h
+@@ -153,6 +153,15 @@ protected:
+ 
+ 	/** A fence to track render thread has finished with StreamingTexture data before destroy. */
+ 	FRenderCommandFence DestroyFence;
++public:
++	bool bIncludeGrassInStreamingTexture; // [ARK]
++protected:
++public:
++	TArray<FIntPoint> DebugBuildStreamingMipsTiles; // [ARK]
++protected:
++public:
++	TObjectPtr<AActor> DebugBuildStreamingMipsTilesActorBounds; // [ARK]
++protected:
+ 
+ public:
+ 	/**

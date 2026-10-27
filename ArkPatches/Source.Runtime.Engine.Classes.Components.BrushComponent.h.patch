@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/BrushComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/BrushComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/BrushComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/BrushComponent.h
+@@ -33,6 +33,10 @@ class UBrushComponent : public UPrimitiveComponent
+ 	/** Local space translation */
+ 	UPROPERTY()
+ 	FVector PrePivot_DEPRECATED;
++	uint32 bBodySetupLocked : 1; // [ARK]
++	TSubclassOf<UNavAreaBase> NavAreaClass; // [ARK]
++	TSubclassOf<UNavAreaBase> SecondNavAreaClass; // [ARK]
++	float SurfaceNavAreaHeight; // [ARK]
+ #endif
+ 
+ 	//~ Begin UObject Interface
+@@ -73,6 +77,7 @@ public:
+ 
+ 	/** Create the AggGeom collection-of-convex-primitives from the Brush UModel data. */
+ 	ENGINE_API void BuildSimpleBrushCollision();
++	ENGINE_API virtual void GetNavigationData(FNavigationRelevantData&) const; // [ARK]
+ };
+ 
+ 

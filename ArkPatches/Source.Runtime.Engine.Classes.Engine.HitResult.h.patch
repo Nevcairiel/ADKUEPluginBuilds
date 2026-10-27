@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/HitResult.h b/Engine/Source/Runtime/Engine/Classes/Engine/HitResult.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/HitResult.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/HitResult.h
+@@ -114,6 +114,7 @@ struct FHitResult
+ 	 */
+ 	UPROPERTY()
+ 	uint8 bStartPenetrating : 1;
++	uint32 bVolatileCollision : 1; // [ARK]
+ 
+ 	/**
+ 	 * Physical material that was hit.

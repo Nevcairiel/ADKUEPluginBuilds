@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/RenderCore/Public/RenderGraphBlackboard.h b/Engine/Source/Runtime/RenderCore/Public/RenderGraphBlackboard.h
+--- a/Engine/Source/Runtime/RenderCore/Public/RenderGraphBlackboard.h
++++ b/Engine/Source/Runtime/RenderCore/Public/RenderGraphBlackboard.h
+@@ -126,9 +126,11 @@ public:
+ 	}
+ 
+ private:
++public: // [ARK] was private
+ 	FRDGBlackboard(FRDGAllocator& InAllocator)
+ 		: Allocator(InAllocator)
+ 	{}
++private:
+ 
+ 	void Clear()
+ 	{

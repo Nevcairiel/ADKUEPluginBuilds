@@ -1,0 +1,20 @@
+diff --git a/Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h b/Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h
+--- a/Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h
++++ b/Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h
+@@ -803,7 +803,10 @@ private:
+ 	* The last world game time at which we were ticked. Game time used is dependent on bTickEvenWhenPaused
+ 	* Valid only if we've been ticked at least once since having a tick interval
+ 	*/
++#if 0 // [ARK] removed
+ 	TOptional<float> LastTickGameTimeSeconds;
++#endif // [ARK]
++	TOptional<double> LastTickGameTimeSeconds; // [ARK] type changed
+ 
+ 	struct FPauseOnArgs
+ 	{
+@@ -818,4 +821,5 @@ private:
+ 	DECLARE_DELEGATE(FOnEvaluationCallback);
+ 	TArray<FOnEvaluationCallback> PreEvaluationCallbacks;
+ 	TArray<FOnEvaluationCallback> PostEvaluationCallbacks;
++	alignas(4) uint8 LastSentPlaybackPosition[12]; // [ARK]
+ };

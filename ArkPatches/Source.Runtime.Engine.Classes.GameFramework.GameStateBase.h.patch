@@ -1,0 +1,43 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameStateBase.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/GameStateBase.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameStateBase.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/GameStateBase.h
+@@ -145,6 +145,15 @@ protected:
+ 	/** Allows clients to calculate ServerWorldTimeSecondsDelta */
+ 	UFUNCTION()
+ 	ENGINE_API virtual void OnRep_ReplicatedWorldTimeSecondsDouble();
++public:
++	ENGINE_API virtual float GetClientReplicationRateFor(UNetConnection*, AActor*) const; // [ARK]
++protected:
++public:
++	ENGINE_API virtual float GetMatineePlayRate(AActor*); // [ARK]
++protected:
++public:
++	ENGINE_API virtual void LevelAddedToWorld(ULevel*); // [ARK]
++protected:
+ 
+ 	/** Server TimeSeconds. Useful for syncing up animation and gameplay. */
+ 	UPROPERTY(Transient, ReplicatedUsing = OnRep_ReplicatedWorldTimeSecondsDouble)
+@@ -165,6 +174,15 @@ protected:
+ 	double SumServerWorldTimeSecondsDelta;
+ 	/** The number of server world time deltas accumulated in SumServerWorldTimeSecondsDelta - used for computing the mean */
+ 	uint32 NumServerWorldTimeSecondsDeltas;
++public:
++	TMap<FName,TArray<FSemaphoreEntry>> SemaphoreStorage; // [ARK]
++protected:
++public:
++	FPostProcessOverlapEvent OnAnyPostProcessVolumeEntered; // [ARK]
++protected:
++public:
++	FPostProcessOverlapEvent OnAnyPostProcessVolumeLeft; // [ARK]
++protected:
+ 
+ private:
+ 	// Hidden functions that don't make sense to use on this class.
+@@ -172,6 +190,7 @@ private:
+ 
+ 	friend class UDemoNetDriver;
+ 	friend class FReplayHelper;
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
+ };
+ 
+ 

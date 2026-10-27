@@ -1,0 +1,11 @@
+diff --git a/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraSettings.h b/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraSettings.h
+--- a/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraSettings.h
++++ b/Engine/Plugins/FX/Niagara/Source/Niagara/Public/NiagaraSettings.h
+@@ -163,6 +163,7 @@ class UNiagaraSettings : public UDeveloperSettings
+ 	 It is recommended to not disable this when working with large world coordinates. */
+ 	UPROPERTY(config, EditAnywhere, Category = Niagara, meta = ( DisplayName = "Enforce strict type checks in the graph" ))
+ 	bool bEnforceStrictStackTypes = true;
++	bool bStatelessEmittersEnabled; // [ARK]
+ 
+ 	/** If set to true, quaternion attributes will be interpolated via slerp instead of lerp in interpolated spawn scripts. */
+ 	UPROPERTY(config, EditAnywhere, AdvancedDisplay, Category = Niagara)

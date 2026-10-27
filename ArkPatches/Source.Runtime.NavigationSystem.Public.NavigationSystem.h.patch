@@ -1,0 +1,23 @@
+diff --git a/Engine/Source/Runtime/NavigationSystem/Public/NavigationSystem.h b/Engine/Source/Runtime/NavigationSystem/Public/NavigationSystem.h
+--- a/Engine/Source/Runtime/NavigationSystem/Public/NavigationSystem.h
++++ b/Engine/Source/Runtime/NavigationSystem/Public/NavigationSystem.h
+@@ -296,6 +296,9 @@ class UNavigationSystemV1 : public UNavigationSystemBase
+ 
+ public:
+ 	NAVIGATIONSYSTEM_API UNavigationSystemV1(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
++private:
++	NAVIGATIONSYSTEM_API virtual void UpdateInvokers(); // [ARK]
++public:
+ 	virtual ~UNavigationSystemV1() = default;
+ 
+ 	NAVIGATIONSYSTEM_API void GatherDebugLabels(TArray<FString>& InOutDebugLabels) const;
+@@ -463,7 +466,9 @@ private:
+ 	TArray<FBox> InvokersSeedBounds;
+ 
+ 	double NextInvokersUpdateTime;
++#if 0 // [ARK] removed
+ 	NAVIGATIONSYSTEM_API void UpdateInvokers();
++#endif // [ARK]
+ 
+ public:
+ #if !UE_BUILD_SHIPPING

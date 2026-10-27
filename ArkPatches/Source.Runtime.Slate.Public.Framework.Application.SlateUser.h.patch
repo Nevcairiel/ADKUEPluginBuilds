@@ -1,0 +1,139 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateUser.h b/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateUser.h
+--- a/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateUser.h
++++ b/Engine/Source/Runtime/Slate/Public/Framework/Application/SlateUser.h
+@@ -129,10 +129,16 @@ public:
+ 	SLATE_API bool HasValidFocusPath() const;
+ 	SLATE_API const FWeakWidgetPath& GetWeakFocusPath() const;
+ 
++public: // [ARK] was protected
+ SLATE_SCOPE:
++public: // [ARK] public in the devkit
+ 	static TSharedRef<FSlateUser> Create(int32 InUserIndex, TSharedPtr<ICursor> InCursor);
++public:
++public: // [ARK] was protected
+ 	static SLATE_API TSharedRef<FSlateUser> Create(FPlatformUserId InPlatformUserId, TSharedPtr<ICursor> InCursor);
++public:
+ 
++public: // [ARK] was protected
+ 	inline TSharedRef<FWidgetPath> GetFocusPath() const
+ 	{
+ 		if (!StrongFocusPath.IsValid())
+@@ -141,51 +147,118 @@ SLATE_SCOPE:
+ 		}
+ 		return StrongFocusPath.ToSharedRef();
+ 	}
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void DrawWindowlessDragDropContent(const TSharedRef<SWindow>& WindowToDraw, FSlateWindowElementList& WindowElementList, int32& MaxLayerId);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void DrawCursor(const TSharedRef<SWindow>& WindowToDraw, FSlateWindowElementList& WindowElementList, int32& MaxLayerId);
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void QueueSyntheticCursorMove();
++public:
++public: // [ARK] was protected
+ 	SLATE_API bool SynthesizeCursorMoveIfNeeded();
++public:
+ 
++public: // [ARK] was protected
+ 	TSharedPtr<ICursor> GetCursor() const { return Cursor; }
++public:
++public: // [ARK] was protected
+ 	SLATE_API void LockCursor(const TSharedRef<SWidget>& Widget);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void UnlockCursor();
++public:
++public: // [ARK] was protected
+ 	SLATE_API void UpdateCursor();
++public:
++public: // [ARK] was protected
+ 	SLATE_API void ProcessCursorReply(const FCursorReply& CursorReply);
++public:
++public: // [ARK] was protected
+ 	void RequestCursorQuery() { bQueryCursorRequested = true; }
++public:
++public: // [ARK] was protected
+ 	SLATE_API void QueryCursor();
++public:
++public: // [ARK] was protected
+ 	void OverrideCursor(const TSharedPtr<ICursor> InCursor) { Cursor = InCursor; }
++public:
+ 	
++public: // [ARK] was protected
+ 	SLATE_API void SetFocusPath(const FWidgetPath& NewFocusPath, EFocusCause InFocusCause, bool bInShowFocus);
++public:
+ 	
++public: // [ARK] was protected
+ 	SLATE_API void FinishFrame();
++public:
++public: // [ARK] was protected
+ 	SLATE_API void NotifyWindowDestroyed(TSharedRef<SWindow> DestroyedWindow);
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API bool IsTouchPointerActive(int32 TouchPointerIndex) const;
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void NotifyTouchStarted(const FPointerEvent& TouchEvent);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void NotifyPointerMoveBegin(const FPointerEvent& PointerEvent);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void NotifyPointerMoveComplete(const FPointerEvent& PointerEvent, const FWidgetPath& WidgetsUnderPointer);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void NotifyPointerReleased(const FPointerEvent& PointerEvent, const FWidgetPath& WidgetsUnderCursor, TSharedPtr<FDragDropOperation> DroppedContent, bool bWasHandled);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void UpdatePointerPosition(const FPointerEvent& PointerEvent);
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void StartDragDetection(const FWidgetPath& PathToWidget, int32 PointerIndex, FKey DragButton, UE::Slate::FDeprecateVector2DParameter StartLocation);
++public:
++public: // [ARK] was protected
+ 	SLATE_API FWidgetPath DetectDrag(const FPointerEvent& PointerEvent, float DragTriggerDistance);
++public:
++public: // [ARK] was protected
+ 	SLATE_API bool IsDetectingDrag(uint32 PointerIndex) const;
++public:
++public: // [ARK] was protected
+ 	SLATE_API void ResetDragDetection();
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void SetDragDropContent(TSharedRef<FDragDropOperation> InDragDropContent);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void ResetDragDropContent();
++public:
+ 
++public: // [ARK] was protected
+ 	int32 GetFocusVersion() const { return FocusVersion; }
++public:
++public: // [ARK] was protected
+ 	void IncrementFocusVersion() { FocusVersion++; }
++public:
+ 
++public: // [ARK] was protected
+ 	SLATE_API void UpdateTooltip(const FMenuStack& MenuStack, bool bCanSpawnNewTooltip);
++public:
++public: // [ARK] was protected
+ 	SLATE_API void ResetTooltipWindow();
++public:
++public: // [ARK] was protected
+ 	SLATE_API bool IsWindowHousingInteractiveTooltip(const TSharedRef<const SWindow>& WindowToTest) const;
++public:
+ 
++public: // [ARK] was protected
+ 	FGestureDetector& GetGestureDetector() { return GestureDetector; }
++public:
+ 
+ #if PLATFORM_MAC
+ 	// Unclear why from existing code, but Mac seems to need to cache & restore all mouse captor paths when activating the top level window

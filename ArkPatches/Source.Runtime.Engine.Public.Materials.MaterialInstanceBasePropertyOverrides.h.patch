@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceBasePropertyOverrides.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceBasePropertyOverrides.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceBasePropertyOverrides.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceBasePropertyOverrides.h
+@@ -76,6 +76,8 @@ struct FMaterialInstanceBasePropertyOverrides
+ 	/** Bitmask of usage flags override states. */
+ 	UPROPERTY(EditAnywhere, Category = Material)
+ 	uint32 bOverride_UsageFlags;
++	uint8 bOverride_bUsedWithVolumetricCloud : 1; // [ARK]
++	uint8 bUsedWithVolumetricCloud : 1; // [ARK]
+ 
+ 	/** Indicates that the material should be rendered without backface culling and the normal should be flipped for backfaces. */
+ 	UPROPERTY(EditAnywhere, Category = Material, meta = (editcondition = "bOverride_TwoSided"))

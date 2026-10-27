@@ -1,0 +1,27 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget.h b/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget.h
+@@ -25,6 +25,7 @@ class UTextureRenderTarget : public UTexture
+ 	/** Will override FTextureRenderTarget2DResource::GetDisplayGamma if > 0. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=TextureRenderTarget)
+ 	float TargetGamma;
++	uint32 bUsedWithComputeMaterial : 1; // [ARK]
+ 
+ 	/** If true, there will be two copies in memory - one for the texture and one for the render target. If false, they will share memory if possible. This is useful for scene capture textures that are used in the scene. */
+ 	uint32 bNeedsTwoCopies:1;
+@@ -34,6 +35,7 @@ class UTextureRenderTarget : public UTexture
+ 
+ 	/** If true, RTVs will be created for each slice (texture array and/or cube). */
+ 	uint32 bTargetArraySlicesIndependently : 1;
++	uint32 bSupportsRenderTargetScalabilityRules : 1; // [ARK]
+ 
+ 	/**
+ 	 * Render thread: Access the render target resource for this texture target object
+@@ -81,6 +83,7 @@ class UTextureRenderTarget : public UTexture
+ 	virtual EPixelFormat GetFormat() const PURE_VIRTUAL(GetFormat,return PF_Unknown;)
+ 	virtual bool IsSRGB() const PURE_VIRTUAL(IsSRGB,return false;)
+ 	virtual float GetDisplayGamma() const PURE_VIRTUAL(GetDisplayGamma,return 0.f;)
++	ENGINE_API virtual int GetNumMips() const; // [ARK]
+ 
+ 	// UTextureRenderTarget default display gamma if none is set
+ 	//	returns hard-coded 2.2

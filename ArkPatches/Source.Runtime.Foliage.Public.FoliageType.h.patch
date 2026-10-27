@@ -1,0 +1,168 @@
+diff --git a/Engine/Source/Runtime/Foliage/Public/FoliageType.h b/Engine/Source/Runtime/Foliage/Public/FoliageType.h
+--- a/Engine/Source/Runtime/Foliage/Public/FoliageType.h
++++ b/Engine/Source/Runtime/Foliage/Public/FoliageType.h
+@@ -10,6 +10,7 @@
+ #include "Components/PrimitiveComponent.h"
+ #include "Curves/CurveFloat.h"
+ #include "VT/RuntimeVirtualTextureEnum.h"
++#include "Ark/FoliageBaseType.h" // [ARK] base class
+ #include "FoliageType.generated.h"
+ 
+ class UStaticMesh;
+@@ -102,7 +103,7 @@ struct FFoliageDensityFalloff
+ };
+ 
+ UCLASS(abstract, hidecategories = Object, editinlinenew, MinimalAPI, BlueprintType, Blueprintable)
+-class UFoliageType : public UObject
++class UFoliageType : public UFoliageBaseType // [ARK] bases (was : public UObject)
+ {
+ 	GENERATED_UCLASS_BODY()
+ 
+@@ -310,6 +311,7 @@ public:
+ 	/** Controls whether the primitive should affect dynamic distance field lighting methods.  This flag is only used if CastShadow is true. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=InstanceSettings, meta=(EditCondition="CastShadow"))
+ 	uint32 bAffectDistanceFieldLighting:1;
++	uint32 bAutoEnableDistanceFieldLighting : 1; // [ARK]
+ 
+ 	/** Controls whether the foliage should cast shadows in the case of non precomputed shadowing.  This flag is only used if CastShadow is true. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=InstanceSettings, meta=(EditCondition="CastShadow"))
+@@ -346,6 +348,7 @@ public:
+ 	/** Controls the type of lightmap used for this component. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=InstanceSettings)
+ 	ELightmapType LightmapType;
++	ETwoSidedDistanceFieldSetting DistanceFieldMostlyTwoSidedOverride; // [ARK]
+ 
+ 	/**
+ 	 * If enabled, foliage will render a pre-pass which allows it to occlude other primitives, and also allows 
+@@ -362,6 +365,8 @@ public:
+ 
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = InstanceSettings)
+ 	uint8 bEvaluateWorldPositionOffset : 1;
++	uint8 bIgnoreAutomaticBoundsWPODisableDistance : 1; // [ARK]
++	uint8 bIgnoreWPODisableDistanceScaling : 1; // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = InstanceSettings, meta = (ClampMin=0))
+ 	int32 WorldPositionOffsetDisableDistance;
+@@ -369,6 +374,11 @@ public:
+ 	/** Used to forcefully disable pixel programmable rasterization of Nanite when the mesh is further than a given distance from the camera. */
+ 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = InstanceSettings, meta = (ClampMin = 0))
+ 	float NanitePixelProgrammableDistance = 0.0f;
++	int PerInstanceDynamicCustomDataOutDisableDistance; // [ARK]
++	uint8 bForceDisablePerInstanceDynamicCustomDataOut : 1; // [ARK]
++	uint8 bSupportPerInstanceCustomFlags : 1; // [ARK]
++	uint8 bSupportGPUMessageInstanceId : 1; // [ARK]
++	uint8 bRegisterWithMaterialGPUMessageQueue : 1; // [ARK]
+ 
+ 	/** Custom collision for foliage */
+ 	UPROPERTY(EditAnywhere, Category=InstanceSettings, meta=(HideObjectType=true))
+@@ -630,6 +640,9 @@ public:
+ #if WITH_EDITORONLY_DATA
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=HLOD)
+ 	uint32 bIncludeInHLOD:1;
++	uint32 bProjectLandscapeGrass : 1; // [ARK]
++	uint32 bIgnoreMaterialGrassOutput : 1; // [ARK]
++	int GrassSliceIndex; // [ARK]
+ #endif // WITH_EDITORONLY_DATA
+ 
+ private:
+@@ -666,11 +679,15 @@ private:
+ 	UPROPERTY()
+ 	float ZOffsetMax_DEPRECATED;
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY()
+ 	int32 StartCullDistance_DEPRECATED;
++#endif // [ARK]
+ 	
++#if 0 // [ARK] removed
+ 	UPROPERTY()
+ 	int32 EndCullDistance_DEPRECATED;
++#endif // [ARK]
+ 
+ 	UPROPERTY()
+ 	uint32 UniformScale_DEPRECATED:1;
+@@ -695,6 +712,84 @@ private:
+ 
+ 	UPROPERTY()
+ 	float MaxScale_DEPRECATED;
++public:
++	int StartCullDistance_DEPRECATED; // [ARK]
++private:
++public:
++	int EndCullDistance_DEPRECATED; // [ARK]
++private:
++public:
++	TSubclassOf<UActorComponent> AttachedComponentClass; // [ARK]
++private:
++public:
++	TSubclassOf<AActor> DestroyedMeshActorClass; // [ARK]
++private:
++public:
++	TObjectPtr<UStaticMesh> TreeStumpMesh; // [ARK]
++private:
++public:
++	TObjectPtr<USoundBase> OverrideTreeHarvestSound; // [ARK]
++private:
++public:
++	TObjectPtr<USoundBase> OverrideTreeGroundImpactSound; // [ARK]
++private:
++public:
++	float DistanceAlongTreeToSpawnImpactSound; // [ARK]
++private:
++public:
++	float OverrideWalkableFloorZ; // [ARK]
++private:
++public:
++	float PlayerOverrideWalkableFloorZ; // [ARK]
++private:
++public:
++	uint32 bIsFallingTree : 1; // [ARK]
++private:
++public:
++	uint32 bInstanceRequiresPhysXCollision : 1; // [ARK]
++private:
++public:
++	uint32 bReplicateThisComponent : 1; // [ARK]
++private:
++public:
++	uint32 bDontScaleAttachedComponent : 1; // [ARK]
++private:
++public:
++	TArray<TObjectPtr<UMaterialInterface>> OverrideDestructionMaterials; // [ARK]
++private:
++public:
++	TSubclassOf<AActor> DamageFXActorToSpawn; // [ARK]
++private:
++public:
++	float AttachedComponentScaleFactor; // [ARK]
++private:
++public:
++	float MinScaleForAttachedComponent; // [ARK]
++private:
++public:
++	float MaxScaleForAttachedComponent; // [ARK]
++private:
++public:
++	int ObjectLayer; // [ARK]
++private:
++public:
++	int DisplayOrder; // [ARK]
++private:
++public:
++	int LowEnd_StartCullDistance; // [ARK]
++private:
++public:
++	int LowEnd_EndCullDistance; // [ARK]
++private:
++public:
++	float MaxClusterRadius; // [ARK]
++private:
++public:
++	int MaxInstancesPerCluster; // [ARK]
++private:
++public:
++	uint32 bMapCheckIgnoreLargeCullDistance : 1; // [ARK]
++private:
+ #endif// WITH_EDITORONLY_DATA
+ };
+ 

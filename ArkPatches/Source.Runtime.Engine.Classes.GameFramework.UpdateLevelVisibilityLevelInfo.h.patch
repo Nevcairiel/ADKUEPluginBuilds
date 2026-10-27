@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/UpdateLevelVisibilityLevelInfo.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/UpdateLevelVisibilityLevelInfo.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/UpdateLevelVisibilityLevelInfo.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/UpdateLevelVisibilityLevelInfo.h
+@@ -98,6 +98,7 @@ struct FUpdateLevelVisibilityLevelInfo
+ 	/** Skip connection close if level can't be found (not net serialized) */
+ 	UPROPERTY(NotReplicated)
+ 	uint32 bSkipCloseOnError : 1;
++	const ULevel* LevelReference; // [ARK]
+ 
+ 	ENGINE_API bool NetSerialize(FArchive& Ar, UPackageMap* PackageMap, bool& bOutSuccess);
+ };

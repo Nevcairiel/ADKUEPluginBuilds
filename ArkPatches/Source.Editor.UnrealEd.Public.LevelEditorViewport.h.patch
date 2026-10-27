@@ -1,0 +1,24 @@
+diff --git a/Engine/Source/Editor/UnrealEd/Public/LevelEditorViewport.h b/Engine/Source/Editor/UnrealEd/Public/LevelEditorViewport.h
+--- a/Engine/Source/Editor/UnrealEd/Public/LevelEditorViewport.h
++++ b/Engine/Source/Editor/UnrealEd/Public/LevelEditorViewport.h
+@@ -227,7 +227,9 @@ public:
+ 	UNREALED_API virtual void ReceivedFocus(FViewport* InViewport) override;
+ 	UNREALED_API virtual void LostFocus(FViewport* InViewport) override;
+ 	UNREALED_API virtual void ProcessClick(FSceneView& View, HHitProxy* HitProxy, FKey Key, EInputEvent Event, uint32 HitX, uint32 HitY) override;
++#if 0 // [ARK] removed
+ 	UNREALED_API virtual void SummonContextMenu(const FTypedElementHandle& HitProxyElement = FTypedElementHandle());
++#endif // [ARK]
+ 	UNREALED_API virtual UWorld* GetWorld() const override;
+ 	UNREALED_API virtual void BeginCameraMovement(bool bHasMovement) override;
+ 	UNREALED_API virtual void EndCameraMovement() override;
+@@ -1053,4 +1055,10 @@ private:
+ 
+ 	/** Handle to a timer event raised in ::ReceivedFocus*/
+ 	FTimerHandle			FocusTimerHandle;
++public:
++	UNREALED_API virtual void SummonContextMenu(const FTypedElementHandle&, UMaterialInterface*, UActorComponent*); // [ARK]
++private:
++public:
++	UNREALED_API virtual void PickMaterial(UMaterialInterface*); // [ARK]
++private:
+ };

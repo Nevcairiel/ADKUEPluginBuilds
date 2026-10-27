@@ -1,0 +1,86 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimInstance.h b/Engine/Source/Runtime/Engine/Classes/Animation/AnimInstance.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/AnimInstance.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/AnimInstance.h
+@@ -412,6 +412,7 @@ private:
+ 	 * When Montage are being ticked, we queue AnimNotifies and Events. We trigger notifies first, then Montage events. */
+ 	UPROPERTY(Transient)
+ 	uint8 bQueueMontageEvents : 1;
++	bool bTriggeringAnimNotifies; // [ARK]
+ 
+ 	/** Flag used to query if the animation instance has been uninitialized via UninitializeAnimation() call. */
+ 	uint8 bUninitialized : 1;
+@@ -461,6 +462,8 @@ public:
+ 
+ 	// kismet event functions
+ 
++	ENGINE_API virtual void OnCharacterStepped_Implementation(FVector, FVector); // [ARK]
++	ENGINE_API virtual bool IsUsingRootTransform_Implementation() const; // [ARK]
+ 	UFUNCTION(BlueprintCallable, Category = "Animation") 
+ 	ENGINE_API virtual APawn* TryGetPawnOwner() const;
+ 
+@@ -689,7 +692,7 @@ public:
+ 	/** Returns true if the animation montage is currently active and playing. 
+ 	If reference is NULL, it will return true is ANY montage is currently active and playing. */
+ 	UFUNCTION(BlueprintPure, Category="Animation|Montage")
+-	ENGINE_API bool Montage_IsPlaying(const UAnimMontage* Montage) const;
++	ENGINE_API bool Montage_IsPlaying(const UAnimMontage* Montage, float ArkUnknown = 0.f) const; // [ARK] float, ignored when 0 (name assumed)
+ 
+ 	/** Returns the name of the current animation montage section. */
+ 	UFUNCTION(BlueprintPure, Category="Animation|Montage")
+@@ -830,6 +833,7 @@ public:
+ 	TArray<struct FAnimMontageInstance*> MontageInstances;
+ 
+ 	ENGINE_API virtual void OnMontageInstanceStopped(FAnimMontageInstance & StoppedMontageInstance);
++	ENGINE_API virtual void LinkAnimGraphByTag(FName, TSubclassOf<UAnimInstance>); // [ARK]
+ 	ENGINE_API void ClearMontageInstanceReferences(FAnimMontageInstance& InMontageInstance);
+ 
+ 	UE_DEPRECATED(4.24, "Function renamed, please use GetLinkedInputPoseNode")
+@@ -861,8 +865,10 @@ public:
+ 	void SetSubInstanceClassByTag(FName InTag, TSubclassOf<UAnimInstance> InClass) { LinkAnimGraphByTag(InTag, InClass); }
+ 
+ 	/** Runs through all nodes, attempting to find a linked instance by name/tag, then sets the class of each node if the tag matches */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category = "Animation|Linked Anim Graphs")
+ 	ENGINE_API void LinkAnimGraphByTag(FName InTag, TSubclassOf<UAnimInstance> InClass);
++#endif // [ARK]
+ 
+ 	UE_DEPRECATED(4.24, "Function renamed, please use LinkAnimClassLayers")
+ 	void SetLayerOverlay(TSubclassOf<UAnimInstance> InClass) { LinkAnimClassLayers(InClass); }
+@@ -985,9 +991,18 @@ protected:
+ 	ENGINE_API virtual void Montage_UpdateWeight(float DeltaSeconds);
+ 	/** Advance montages **/
+ 	ENGINE_API virtual void Montage_Advance(float DeltaSeconds);
++	ENGINE_API virtual float Montage_PlayInternal(UAnimMontage*, const FMontageBlendSettings&, float, EMontagePlayReturnType, float, bool, bool); // [ARK]
++public:
++	ENGINE_API virtual void BlendSpacePlayerBase_UpdateBlendFilter(FBlendFilter&); // [ARK]
++protected:
++public:
++	ENGINE_API virtual void BlendSpacePlayerBase_InitializeBlendFilter(FBlendFilter&); // [ARK]
++protected:
+ 
+ 	ENGINE_API void Montage_StopInternal(TFunctionRef<FMontageBlendSettings(const FAnimMontageInstance*)> AlphaBlendSelectorFunction, const UAnimMontage* Montage = nullptr);
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual float Montage_PlayInternal(UAnimMontage* MontageToPlay, const FMontageBlendSettings& BlendInSettings, float InPlayRate = 1.f, EMontagePlayReturnType ReturnValueType = EMontagePlayReturnType::MontageLength, float InTimeToStartMontageAt = 0.f, bool bStopAllMontages = true);
++#endif // [ARK]
+ 
+ public:
+ 
+@@ -1821,6 +1836,8 @@ public:
+ 
+ 	/** Called when a montage hits a 'PlayMontageNotify' or 'PlayMontageNotifyWindow' end */
+ 	FPlayMontageAnimNotifyDelegate OnPlayMontageNotifyEnd;
++	TWeakObjectPtr<USkeletalMeshComponent> BaseAnimSharingComponent; // [ARK]
++	uint8 bIsAnimSharingPaused : 1; // [ARK]
+ 
+ public:
+ 	/** Dispatch AnimEvents (AnimNotifies, Montage Events) queued during UpdateAnimation() */
+@@ -1832,6 +1849,9 @@ public:
+ #if WITH_EDITOR
+ 	// Helper function to handle reinstancing in editor
+ 	ENGINE_API virtual void HandleObjectsReinstanced(const TMap<UObject*, UObject*>& OldToNewInstanceMap);
++	ENGINE_API virtual void UpdateBaseAnimSharingComponent(USkeletalMeshComponent*); // [ARK]
++	ENGINE_API virtual void PauseAnimSharingLeaderComponent(); // [ARK]
++	ENGINE_API virtual void UnPauseAnimSharingLeaderComponent(); // [ARK]
+ 
+ 	/** Returns true if this anim instance is actively being debugged, false otherwise */
+ 	ENGINE_API bool IsBeingDebugged() const;

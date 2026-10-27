@@ -1,0 +1,16 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Particles/Emitter.h b/Engine/Source/Runtime/Engine/Classes/Particles/Emitter.h
+--- a/Engine/Source/Runtime/Engine/Classes/Particles/Emitter.h
++++ b/Engine/Source/Runtime/Engine/Classes/Particles/Emitter.h
+@@ -93,6 +93,12 @@ private:
+ 
+ 	UPROPERTY()
+ 	TObjectPtr<class UArrowComponent> ArrowComponent;
++public:
++	uint32 bForceOnDediServer : 1; // [ARK]
++private:
++public:
++	bool omitHaptics; // [ARK]
++private:
+ public:
+ 
+ #endif

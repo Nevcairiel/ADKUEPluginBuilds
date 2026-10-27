@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/Controller.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/Controller.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/Controller.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/Controller.h
+@@ -398,6 +398,9 @@ protected:
+ 
+ 	/** Called when leaving the inactive state */
+ 	ENGINE_API virtual void EndInactiveState();
++public:
++	ENGINE_API virtual bool IsDinoController() const; // [ARK]
++protected:
+ 
+ 	/** Event when this controller instigates ANY damage */
+ 	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly)
+@@ -407,6 +410,7 @@ private:
+ 	// Hidden functions that don't make sense to use on this class.
+ 	HIDE_ACTOR_TRANSFORM_FUNCTIONS();
+ 
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
+ };
+ 
+ 

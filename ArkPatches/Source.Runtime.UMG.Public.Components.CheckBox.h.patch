@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/CheckBox.h b/Engine/Source/Runtime/UMG/Public/Components/CheckBox.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/CheckBox.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/CheckBox.h
+@@ -71,6 +71,7 @@ public:
+ 	/** Sometimes a button should only be mouse-clickable and never keyboard focusable. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Getter, Category="Interaction")
+ 	bool IsFocusable;
++	bool bUseHoverSound; // [ARK]
+ 
+ public:
+ 
+@@ -175,6 +176,7 @@ protected:
+ protected:
+ 	TSharedPtr<SCheckBox> MyCheckbox;
+ 
++public: // [ARK] K2_Gate_CheckedState public
+ PRAGMA_DISABLE_DEPRECATION_WARNINGS
+ 	PROPERTY_BINDING_IMPLEMENTATION(ECheckBoxState, CheckedState)
+ PRAGMA_ENABLE_DEPRECATION_WARNINGS

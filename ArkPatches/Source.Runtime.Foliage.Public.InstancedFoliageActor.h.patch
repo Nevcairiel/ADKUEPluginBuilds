@@ -1,0 +1,53 @@
+diff --git a/Engine/Source/Runtime/Foliage/Public/InstancedFoliageActor.h b/Engine/Source/Runtime/Foliage/Public/InstancedFoliageActor.h
+--- a/Engine/Source/Runtime/Foliage/Public/InstancedFoliageActor.h
++++ b/Engine/Source/Runtime/Foliage/Public/InstancedFoliageActor.h
+@@ -50,6 +50,8 @@ public:
+ 	FOLIAGE_API bool RemoveFoliageInfoAndCopyValue(UFoliageType* FoliageType, TUniqueObj<FFoliageInfo>& OutFoliageInfo);
+ 
+ 	//~ Begin UObject Interface.
++	FOLIAGE_API virtual bool RemoveInstances(UInstancedStaticMeshComponent*, const TArray<int>&); // [ARK]
++	FOLIAGE_API virtual bool RemoveNonComponentOwnedInstances(); // [ARK]
+ 	virtual void Serialize(FArchive& Ar) override;
+ 	virtual void PostLoad() override;
+ #if WITH_EDITORONLY_DATA
+@@ -64,7 +66,9 @@ public:
+ #if WITH_EDITOR
+ 	virtual void RerunConstructionScripts() override {}
+ #endif
++#if 0 // [ARK] removed
+ 	virtual bool IsLevelBoundsRelevant() const override { return false; }
++#endif // [ARK]
+ 
+ public:
+ #if WITH_EDITOR
+@@ -316,6 +320,30 @@ private:
+ private:
+ #if WITH_EDITOR
+ 	FOnFoliageTypeMeshChanged OnFoliageTypeMeshChangedEvent;
++public:
++	TArray<FString> BaseMeshLookup; // [ARK]
++private:
+ #endif
+ 
++public:
++FOLIAGE_API virtual void PostInitializeComponents(); // [ARK]
++private:
++public:
++FOLIAGE_API virtual void PreSave(FObjectPreSaveContext); // [ARK]
++private:
++public:
++FOLIAGE_API virtual void GetMultiUseEntries(APlayerController*, TArray<FMultiUseEntry>&, int); // [ARK]
++private:
++public:
++FOLIAGE_API virtual bool TryMultiUse(APlayerController*, int, int); // [ARK]
++private:
++public:
++FOLIAGE_API virtual void BeginPlay(); // [ARK]
++private:
++public:
++FOLIAGE_API virtual void EndPlay(const EEndPlayReason::Type); // [ARK]
++private:
++public:
++FOLIAGE_API virtual bool Primal_IncrementalUnregisterAllComponents(bool); // [ARK]
++private:
+ };

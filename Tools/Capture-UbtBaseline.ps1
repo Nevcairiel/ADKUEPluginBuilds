@@ -11,11 +11,14 @@
     CompilerFlags.rsp    cl.exe flags (no include paths, no outputs)
     LinkerFlags.rsp      link.exe flags (no inputs, no outputs)
     SystemLibs.txt       Windows import libraries
+    ThirdPartyLibs.txt   vendor libraries of engine ThirdParty modules (relative to the engine root, copied into the SDK)
     EngineModules.txt    engine modules the plugin links against (-> ShooterGameEditor-<Module>.lib)
+    PluginModules.txt    other modules of the same plugin this module links against (multi-module plugins)
     Definitions.h        UBT's per-module definitions, retargeted to the ShooterGameEditor target
     SdkHeaders.txt       engine headers to copy into the SDK (relative to the engine root)
     UhtModules.json      UHT manifest entries of all modules the plugin depends on (relative paths)
 
+  A multi-module plugin gets one such set per module in <Plugin>\Build\Config\<Module>.
   Only needs to run again if the plugin's sources/dependencies or the engine version change.
 .EXAMPLE
   .\Tools\Capture-UbtBaseline.ps1 BlueprintAssist
@@ -26,9 +29,8 @@ param(
 )
 . "$PSScriptRoot\..\Common.ps1"
 Initialize-Plugin $Plugin
-$configDir = $ConfigDir
 $hostDir   = Join-Path $IntDir 'UbtBaseline'
-New-Item -ItemType Directory -Force $configDir, $hostDir | Out-Null
+New-Item -ItemType Directory -Force $hostDir | Out-Null
 
 # --- 1. host project with a junction to the plugin sources ------------------------------------------------
 $hostPlugin = Join-Path $hostDir "Plugins\$PluginName"
@@ -50,6 +52,11 @@ if (-not $SkipBuild) {
     if ($LASTEXITCODE -ne 0) { throw "UBT baseline build failed" }
 }
 
+foreach ($module in $ModuleNames) {
+Select-PluginModule $module
+$configDir = $ConfigDir
+New-Item -ItemType Directory -Force $configDir | Out-Null
+Write-Step "Module $ModuleName -> $configDir"
 $int = Join-Path $hostPlugin "Intermediate\Build\Win64\x64\UnrealEditor\Development\$ModuleName"
 $engineSource = (Join-Path $EngineRoot 'Engine\Source').Replace('\', '/')
 $hostPluginFwd = $hostPlugin.ToString().Replace('\', '/')
@@ -93,15 +100,20 @@ Set-Content "$configDir\CompilerFlags.rsp" ($flags | Select-Object -Unique)
 # --- 3. linker flags, libraries ------------------------------------------------------------------------------
 $link = Get-Content "$int\UnrealEditor-$ModuleName.dll.rsp"
 $lflags = [Collections.Generic.List[string]]::new(); $mods = [Collections.Generic.List[string]]::new(); $sys = [Collections.Generic.List[string]]::new()
+$thirdParty = [Collections.Generic.List[string]]::new(); $siblings = [Collections.Generic.List[string]]::new()
 foreach ($l in $link) {
-    if ($l -match 'UnrealEditor-(\w+)\.lib"$') { $mods.Add($Matches[1]) }
+    if ($l -match 'UnrealEditor-(\w+)\.lib"$') { if ($Matches[1] -in $ModuleNames) { $siblings.Add($Matches[1]) } else { $mods.Add($Matches[1]) } }
     elseif ($l -match '^"(\w+\.lib)"$') { $sys.Add($Matches[1]) }
+    # vendor libraries of engine ThirdParty modules (ICU, EOSSDK, ...); UBT links them relative to Engine\Source
+    elseif ($l -match '^"(ThirdParty/[^"]+\.lib)"$') { $thirdParty.Add('Engine\Source\' + $Matches[1].Replace('/', '\')) }
     elseif ($l -match '\.(obj|lib|res)"$' -or $l -match '^/(OUT|PDB|IMPLIB|LIBPATH|NATVIS|DELAYLOAD:"libsndfile)') { }
     else { $lflags.Add($l) }
 }
 Set-Content "$configDir\LinkerFlags.rsp" $lflags
 Set-Content "$configDir\EngineModules.txt" $mods
 Set-Content "$configDir\SystemLibs.txt" $sys
+Set-Content "$configDir\ThirdPartyLibs.txt" $thirdParty
+Set-Content "$configDir\PluginModules.txt" $siblings
 
 # --- 4. definitions, retargeted to the devkit's ShooterGameEditor target ------------------------------------
 $overrides = [ordered]@{
@@ -110,6 +122,13 @@ $overrides = [ordered]@{
     'UE_APP_NAME'                   = '"ShooterGameEditor"'
     'UE_PROJECT_NAME'               = 'ShooterGame'
     'UE_TARGET_NAME'                = 'ShooterGameEditor'
+}
+# Plugin specific overrides (<Plugin>\Build\DefinitionOverrides.txt, lines NAME=VALUE): definitions whose value
+# UBT derives from the vanilla engine but must differ for the devkit (e.g. a feature that needs a plugin the devkit
+# has no binaries of).
+$overrideFile = Join-Path $PluginBuildDir 'DefinitionOverrides.txt'
+if (Test-Path $overrideFile) {
+    foreach ($l in Get-Content $overrideFile) { if ($l -match '^\s*([A-Za-z_]\w*)\s*=\s*(.*?)\s*$') { $overrides[$Matches[1]] = $Matches[2] } }
 }
 function Convert-Definitions([string[]] $lines) {
     foreach ($l in $lines) {
@@ -150,7 +169,7 @@ $closure = [Collections.Generic.HashSet[string]]::new(); $queue = [Collections.G
 $hasUht = $byName.ContainsKey($ModuleName)
 if (-not $hasUht) { foreach ($l in $shared) { if ($l -match '^/I "\.\./Intermediate/Build/Win64/UnrealEditor/Inc/(\w+)/UHT"$' -and $byName.ContainsKey($Matches[1])) { $queue.Enqueue($Matches[1]) } } }
 while ($queue.Count) { $n = $queue.Dequeue(); if (-not $closure.Add($n)) { continue }; foreach ($d in $byName[$n].ModuleDependencies) { if ($byName.ContainsKey($d)) { $queue.Enqueue($d) } } }
-[void]$closure.Remove($ModuleName)
+foreach ($m in $ModuleNames) { [void]$closure.Remove($m) }   # the plugin's own modules are UHT'd by Invoke-Uht.ps1 <Plugin>
 $rootPrefix = $EngineRoot.TrimEnd('\') + '\'
 function Rel([string] $p) { if ($p.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase)) { return '$(SDK)\' + $p.Substring($rootPrefix.Length) } else { throw "path outside engine: $p" } }
 $reflected = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
@@ -205,5 +224,7 @@ foreach ($f in $depFiles) {
     }
 }
 foreach ($r in $reflected) { [void]$headers.Add((Get-TrueCase $r).Substring($rootPrefix.Length)) }
+foreach ($t in $thirdParty) { [void]$headers.Add($t) }   # copied into the SDK like the headers
 Set-Content "$configDir\SdkHeaders.txt" ($headers | Sort-Object)
 Write-Host "Captured: $($includes.Count) include paths, $($mods.Count) engine modules, $($closure.Count) UHT modules, $($headers.Count) SDK headers"
+}

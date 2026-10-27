@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/PhysicsCore/Public/BodySetupCore.h b/Engine/Source/Runtime/PhysicsCore/Public/BodySetupCore.h
+--- a/Engine/Source/Runtime/PhysicsCore/Public/BodySetupCore.h
++++ b/Engine/Source/Runtime/PhysicsCore/Public/BodySetupCore.h
+@@ -39,4 +39,9 @@ public:
+ 	/** Collision Type for this body. This eventually changes response to collision to others **/
+ 	UPROPERTY(EditAnywhere,Category=Collision)
+ 	TEnumAsByte<enum EBodyCollisionResponse::Type> CollisionReponse;
++	uint32 bReallyUseTriangleMeshCollisions : 1; // [ARK]
++	uint32 bUseLastLODInsteadOfFirstForCollisionMesh : 1; // [ARK]
++	uint32 bUseSecondToLastLODInsteadOfFirstForCollisionMesh : 1; // [ARK]
++	uint32 bUsesSkelCustomIgnore : 1; // [ARK]
++	uint32 bOneWayCollision : 1; // [ARK]
+ };

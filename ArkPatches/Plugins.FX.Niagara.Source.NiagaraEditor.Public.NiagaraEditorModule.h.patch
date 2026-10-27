@@ -1,0 +1,11 @@
+diff --git a/Engine/Plugins/FX/Niagara/Source/NiagaraEditor/Public/NiagaraEditorModule.h b/Engine/Plugins/FX/Niagara/Source/NiagaraEditor/Public/NiagaraEditorModule.h
+--- a/Engine/Plugins/FX/Niagara/Source/NiagaraEditor/Public/NiagaraEditorModule.h
++++ b/Engine/Plugins/FX/Niagara/Source/NiagaraEditor/Public/NiagaraEditorModule.h
+@@ -149,6 +149,7 @@ struct FNiagaraRendererCreationInfo
+ 
+ 	UPROPERTY()
+ 	FText Description;
++	bool bIsSupportedByStateless; // [ARK]
+ 
+ 	UPROPERTY()
+ 	FTopLevelAssetPath RendererClassPath;

@@ -1,0 +1,32 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/AmbientSound.h b/Engine/Source/Runtime/Engine/Classes/Sound/AmbientSound.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/AmbientSound.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/AmbientSound.h
+@@ -17,6 +17,15 @@ private:
+ 	/** Audio component that handles sound playing */
+ 	UPROPERTY(Category = Sound, VisibleAnywhere, BlueprintReadOnly, meta = (ExposeFunctionCategories = "Sound,Audio,Audio|Components|Audio", AllowPrivateAccess = "true"))
+ 	TObjectPtr<class UAudioComponent> AudioComponent;
++public:
++	float DefaultVolumeMultiplier; // [ARK]
++private:
++public:
++	uint32 bAddedToArray : 1; // [ARK]
++private:
++public:
++	uint32 bOverrideAutoplay : 1; // [ARK]
++private:
+ public:
+ 	
+ 	ENGINE_API FString GetInternalSoundCueName();
+@@ -45,6 +54,12 @@ public:
+ public:
+ 	/** Returns AudioComponent subobject **/
+ 	class UAudioComponent* GetAudioComponent() const { return AudioComponent; }
++	ENGINE_API virtual void BeginPlay(); // [ARK]
++	ENGINE_API virtual void EndPlay(const EEndPlayReason::Type); // [ARK]
++	ENGINE_API virtual void UpdateAmbientSound(); // [ARK]
++	ENGINE_API virtual bool IsLevelBoundsRelevant() const; // [ARK]
++	ENGINE_API virtual void Destroyed(); // [ARK]
++	ENGINE_API virtual void PreInitializeComponents(); // [ARK]
+ };
+ 
+ 

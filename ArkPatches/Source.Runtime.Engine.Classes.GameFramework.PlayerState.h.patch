@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerState.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerState.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerState.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerState.h
+@@ -236,6 +236,7 @@ public:
+ 
+ 	/** custom access to player name, called only when bUseCustomPlayerNames is set */
+ 	ENGINE_API virtual FString GetPlayerNameCustom() const;
++	ENGINE_API virtual FString GetNetPlayerName() const; // [ARK]
+ 
+ 	/** returns previous player name */
+ 	ENGINE_API virtual FString GetOldPlayerName() const;
+@@ -433,6 +434,9 @@ public:
+ 	ENGINE_API virtual void OnSetUniqueId();
+ 
+ 	//~ End Methods for Replicated Members.
++private:
++	ENGINE_API virtual FVector GetVelocity(bool bIsForRagdoll = false) const; // [ARK]
++public:
+ };
+ 
+ struct FSetPlayerStatePawn

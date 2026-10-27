@@ -1,0 +1,8 @@
+# Data members the SDK keeps under their vanilla name although the devkit renamed them (same position and type).
+# Member names are not part of the ABI; keeping the vanilla names lets engine inline code and plugins compile
+# unchanged (Tools\Apply-ManualArkEdits.sh does the renames, Tools\Test-ArkAbi.ps1 accepts them).
+#
+# <Type> <devkit name> <SDK name>
+ULevel Actors2 Actors
+ULevel ActorsForGC2 ActorsForGC
+AWorldSettings MatineeTimeDilation CinematicTimeDilation

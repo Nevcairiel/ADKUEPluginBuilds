@@ -1,0 +1,175 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/ActorComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/ActorComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/ActorComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/ActorComponent.h
+@@ -20,6 +20,8 @@
+ #include "Misc/Timeout.h"
+ #include "Misc/TransactionallySafeRWLock.h"
+ #include "Physics/Experimental/AsyncPhysicsStateProcessorInterface.h"
++#include "Ark/PrimalActorComponent.h" // [ARK] base class
++#include "UObject/NameTypes.h" // [ARK] member type
+ #include "ActorComponent.generated.h"
+ 
+ struct FTypedElementHandle;
+@@ -157,7 +159,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FActorComponentGlobalDestroyPhysicsSignature
+  * @see UPrimitiveComponent
+  */
+ UCLASS(DefaultToInstanced, BlueprintType, abstract, meta=(ShortTooltip="An ActorComponent is a reusable component that can be added to any actor."), config=Engine, MinimalAPI)
+-class UActorComponent : public UObject, public IInterface_AssetUserData, public IAsyncPhysicsStateProcessor
++class UActorComponent : public UPrimalActorComponent, public IInterface_AssetUserData, public IAsyncPhysicsStateProcessor // [ARK] bases (was : public UObject, public IInterface_AssetUserData, public IAsyncPhysicsStateProcessor)
+ {
+ 	GENERATED_BODY()
+ 
+@@ -326,6 +328,7 @@ public:
+ 	/** True if this component can be modified when it was inherited from a parent actor class */
+ 	UPROPERTY(EditDefaultsOnly, Category="Variable")
+ 	uint8 bEditableWhenInherited:1;
++	uint8 bOnlyRelevantToOwner : 1; // [ARK]
+ 
+ 	/** Cached navigation relevancy flag for collision updates */
+ 	uint8 bNavigationRelevant : 1;
+@@ -566,6 +569,45 @@ public:
+ private:
+ 	UPROPERTY()
+ 	TArray<FSimpleMemberReference> UCSModifiedProperties_DEPRECATED;
++public:
++	uint32 bStasisPreventUnregister : 1; // [ARK]
++private:
++public:
++	uint32 bOnlyInitialReplication : 1; // [ARK]
++private:
++public:
++	uint32 bPreventOnDedicatedServer : 1; // [ARK]
++private:
++public:
++	uint32 bPreventOnConsoles : 1; // [ARK]
++private:
++public:
++	uint32 bPreventOnClient : 1; // [ARK]
++private:
++public:
++	uint32 bPreventOnNonDedicatedHost : 1; // [ARK]
++private:
++public:
++	uint32 bDedicatedForceTickingEveryFrame : 1; // [ARK]
++private:
++public:
++	uint32 bAlwaysReplicatePropertyConditional : 1; // [ARK]
++private:
++public:
++	uint32 bUseBPOnComponentTick : 1; // [ARK]
++private:
++public:
++	uint32 bUseBPOnComponentDestroyed : 1; // [ARK]
++private:
++public:
++	uint32 bUseBPOnComponentCreated : 1; // [ARK]
++private:
++public:
++	FName CustomTag; // [ARK]
++private:
++public:
++	int CustomData; // [ARK]
++private:
+ #endif
+ 
+ 	static ENGINE_API FTransactionallySafeRWLock AllUCSModifiedPropertiesLock;
+@@ -612,6 +654,7 @@ public:
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Components|Activation")
+ 	ENGINE_API virtual void SetAutoActivate(bool bNewAutoActivate);
++	ENGINE_API virtual void DestroyPhysicsState(); // [ARK]
+ 
+ 	/** Sets whether this component can tick when paused. */
+ 	UFUNCTION(BlueprintCallable, Category="Components|Tick")
+@@ -621,7 +664,9 @@ public:
+ 	ENGINE_API void CreatePhysicsState(bool bAllowDeferral = false);
+ 
+ 	/** Shut down any physics engine structure for this component */
++#if 0 // [ARK] removed
+ 	ENGINE_API void DestroyPhysicsState();
++#endif // [ARK]
+ 
+ 
+ 	// Networking
+@@ -879,12 +924,15 @@ protected:
+ 
+ 	/** Used to check that DestroyPhysicsState() is working correctly */
+ 	virtual bool HasValidPhysicsState() const { return false; }
++	ENGINE_API virtual void RegisterComponentTickFunctions(bool, bool); // [ARK]
+ 
+ 	/**
+ 	 * Virtual call chain to register all tick functions
+ 	 * @param bRegister - true to register, false, to unregister
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister);
++#endif // [ARK]
+ 
+ public:
+ 
+@@ -1012,6 +1060,9 @@ public:
+ 	 */
+ 	UFUNCTION(BlueprintCallable, Category="Components|Tick")
+ 	ENGINE_API virtual bool IsComponentTickEnabled() const;
++	ENGINE_API virtual bool AllowRegisterWithWorld(UWorld*); // [ARK]
++	ENGINE_API virtual void FailedToRegisterWithWorld(UWorld*); // [ARK]
++	virtual bool CanSkipInstancingWhenPrevented() const { return true; } // [ARK]
+ 
+ 	/** 
+ 	* Sets the tick interval for this component's primary tick function. Does not enable the tick interval. Takes effect on next tick.
+@@ -1269,6 +1320,8 @@ public:
+ 	virtual FBox GetStreamingBoundsEditor() const { return GetStreamingBounds(); }
+ 	virtual bool ForceActorNonSpatiallyLoaded() const { return false; }
+ 	virtual bool ForceActorNoDataLayers() const { return false; }
++	ENGINE_API virtual void AddEditorOnlyAssetUserData(UAssetUserData*); // [ARK]
++	ENGINE_API virtual bool AddEditorOnlyAssetUserDataOfClass(TSubclassOf<UAssetUserData>); // [ARK]
+ #endif // WITH_EDITOR
+ 	//~ End UObject Interface.
+ 
+@@ -1442,6 +1495,36 @@ private:
+ #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+ 	/** This is the old name of the tick function. We just want to avoid mistakes with an attempt to override this */
+ 	virtual void Tick( float DeltaTime ) final { check(0); }
++public:
++	virtual void ReceiveComponentDamage(float, const FDamageEvent&, AController*, AActor*) {} // [ARK]
++private:
++public:
++	virtual bool AllowOctreeUsing() { return true; } // [ARK]
++private:
++public:
++	virtual bool IsSceneComponent() const { return false; } // [ARK]
++private:
++public:
++	virtual bool IsSkeletalMeshComponent() const { return false; } // [ARK]
++private:
++public:
++	virtual bool IsCharacterMovementComponent() const { return false; } // [ARK]
++private:
++public:
++	virtual bool IsPrimitiveComponent() const { return false; } // [ARK]
++private:
++public:
++	virtual bool IsMeshComponent() const { return false; } // [ARK]
++private:
++public:
++	virtual TArray<TWeakObjectPtr<USkinnedMeshComponent>>* GetFollowersSkinnedMeshComponentsForEndOfFrameUpdate() { return nullptr; } // [ARK]
++private:
++public:
++	virtual bool HasLeaderForEndOfFrameUpdate() const { return false; } // [ARK]
++private:
++public:
++	virtual bool HasFollowersForEndOfFrameUpdate() const { return false; } // [ARK]
++private:
+ #endif
+ 
+ 	ENGINE_API void ClearNeedEndOfFrameUpdate_Internal();
+@@ -1499,6 +1582,9 @@ protected:
+ 
+ 	/** Convenience method for testing whether or not we are still be constructed / initialized. */
+ 	ENGINE_API bool NeedsInitialization() const;
++public:
++	virtual bool Primal_IsComponent() const override { return true; } // [ARK]
++protected:
+ };
+ 
+ //////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshSourceData.h b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshSourceData.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshSourceData.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMeshSourceData.h
+@@ -184,6 +184,7 @@ public:
+ 	/** The file path that was used to import this LOD. */
+ 	UPROPERTY(VisibleAnywhere, Category = StaticMeshSourceModel, AdvancedDisplay)
+ 	FString SourceImportFilename;
++	int DynamicCustomDataOutputMaterialIndex; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	/** Whether this LOD was imported in the same file as the base mesh. */

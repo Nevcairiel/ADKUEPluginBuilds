@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/BlendSpace.h b/Engine/Source/Runtime/Engine/Classes/Animation/BlendSpace.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/BlendSpace.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/BlendSpace.h
+@@ -125,6 +125,7 @@ struct FBlendParameter
+ 	/** Maximum value for this axis range. */
+ 	UPROPERTY(EditAnywhere, DisplayName = "Maximum Axis Value", Category=BlendParameter, meta=(NoResetToDefault))
+ 	float Max;
++	float Offset; // [ARK]
+ 
+ 	/** The number of grid divisions along this axis. */
+ 	UPROPERTY(EditAnywhere, DisplayName = "Grid Divisions", Category=BlendParameter, meta=(UIMin="1", ClampMin="1"))

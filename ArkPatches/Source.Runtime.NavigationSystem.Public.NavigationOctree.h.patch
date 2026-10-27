@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/NavigationSystem/Public/NavigationOctree.h b/Engine/Source/Runtime/NavigationSystem/Public/NavigationOctree.h
+--- a/Engine/Source/Runtime/NavigationSystem/Public/NavigationOctree.h
++++ b/Engine/Source/Runtime/NavigationSystem/Public/NavigationOctree.h
+@@ -221,7 +221,9 @@ protected:
+ 	friend struct FNavigationOctreeController;
+ 	friend struct FNavigationOctreeSemantics;
+ 
++public: // [ARK] was protected
+ 	NAVIGATIONSYSTEM_API void SetElementIdImpl(FNavigationElementHandle ElementHandle, FOctreeElementId2 Id);
++protected:
+ 
+ 	TMap<FNavigationElementHandle, FOctreeElementId2> ElementToOctreeId;
+ 	ENavDataGatheringMode DefaultGeometryGatheringMode;

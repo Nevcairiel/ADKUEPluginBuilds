@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/SplineComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/SplineComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/SplineComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/SplineComponent.h
+@@ -12,6 +12,7 @@ PRAGMA_DISABLE_EXPERIMENTAL_WARNINGS
+ #include "Curves/Spline.h"
+ PRAGMA_ENABLE_EXPERIMENTAL_WARNINGS
+ 
++#include "Math/Color.h" // [ARK] member type
+ #include "SplineComponent.generated.h"
+ 
+ PRAGMA_DISABLE_EXPERIMENTAL_WARNINGS
+@@ -281,6 +282,10 @@ public:
+ 	/** If true, the spline will be rendered if the Splines showflag is set. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spline)
+ 	bool bDrawDebug;
++	bool bShowSplineDirectionOnAllPoints; // [ARK]
++	bool bAlwaysDrawSplineInEditorViewport; // [ARK]
++	float SplineDirectionArrowSize; // [ARK]
++	FLinearColor SplineDrawColor; // [ARK]
+ 
+ private:
+ 	/**

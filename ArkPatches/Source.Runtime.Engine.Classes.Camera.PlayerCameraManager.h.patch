@@ -1,0 +1,104 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Camera/PlayerCameraManager.h b/Engine/Source/Runtime/Engine/Classes/Camera/PlayerCameraManager.h
+--- a/Engine/Source/Runtime/Engine/Classes/Camera/PlayerCameraManager.h
++++ b/Engine/Source/Runtime/Engine/Classes/Camera/PlayerCameraManager.h
+@@ -245,7 +245,10 @@ public:
+ 	float ColorScaleInterpDuration;
+ 
+ 	/** Time at which interpolation started (when bEnableColorScaling and bEnableColorScaleInterp == true) */
++#if 0 // [ARK] removed
+ 	float ColorScaleInterpStartTime;
++#endif // [ARK]
++	double ColorScaleInterpStartTime; // [ARK] type changed
+ 
+ 	/** Current ViewTarget */
+ 	UPROPERTY(transient)
+@@ -364,6 +367,7 @@ protected:
+ 	/** Cached ref to modifier for code-driven screen shakes */
+ 	UPROPERTY(transient)
+ 	TObjectPtr<class UCameraModifier_CameraShake> CachedCameraShakeMod;
++	TObjectPtr<UCameraAnimInst> AnimInstPool[8]; // [ARK]
+ 
+ 
+ 	/** Internal list of active post process effects. Parallel array to PostProcessBlendCacheWeights. */
+@@ -375,6 +379,10 @@ protected:
+ 
+ 	/** Internal list of how to blend post process effects. */
+ 	TArray<EViewTargetBlendOrder> PostProcessBlendCacheOrders;
++public:
++	TArray<TObjectPtr<UCameraAnimInst>> ActiveAnims; // [ARK]
++protected:
++	TArray<TObjectPtr<UCameraAnimInst>> FreeAnims; // [ARK]
+ 
+ public:
+ 	/** Adds a postprocess effect at the given weight. */
+@@ -643,6 +651,9 @@ protected:
+ 	ENGINE_API virtual bool AddCameraModifierToList(UCameraModifier* NewModifier);
+ 
+ 	ENGINE_API virtual void CleanUpAnimCamera(const bool bDestroy);
++public:
++	ENGINE_API virtual void ApplyCameraModifiers(float, FMinimalViewInfo&, bool); // [ARK]
++protected:
+ 
+ public:	
+ 	/**
+@@ -650,7 +661,9 @@ public:
+ 	 * @param	DeltaTime	Time in seconds since last update
+ 	 * @param	InOutPOV	Point of View
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void ApplyCameraModifiers(float DeltaTime, FMinimalViewInfo& InOutPOV);
++#endif // [ARK]
+ 	
+ 	/**
+ 	 * Initialize this PlayerCameraManager for the given associated PlayerController.
+@@ -807,8 +820,11 @@ public:
+ 	 * @param PlaySpace - Which coordinate system to play the shake in (affects oscillations and camera anims)
+ 	 * @param UserPlaySpaceRot - Coordinate system to play shake when PlaySpace == CAPS_UserDefined.
+ 	 */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category = "Camera Shakes")
+ 	ENGINE_API virtual UCameraShakeBase* StartCameraShake(TSubclassOf<UCameraShakeBase> ShakeClass, float Scale=1.f, ECameraShakePlaySpace PlaySpace = ECameraShakePlaySpace::CameraLocal, FRotator UserPlaySpaceRot = FRotator::ZeroRotator);
++#endif // [ARK]
++	ENGINE_API virtual UCameraShakeBase* StartCameraShake(TSubclassOf<UCameraShakeBase>, float, ECameraShakePlaySpace, FRotator, float, bool); // [ARK] signature changed
+ 
+ 	/** 
+ 	 * Plays a camera shake on this camera.
+@@ -876,6 +892,10 @@ public:
+ 	*/
+ 	UFUNCTION(BlueprintCallable, Category = "Camera Fades")
+ 	ENGINE_API virtual void SetManualCameraFade(float InFadeAmount, FLinearColor Color, bool bInFadeAudio);
++	ENGINE_API virtual UCameraAnimInst* PlayCameraAnim(UCameraAnim*, float, float, float, float, bool, bool, float, ECameraShakePlaySpace, FRotator); // [ARK]
++	ENGINE_API virtual void StopAllInstancesOfCameraAnim(UCameraAnim*, bool); // [ARK]
++	ENGINE_API virtual void StopCameraAnimInst(UCameraAnimInst*, bool); // [ARK]
++	ENGINE_API virtual void StopAllCameraAnims(bool); // [ARK]
+ 
+ 
+ 	/** Sets the bGameCameraCutThisFrame flag to true (indicating we did a camera cut this frame; useful for game code to call, e.g., when performing a teleport that should be seamless) */
+@@ -917,12 +937,27 @@ protected:
+ 	 * @param	DeltaTime	Delta Time since last camera update (in seconds).
+ 	 */
+ 	ENGINE_API virtual void UpdateViewTargetInternal(FTViewTarget& OutVT, float DeltaTime);
++public:
++	ENGINE_API virtual float GetWorldCameraShakeScale(bool); // [ARK]
++protected:
++public:
++	ENGINE_API virtual void OnBasedMovementUpdated(const FTransform&, const FTransform&); // [ARK]
++protected:
++public:
++	ENGINE_API virtual bool ShouldLooslyAttachViewToHMDView() const; // [ARK]
++protected:
+ 
+ 	// ClientSide camera updates prevents DoUpdateCamera from swapping PendingViewTarget in when the blend is complete, just use a timer to swap
+ 	UFUNCTION()
+ 	ENGINE_API void SwapPendingViewTargetWhenUsingClientSideCameraUpdates();
+ 
+ 	FTimerHandle SwapPendingViewTargetWhenUsingClientSideCameraUpdatesTimerHandle;
++public:
++	FVector TPVCameraOffset; // [ARK]
++protected:
++public:
++	float TPVCameraCollisionHeightScaler; // [ARK]
++protected:
+ 
+ private:
+ 	// Buried to prevent use; use GetCameraRotation instead

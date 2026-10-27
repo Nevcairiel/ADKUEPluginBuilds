@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/FinalPostProcessSettings.h b/Engine/Source/Runtime/Engine/Public/FinalPostProcessSettings.h
+--- a/Engine/Source/Runtime/Engine/Public/FinalPostProcessSettings.h
++++ b/Engine/Source/Runtime/Engine/Public/FinalPostProcessSettings.h
+@@ -207,4 +207,7 @@ public:
+ 
+ 	// Maintains a container with IBlendableInterface objects and their data
+ 	FBlendableManager BlendableManager;
++	bool bHasAnyCustomDepths; // [ARK]
++	TMap<uint64,float> DisabledHeigthFogVolumes; // [ARK]
++	TMap<uint64,float> PrimaryLerpingHeightFogs; // [ARK]
+ };

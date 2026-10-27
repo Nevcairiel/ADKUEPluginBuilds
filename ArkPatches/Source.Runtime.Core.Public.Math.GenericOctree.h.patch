@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Core/Public/Math/GenericOctree.h b/Engine/Source/Runtime/Core/Public/Math/GenericOctree.h
+--- a/Engine/Source/Runtime/Core/Public/Math/GenericOctree.h
++++ b/Engine/Source/Runtime/Core/Public/Math/GenericOctree.h
+@@ -514,6 +514,7 @@ private:
+ 	TArray<FNodeIndex> FreeList;
+ 	/** The extent of a leaf at the maximum allowed depth of the tree. */
+ 	FVector::FReal MinLeafExtent;
++	uint32 UserData = 0; // [ARK]
+ 
+ 	FNodeIndex AllocateEightNodes()
+ 	{

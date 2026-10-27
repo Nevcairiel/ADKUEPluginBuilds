@@ -1,0 +1,9 @@
+diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeNaniteComponent.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeNaniteComponent.h
+--- a/Engine/Source/Runtime/Landscape/Classes/LandscapeNaniteComponent.h
++++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeNaniteComponent.h
+@@ -163,4 +163,5 @@ public:
+ 	virtual FPrimitiveSceneProxy* CreateSceneProxy() override;
+ 
+ 	virtual bool IsHLODRelevant() const override;
++	LANDSCAPE_API virtual bool AffectsGrassHeightMap() const; // [ARK]
+ };

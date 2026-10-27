@@ -1,0 +1,48 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimMontage.h b/Engine/Source/Runtime/Engine/Classes/Animation/AnimMontage.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/AnimMontage.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/AnimMontage.h
+@@ -444,6 +444,12 @@ private:
+ 
+ 	UPROPERTY(Transient)
+ 	int32 DisableRootMotionCount;
++public:
++	bool bPrimalDoNotConsumeRMWhenRMIsDisabled; // [ARK]
++private:
++public:
++	bool bPauseOnFinish; // [ARK]
++private:
+ 
+ public:
+ 	/** Montage to Montage Synchronization.
+@@ -488,6 +494,9 @@ private:
+ 	struct FAnimMontageInstance* MontageSyncLeader;
+ 	/** Frame counter to sync montages once per frame */
+ 	uint32 MontageSyncUpdateFrameCounter;
++public:
++	float BlendOutTimeOverride; // [ARK]
++private:
+ 
+ 	/** true if montage has been updated this frame */
+ 	ENGINE_API bool MontageSync_HasBeenUpdatedThisFrame() const;
+@@ -713,6 +722,8 @@ class UAnimMontage : public UAnimCompositeBase
+ 	/** If this is on, it will allow extracting root motion rotation. DEPRECATED in 4.5 root motion is controlled by anim sequences **/
+ 	UPROPERTY()
+ 	bool bEnableRootMotionRotation;
++	float RootMotionScale; // [ARK]
++	float RootMotionCharacterTurnRateScale; // [ARK]
+ 
+ 	/** When it hits end, it automatically blends out. If this is false, it won't blend out but keep the last pose until stopped explicitly */
+ 	UPROPERTY(EditAnywhere, Category = BlendOption)
+@@ -994,6 +1005,12 @@ public:
+ 	/** Name of optional TimeStretchCurveName to look for in Montage. Time stretch curve will only be used when the montage has a non-default play rate */
+ 	UPROPERTY(EditAnywhere, Category = TimeStretchCurve)
+ 	FName TimeStretchCurveName;
++	uint8 bLocalOnlyRootMotion : 1; // [ARK]
++	uint8 bClientPlayWhenNotRendered : 1; // [ARK]
++	uint8 bForceTickPoseAndServerUpdateMesh : 1; // [ARK]
++	uint8 bAnimPauseOnFinish : 1; // [ARK]
++	uint8 bIsEmoteMontage : 1; // [ARK]
++	TArray<FName> AnimationTags; // [ARK]
+ 
+ private:
+ #if WITH_EDITOR

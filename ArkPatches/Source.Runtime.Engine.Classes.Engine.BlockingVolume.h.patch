@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/BlockingVolume.h b/Engine/Source/Runtime/Engine/Classes/Engine/BlockingVolume.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/BlockingVolume.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/BlockingVolume.h
+@@ -22,4 +22,7 @@ public:
+ 	virtual void LoadedFromAnotherClass(const FName& OldClassName) override;
+ 	virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedEvent) override;
+ #endif // WITH_EDITOR	
++	bool bAddToBlockingVolumeList; // [ARK]
++virtual void PreLoadSaveGame(); // [ARK]
++virtual void EndPlay(const EEndPlayReason::Type); // [ARK]
+ };

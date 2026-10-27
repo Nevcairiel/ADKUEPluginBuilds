@@ -1,0 +1,66 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/LightComponentBase.h b/Engine/Source/Runtime/Engine/Classes/Components/LightComponentBase.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/LightComponentBase.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/LightComponentBase.h
+@@ -7,6 +7,7 @@
+ #include "Misc/Guid.h"
+ #include "LightComponentId.h"
+ #include "Components/SceneComponent.h"
++#include "Math/Color.h" // [ARK] member type
+ #include "LightComponentBase.generated.h"
+ 
+ class UTexture2D;
+@@ -35,6 +36,9 @@ class ULightComponentBase : public USceneComponent
+ 	 */
+ 	UPROPERTY(BlueprintReadOnly, interp, Category=Light, meta=(DisplayName = "Intensity", UIMin = "0.0", UIMax = "20.0", ShouldShowInViewport = true))
+ 	float Intensity;
++	float IntensityScale; // [ARK]
++	float FinalIntensityScale; // [ARK]
++	FLinearColor ColorIntensity; // [ARK]
+ 
+ 	/** 
+ 	 * Filter color of the light.
+@@ -50,12 +54,14 @@ class ULightComponentBase : public USceneComponent
+ 	 */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Light, meta = (ShouldShowInViewport = true))
+ 	uint32 bAffectsWorld:1;
++	uint32 bAffectedByAtmosphereLights : 1; // [ARK]
+ 
+ 	/**
+ 	 * Whether the light should cast any shadows.
+ 	 **/
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Light)
+ 	uint32 CastShadows:1;
++	float TurnOffShadowsAtDistanceFromViewer; // [ARK]
+ 
+ 	/**
+ 	 * Whether the light should cast shadows from static objects.  Also requires Cast Shadows to be set to True.
+@@ -101,6 +107,7 @@ class ULightComponentBase : public USceneComponent
+ 	/** Whether the light affects global illumination, when ray-traced global illumination is enabled. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, AdvancedDisplay, meta = (DisplayName = "Affect Ray Tracing Global Illumination"))
+ 	uint32 bAffectGlobalIllumination : 1;
++	uint32 bSupportSampledLighting : 1; // [ARK]
+ 
+ 	/**
+ 	 *Change the deep shadow layers distribution 0:linear distribution (uniform layer distribution), 1:exponential (more details on near small details).
+@@ -139,6 +146,11 @@ class ULightComponentBase : public USceneComponent
+ 	/** Sprite scaling for dynamic light in the editor. */
+ 	UPROPERTY(transient)
+ 	float DynamicEditorTextureScale;
++	int ObjectLayerMask; // [ARK]
++	uint32 UseBlackLightBuffer : 1; // [ARK]
++	uint32 AlwaysProjectShadows : 1; // [ARK]
++	uint32 UseAmbientLightInfo : 1; // [ARK]
++	uint32 UseSpotLightInfo : 1; // [ARK]
+ #endif
+ 
+ 	/** Sets whether this light casts shadows */
+@@ -253,6 +265,9 @@ class ULightComponentBase : public USceneComponent
+ private:
+ 	/** Runtime unique id used to identify a light component. */
+ 	FLightComponentId LightComponentId;
++public:
++	ENGINE_API virtual void InternalSetVisibility(bool, USceneComponent::EVisibilityPropagation, bool); // [ARK]
++private:
+ };
+ 
+ 

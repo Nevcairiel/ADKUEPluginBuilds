@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Foliage/Public/InstancedFoliage.h b/Engine/Source/Runtime/Foliage/Public/InstancedFoliage.h
+--- a/Engine/Source/Runtime/Foliage/Public/InstancedFoliage.h
++++ b/Engine/Source/Runtime/Foliage/Public/InstancedFoliage.h
+@@ -72,6 +72,7 @@ struct FFoliageInstance_Deprecated : public FFoliageInstancePlacementInfo
+ {
+ 	UActorComponent* Base;
+ 	FGuid ProceduralGuid;
++	int BaseIndex; // [ARK]
+ 	friend FArchive& operator<<(FArchive& Ar, FFoliageInstance_Deprecated& Instance);
+ };
+ 
+@@ -253,6 +254,7 @@ struct FFoliageImpl
+ 	virtual void EnterEditMode() {}
+ 	virtual void ExitEditMode() {}
+ 	virtual bool ShouldAttachToBaseComponent() const { return true; }
++	virtual void BeginDestroy(); // [ARK]
+ 
+ 	AInstancedFoliageActor* GetIFA() const;
+ 	FFoliageInfo* GetInfo() const { check(Info); return Info; }

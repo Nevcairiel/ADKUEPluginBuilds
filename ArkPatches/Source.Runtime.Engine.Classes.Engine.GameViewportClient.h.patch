@@ -1,0 +1,56 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/GameViewportClient.h b/Engine/Source/Runtime/Engine/Classes/Engine/GameViewportClient.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/GameViewportClient.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/GameViewportClient.h
+@@ -100,6 +100,7 @@ public:
+ 
+ 	/** set to true if we want to split the render of each player view into separate Viewports/RT */
+ 	uint32 bEnablePlayersSplitRT:1;
++	uint32 bRenderingMoviePipeline : 1; // [ARK]
+ protected:
+ 	/**
+ 	 * The splitscreen type that is actually being used; takes into account the number of players and other factors (such as cinematic mode)
+@@ -141,6 +142,7 @@ public:
+ 	/** Sets the player which console commands will be executed in the context of. */
+ 	UFUNCTION(exec)
+ 	ENGINE_API virtual void SetConsoleTarget(int32 PlayerIndex);
++	ENGINE_API virtual bool IsSplitscreenAllowed() const; // [ARK]
+ 
+ 	/** Add a Widget to use for specified cursor type*/
+ 	UE_DEPRECATED(5.4, "AddCursorWidget is deprecated, use SetSoftwareCursorWidget instead.")
+@@ -318,6 +320,7 @@ public:
+ 	 * @param	DeltaTime	The time since the last call to Tick.
+ 	 */
+ 	ENGINE_API virtual void Tick( float DeltaTime );
++	ENGINE_API virtual void PreWorldTick(float); // [ARK]
+ 
+ 	/**
+ 	 * Determines whether this viewport client should receive calls to InputAxis() if the game's window is not currently capturing the mouse.
+@@ -367,6 +370,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	 * @param	Command		command to process
+ 	 */
+ 	ENGINE_API virtual FString ConsoleCommand( const FString& Command );
++	ENGINE_API virtual bool GetMousePosition(FVector2D&, bool) const; // [ARK]
+ 
+ 	/**
+ 	 * Retrieve the size of the main viewport.
+@@ -382,7 +386,9 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	ENGINE_API bool IsExclusiveFullscreenViewport() const;
+ 
+ 	/** @return mouse position in game viewport coordinates (does not account for splitscreen) */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual bool GetMousePosition(FVector2D& MousePosition) const;
++#endif // [ARK]
+ 
+ 	/**
+ 	 * Determine whether a fullscreen viewport should be used in cases where there are multiple players.
+@@ -530,6 +536,10 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 
+ 	/** Make sure all navigation objects have appropriate path rendering components set.  Called when EngineShowFlags.Navigation is set. */
+ 	ENGINE_API virtual void VerifyPathRenderingComponents();
++	ENGINE_API virtual void RemoveAllExistingWidgets(); // [ARK]
++	ENGINE_API virtual void OnSplitscreenPlayerJoinFailure(FUniqueNetIdRepl, const FString&); // [ARK]
++	ENGINE_API virtual void ValidateInput(float, bool, bool); // [ARK]
++	ENGINE_API virtual FString WriteVideoReplayBufferToDisk(); // [ARK]
+ 
+ 	/** Accessor for delegate called when a non-HDR screenshot is captured */
+ 	static FOnScreenshotCaptured& OnScreenshotCaptured()

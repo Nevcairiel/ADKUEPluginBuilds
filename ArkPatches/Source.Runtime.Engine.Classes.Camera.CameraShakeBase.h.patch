@@ -1,0 +1,38 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Camera/CameraShakeBase.h b/Engine/Source/Runtime/Engine/Classes/Camera/CameraShakeBase.h
+--- a/Engine/Source/Runtime/Engine/Classes/Camera/CameraShakeBase.h
++++ b/Engine/Source/Runtime/Engine/Classes/Camera/CameraShakeBase.h
+@@ -61,6 +61,7 @@ struct FCameraShakePatternUpdateParams
+ 	/** The dynamic scale being passed down from the camera manger for the next update */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=CameraShake)
+ 	float DynamicScale = 1.f;
++	float BlendingWeight; // [ARK]
+ 
+ 	/** The current view that this camera shake should modify */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=CameraShake)
+@@ -427,6 +428,7 @@ struct FCameraShakeBaseStartParams
+ 
+ 	/** An optional override for the camera shake's duration */
+ 	TOptional<float> DurationOverride;
++	float Speed; // [ARK]
+ };
+ 
+ /**
+@@ -624,6 +626,18 @@ private:
+ 
+ 	/** Whether this shake is active, which is true between StartShake and TeardownShake */
+ 	bool bIsActive;
++public:
++	float Speed; // [ARK]
++private:
++public:
++	uint32 bIgnoreWhenBasedOnDino : 1; // [ARK]
++private:
++public:
++	uint32 bIgnoreWorldShakeScaling : 1; // [ARK]
++private:
++public:
++	uint32 bForceUseCameraShakeScale : 1; // [ARK]
++private:
+ };
+ 
+ /**

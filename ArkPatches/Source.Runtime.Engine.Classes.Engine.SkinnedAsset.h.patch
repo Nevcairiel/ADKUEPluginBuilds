@@ -1,0 +1,25 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAsset.h b/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAsset.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAsset.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/SkinnedAsset.h
+@@ -368,6 +368,21 @@ private:
+ 	std::atomic<uint64> AccessedProperties;
+ 	/** Used as a bit-field indicating which properties are written to by async compilation. */
+ 	std::atomic<uint64> ModifiedProperties;
++public:
++	FRotator RotOffset; // [ARK]
++private:
++public:
++	FRotator ItemSlotAttachmentRotOffset; // [ARK]
++private:
++public:
++	FVector LocOffset; // [ARK]
++private:
++public:
++	FVector ScaleMultiplier; // [ARK]
++private:
++public:
++	FVector ItemSlotAttachmentLocOffset; // [ARK]
++private:
+ #endif // WITH_EDITOR
+ 
+ 	friend class FSkinnedAssetCompilingManager;

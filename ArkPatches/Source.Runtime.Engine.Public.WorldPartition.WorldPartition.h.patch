@@ -1,0 +1,29 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
+@@ -636,6 +636,9 @@ private:
+ 	private:
+ 		TSet<TPair<TWeakObjectPtr<AActor>, FWorldPartitionReference>> NonDirtyActors;
+ 		bool bIsNonDirtyTrackingDisabled = false;
++public:
++		virtual bool OnAddDirtyActor(const TWeakObjectPtr<AActor>); // [ARK]
++private:
+ 	};
+ 
+ 	TUniquePtr<FWorldPartitionExternalDirtyActorsTracker> ExternalDirtyActorsTracker;
+@@ -819,6 +822,15 @@ private:
+ 	ENGINE_API void GetOnScreenMessages(FCoreDelegates::FSeverityMessageMap& OutMessages);
+ #endif
+ 	class AWorldPartitionReplay* Replay;
++public:
++	TArray<TObjectPtr<ATileStreamingVolume>> TileVolumes; // [ARK]
++private:
++public:
++	bool bHasHadNonZeroUpdate; // [ARK]
++private:
++public:
++	FVector BigJumpLastLocation; // [ARK]
++private:
+ 
+ 	friend struct FWorldPartitionStreamingContext;
+ 	friend class AWorldPartitionReplay;

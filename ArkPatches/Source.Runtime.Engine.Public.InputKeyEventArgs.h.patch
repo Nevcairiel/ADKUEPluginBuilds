@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/InputKeyEventArgs.h b/Engine/Source/Runtime/Engine/Public/InputKeyEventArgs.h
+--- a/Engine/Source/Runtime/Engine/Public/InputKeyEventArgs.h
++++ b/Engine/Source/Runtime/Engine/Public/InputKeyEventArgs.h
+@@ -197,6 +197,7 @@ public:
+ 	 * When set, this takes precedence over AmountDepressed for 2D input.
+ 	 */
+ 	FVector2D AmountDepressed2D = FVector2D::ZeroVector;
++	FVector2D touchPos; // [ARK]
+ 
+ 	/** The time between the previous frame and the current one */
+ 	float DeltaTime = 1.0f / 60.f;

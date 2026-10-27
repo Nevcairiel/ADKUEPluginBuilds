@@ -1,0 +1,31 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/CanvasTypes.h b/Engine/Source/Runtime/Engine/Public/CanvasTypes.h
+--- a/Engine/Source/Runtime/Engine/Public/CanvasTypes.h
++++ b/Engine/Source/Runtime/Engine/Public/CanvasTypes.h
+@@ -664,7 +664,9 @@ private:
+ 	/** 
+ 	* Shared construction function
+ 	*/
++public: // [ARK] was private
+ 	void Construct();
++private:
+ 
+ public:	
+ 
+@@ -784,6 +786,9 @@ public:
+ 
+ 	/** Store index of last Element off to avoid semi expensive Find() */
+ 	int32 LastElementIndex;
++protected:
++	int PotentialDrawsInThisFrame; // [ARK]
++public:
+ 	
+ 	/**
+ 	* Get the sort element for the given sort key. Allocates a new entry if one does not exist
+@@ -842,6 +847,7 @@ public:
+ 	* @return FCanvasTriangleRendererItem instance
+ 	*/
+ 	virtual class FCanvasTriangleRendererItem* GetCanvasTriangleRendererItem() { return NULL; }
++	FString DebugText; // [ARK]
+ };
+ 
+ 

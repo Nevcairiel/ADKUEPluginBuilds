@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/Foliage/Public/FoliageInstancedStaticMeshComponent.h b/Engine/Source/Runtime/Foliage/Public/FoliageInstancedStaticMeshComponent.h
+--- a/Engine/Source/Runtime/Foliage/Public/FoliageInstancedStaticMeshComponent.h
++++ b/Engine/Source/Runtime/Foliage/Public/FoliageInstancedStaticMeshComponent.h
+@@ -52,5 +52,11 @@ private:
+ 
+ 	UPROPERTY()
+ 	FGuid GenerationGuid;
++public:
++	FOLIAGE_API virtual bool RequiresCPUAccess() const; // [ARK]
++private:
++public:
++	FOLIAGE_API virtual void OnDestroyPhysicsState(); // [ARK]
++private:
+ };
+ 

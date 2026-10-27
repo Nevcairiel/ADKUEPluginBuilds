@@ -1,0 +1,89 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/World.h b/Engine/Source/Runtime/Engine/Classes/Engine/World.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/World.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/World.h
+@@ -35,6 +35,9 @@
+ #include "Misc/TransactionallySafeRWLock.h"
+ #include "Engine/ScopedMovementUpdate.h"
+ #include "PSOPrecacheFwd.h"
++#include "UObject/NameTypes.h" // [ARK] member type
++#include "Engine/Scene.h" // [ARK] member type
++#include "Ark/PrimalWorld.h" // [ARK] base class
+ #include "World.generated.h"
+ 
+ #define UE_API ENGINE_API
+@@ -474,6 +477,8 @@ public:
+ 
+ 	/* Determines whether the construction script will be run. If true, the construction script will not be run on the spawned Actor. Only applicable if the Actor is being spawned from a Blueprint. */
+ 	uint8	bDeferConstruction:1;
++	uint8 bWillStasisAfterSpawn : 1; // [ARK]
++	uint8 bDeferBeginPlay : 1; // [ARK]
+ 	
+ 	/* Determines whether or not the actor may be spawned when running a construction script. If true spawning will fail if a construction script is being run. */
+ 	uint8	bAllowDuringConstructionScript:1;
+@@ -516,6 +521,10 @@ public:
+ 
+ 	/* Custom function allowing the caller to specific a function to execute post actor construction but before other systems see this actor spawn. */
+ 	TFunction<void(AActor*)> CustomPreSpawnInitialization;
++	USceneComponent* AttachToComponent; // [ARK]
++	FName AttachToBoneName; // [ARK]
++	bool bPrimalDeferConstruction; // [ARK]
++	uint32 ExtraSpawnData; // [ARK]
+ };
+ 
+ /* World actors spawning helper functions */
+@@ -848,6 +857,9 @@ struct FWorldCachedViewInfo
+ 	FMatrix ProjectionMatrix;
+ 	FMatrix ViewProjectionMatrix;
+ 	FMatrix ViewToWorld;
++	FPostProcessSettings FinalPostProcessSettings; // [ARK]
++	float AverageSceneLuminance; // [ARK]
++	float EyeAdaptationExposure; // [ARK]
+ };
+ 
+ /**
+@@ -928,7 +940,7 @@ private:
+  */
+ 
+ UCLASS(MinimalAPI, customConstructor, config=Engine)
+-class UWorld final : public UObject, public FNetworkNotify
++class UWorld final : public UPrimalWorld, public FNetworkNotify // [ARK] bases (was : public UObject, public FNetworkNotify)
+ {
+ 	GENERATED_UCLASS_BODY()
+ 
+@@ -1507,6 +1519,7 @@ public:
+ 	/** Saved editor viewport states - one for each view type. Indexed using ELevelViewportType from UnrealEdTypes.h.	*/
+ 	UPROPERTY(NonTransactional)
+ 	TArray<FLevelViewportInfo>					EditorViews;
++	double MapLoadtime; // [ARK]
+ #endif
+ 
+ #if WITH_EDITORONLY_DATA
+@@ -2023,6 +2036,7 @@ public:
+ 
+ 	/** Frame delta time in seconds adjusted by e.g. time dilation. */
+ 	float DeltaTimeSeconds;
++	float DeltaTimeAlteration; // [ARK]
+ 
+ 	/** time at which to start pause **/
+ 	double PauseDelay;
+@@ -4064,6 +4078,7 @@ public:
+ private:
+ 	/** In PIE, what Net Mode was this world started in? Fallback for not having a NetDriver */
+ 	ENetMode PlayInEditorNetMode;
++	bool bBroadcastLevelsChangedEventIsEnabled; // [ARK]
+ #endif
+ 
+ public:
+@@ -4476,6 +4491,12 @@ public:
+ 
+ 	TOptional<UE::FTimeout> AddToWorldTimeout;
+ 	TOptional<UE::FTimeout> RemoveFromWorldTimeout;
++public:
++	UE_API virtual void GetParameterCollectionInstances(TArray<UMaterialParameterCollectionInstance *>&); // [ARK]
++private:
++public:
++	UE_API virtual FSceneInterface* GetScene(); // [ARK]
++private:
+ };
+ 
+ /** Global UWorld pointer. Use of this pointer should be avoided whenever possible. */

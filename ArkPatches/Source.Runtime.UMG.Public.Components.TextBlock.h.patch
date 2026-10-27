@@ -1,0 +1,37 @@
+diff --git a/Engine/Source/Runtime/UMG/Public/Components/TextBlock.h b/Engine/Source/Runtime/UMG/Public/Components/TextBlock.h
+--- a/Engine/Source/Runtime/UMG/Public/Components/TextBlock.h
++++ b/Engine/Source/Runtime/UMG/Public/Components/TextBlock.h
+@@ -8,6 +8,7 @@
+ #include "Styling/SlateColor.h"
+ #include "Widgets/SWidget.h"
+ #include "Components/TextWidgetTypes.h"
++#include "Styling/SlateTypes.h" // [ARK] member type
+ #include "TextBlock.generated.h"
+ 
+ class STextBlock;
+@@ -85,6 +86,10 @@ public:
+ 	/** Sets what happens to text that is clipped and doesn't fit within the clip rect for this widget */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Getter, Setter, BlueprintSetter="SetTextOverflowPolicy", Category="Clipping", AdvancedDisplay, meta = (DisplayName="Overflow Policy"))
+ 	ETextOverflowPolicy TextOverflowPolicy;
++	bool CenterVertically; // [ARK]
++	bool bDisableInternalClipping; // [ARK]
++	bool DontApplyDisabledEffect; // [ARK]
++	bool bAutoWrapText_DEPRECATED; // [ARK]
+ 
+ public:
+ 	/** 
+@@ -308,4 +313,14 @@ protected:
+ 	PROPERTY_BINDING_IMPLEMENTATION(FText, Text);
+ 	PROPERTY_BINDING_IMPLEMENTATION(FSlateColor, ColorAndOpacity);
+ 	PROPERTY_BINDING_IMPLEMENTATION(FLinearColor, ShadowColorAndOpacity);
++public:
++	FTextBlockStyle WidgetStyle_DEPRECATED; // [ARK]
++protected:
++	UMG_API virtual void Serialize(FArchive&); // [ARK]
++public:
++	UMG_API virtual void Serialize(FStructuredArchiveRecord); // [ARK]
++protected:
++public:
++	UMG_API virtual void PostLoad(); // [ARK]
++protected:
+ };

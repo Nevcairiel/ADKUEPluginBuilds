@@ -1,0 +1,43 @@
+diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeGrassType.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeGrassType.h
+--- a/Engine/Source/Runtime/Landscape/Classes/LandscapeGrassType.h
++++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeGrassType.h
+@@ -53,6 +53,8 @@ struct FGrassVariety
+ 
+ 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Grass, meta = (EditCondition = "bUseGrid", UIMin = 0, ClampMin = 0, UIMax = 1, ClampMax = 1))
+ 	float PlacementJitter;
++	FPerPlatformInt MinDrawDistance; // [ARK]
++	FPerQualityLevelInt MinDrawDistanceQuality; // [ARK]
+ 
+ 	/* The distance where instances will begin to fade out if using a PerInstanceFadeAmount material node. 0 disables. */
+ 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Grass, meta = (UIMin = 0, ClampMin = 0, UIMax = 1000000, ClampMax = 1000000))
+@@ -148,6 +150,7 @@ struct FGrassVariety
+ 	/** Whether we should keep a cpu copy of the instance buffer. This should be set to true if you plan on using GetOverlappingXXXXCount functions of the component otherwise it won't return any data.**/
+ 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Grass)
+ 	bool bKeepInstanceBufferCPUCopy;
++	bool bIgnoreAutomaticBoundsWPODisable; // [ARK]
+ 
+ 	/** Distance at which to grass instances should disable WPO for performance reasons */
+ 	UPROPERTY(EditAnywhere, Category = Grass)
+@@ -156,6 +159,12 @@ struct FGrassVariety
+ 	/** Control shadow invalidation behavior, in particular with respect to Virtual Shadow Maps and material effects like World Position Offset. */
+ 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category=Grass, AdvancedDisplay)
+ 	EShadowCacheInvalidationBehavior ShadowCacheInvalidationBehavior;
++	bool bBuildFirst; // [ARK]
++	bool bAllowRenderingToRVT; // [ARK]
++	bool bAllowPerInstanceDynamicCustomDataOut; // [ARK]
++	int PerInstanceDynamicCustomDataOutDisableDistance; // [ARK]
++	int TranslucencySortPriority; // [ARK]
++	uint8 SurfaceFilter; // [ARK]
+ 
+ 	UE_API bool IsGrassQualityLevelEnable() const;
+ 
+@@ -199,6 +208,9 @@ class ULandscapeGrassType : public UObject
+ 	bool RandomRotation_DEPRECATED;
+ 	UPROPERTY()
+ 	bool AlignToSurface_DEPRECATED;
++	TObjectPtr<UTexture2D> VisibilityTexture; // [ARK]
++	int VisibilityTextureChannel; // [ARK]
++	int LayerID; // [ARK]
+ 	
+ 	//~ Begin UObject Interface
+ 	virtual void PostLoad() override;

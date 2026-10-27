@@ -1,0 +1,423 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovementComponent.h
+@@ -665,16 +665,25 @@ protected:
+ 	FVector LastUpdateVelocity;
+ 
+ 	/** Timestamp when location or rotation last changed during an update. Only valid on the server. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient)
+ 	float ServerLastTransformUpdateTimeStamp;
++#endif // [ARK]
++	double ServerLastTransformUpdateTimeStamp; // [ARK] type changed
+ 
+ 	/** Timestamp of last client adjustment sent. See NetworkMinTimeBetweenClientAdjustments. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient)
+ 	float ServerLastClientGoodMoveAckTime;
++#endif // [ARK]
++	double ServerLastClientGoodMoveAckTime; // [ARK] type changed
+ 
+ 	/** Timestamp of last client adjustment sent. See NetworkMinTimeBetweenClientAdjustments. */
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient)
+ 	float ServerLastClientAdjustmentTime;
++#endif // [ARK]
++	double ServerLastClientAdjustmentTime; // [ARK] type changed
+ 
+ 	/** Accumulated impulse to be added next tick. */
+ 	UPROPERTY()
+@@ -694,7 +703,10 @@ protected:
+ 	ENGINE_API virtual float ComputeAnalogInputModifier() const;
+ 
+ 	/** Used for throttling "stuck in geometry" logging. */
++#if 0 // [ARK] removed
+ 	float LastStuckWarningTime;
++#endif // [ARK]
++	double LastStuckWarningTime; // [ARK] type changed
+ 
+ 	/** Used when throttling "stuck in geometry" logging, to output the number of events we skipped if throttling. */
+ 	uint32 StuckWarningCountSinceNotify;
+@@ -1098,10 +1110,12 @@ protected:
+ 	/** Was velocity requested by path following? */
+ 	UPROPERTY(Transient)
+ 	uint8 bHasRequestedVelocity:1;
++	uint8 bDontClearRequestedVelocity : 1; // [ARK]
+ 
+ 	/** Was acceleration requested to be always max speed? */
+ 	UPROPERTY(Transient)
+ 	uint8 bRequestedMoveWithMaxSpeed:1;
++	uint32 bForceModifyDesiredRotation : 1; // [ARK]
+ 
+ 	/** Was avoidance updated in this frame? */
+ 	UPROPERTY(Transient)
+@@ -1222,6 +1236,7 @@ public:
+ 
+ 	/** Whether we're stepping off a moving platform (and should trust the client somewhat when landing). */
+ 	bool bCanTrustClientOnLanding = false;
++	bool bSimulatedClientWalkingHasFoundValidBase; // [ARK]
+ 
+ 	/** How loosely the client can follow the server location during this fall. */
+ 	float MaxServerClientErrorWhileFalling = 0.f;
+@@ -1316,7 +1331,9 @@ public:
+ 	ENGINE_API virtual void PostLoad() override;
+ 	ENGINE_API virtual void Activate(bool bReset = false) override;
+ 	ENGINE_API virtual void Deactivate() override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
++#endif // [ARK]
+ 	ENGINE_API virtual void ApplyWorldOffset(const FVector& InOffset, bool bWorldShift) override;
+ 	//End UActorComponent Interface
+ 
+@@ -1539,11 +1556,14 @@ public:
+ 	 * Compute new falling velocity from given velocity and gravity. Applies the limits of the current Physics Volume's TerminalVelocity.
+ 	 */
+ 	ENGINE_API virtual FVector NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity, float DeltaTime) const;
++	ENGINE_API virtual float ImmersionDepth(bool) const; // [ARK]
+ 
+ 	/* Determine how deep in water the character is immersed.
+ 	 * @return float in range 0.0 = not in water, 1.0 = fully immersed
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual float ImmersionDepth() const;
++#endif // [ARK]
+ 
+ 	/** 
+ 	 * Updates Velocity and Acceleration based on the current state, applying the effects of friction and acceleration or deceleration. Does not apply gravity.
+@@ -1636,9 +1656,12 @@ public:
+ 
+ 	/** Update the character state in PerformMovement right before doing the actual position change */
+ 	ENGINE_API virtual void UpdateCharacterStateBeforeMovement(float DeltaSeconds);
++	ENGINE_API virtual void UpdateCharacterStateAfterMovement(float, bool); // [ARK]
+ 
+ 	/** Update the character state in PerformMovement after the position change. Some rotation updates happen after this. */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void UpdateCharacterStateAfterMovement(float DeltaSeconds);
++#endif // [ARK]
+ 
+ 	/** Give one final chance to update the velocity right before doing the actual position change. */
+ 	virtual void UpdateVelocityBeforeMovement(float DeltaSeconds) {}
+@@ -1652,9 +1675,13 @@ public:
+ 	 * @param Iterations - physics iteration count
+ 	 */
+ 	ENGINE_API virtual void StartSwimming(FVector OldLocation, FVector OldVelocity, float timeTick, float remainingTime, int32 Iterations);
++	ENGINE_API virtual FVector LimitRequestedMoveVelocity(const FVector&, float) const; // [ARK]
++	ENGINE_API virtual float Swim(FVector, FHitResult&); // [ARK]
+ 
+ 	/* Swimming uses gravity - but scaled by (1.f - buoyancy) */
++#if 0 // [ARK] removed
+ 	ENGINE_API float Swim(FVector Delta, FHitResult& Hit);
++#endif // [ARK]
+ 
+ 	/** Get as close to waterline as possible, staying on same side as currently. */
+ 	ENGINE_API FVector FindWaterLine(FVector Start, FVector End);
+@@ -1821,12 +1848,15 @@ public:
+ 	 * @param	bClientSimulation	true when called when bIsCrouched is replicated to non owned clients, to update collision cylinder and offset.
+ 	 */
+ 	ENGINE_API virtual void Crouch(bool bClientSimulation = false);
++	ENGINE_API virtual void UnCrouch(bool, bool); // [ARK]
+ 	
+ 	/**
+ 	 * Checks if default capsule size fits (no encroachment), and trigger OnEndCrouch() on the owner if successful.
+ 	 * @param	bClientSimulation	true when called when bIsCrouched is replicated to non owned clients, to update collision cylinder and offset.
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void UnCrouch(bool bClientSimulation = false);
++#endif // [ARK]
+ 
+ 	/** Returns true if the character is allowed to crouch in the current state. By default it is allowed when walking or falling, if CanEverCrouch() is true. */
+ 	ENGINE_API virtual bool CanCrouchInCurrentState() const;
+@@ -1862,6 +1892,8 @@ public:
+ 
+ 	/** Perform rotation over deltaTime */
+ 	ENGINE_API virtual void PhysicsRotation(float DeltaTime);
++	ENGINE_API virtual void UpdateNewYawRotation(FRotator&, FRotator&, FRotator&, FRotator&, float); // [ARK]
++	ENGINE_API virtual void UpdateNewPitchRotation(FRotator&, FRotator&, FRotator&, FRotator&, float); // [ARK]
+ 
+ 	/** if true, DesiredRotation will be restricted to only Yaw component in PhysicsRotation() */
+ 	ENGINE_API virtual bool ShouldRemainVertical() const;
+@@ -1892,6 +1924,7 @@ public:
+ 	
+ 	/** Returns MovementMode string */
+ 	ENGINE_API virtual FString GetMovementName() const;
++	ENGINE_API virtual void AddImpulse(FVector, bool, float, bool); // [ARK]
+ 
+ 	/** 
+ 	 * Add impulse to character. Impulses are accumulated each tick and applied together
+@@ -1903,8 +1936,10 @@ public:
+ 	 * @param	Impulse				Impulse to apply.
+ 	 * @param	bVelocityChange		Whether or not the impulse is relative to mass.
+ 	 */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category="Pawn|Components|CharacterMovement")
+ 	ENGINE_API virtual void AddImpulse( FVector Impulse, bool bVelocityChange = false );
++#endif // [ARK]
+ 
+ 	/** 
+ 	 * Add force to character. Forces are accumulated each tick and applied together
+@@ -1939,6 +1974,7 @@ public:
+ 
+ 	/** Returns whether this pawn is currently allowed to walk off ledges */
+ 	ENGINE_API virtual bool CanWalkOffLedges() const;
++	ENGINE_API virtual bool IsWalkable(const FHitResult&, bool) const; // [ARK]
+ 
+ 	/** Returns The distance from the edge of the capsule within which we don't allow the character to perch on the edge of a surface. */
+ 	UFUNCTION(BlueprintCallable, Category="Pawn|Components|CharacterMovement")
+@@ -1952,8 +1988,10 @@ public:
+ 	ENGINE_API float GetValidPerchRadius() const;
+ 
+ 	/** Return true if the hit result should be considered a walkable surface for the character. */
++#if 0 // [ARK] removed
+ 	UFUNCTION(BlueprintCallable, Category="Pawn|Components|CharacterMovement")
+ 	ENGINE_API virtual bool IsWalkable(const FHitResult& Hit) const;
++#endif // [ARK]
+ 
+ 	/** Get the max angle in degrees of a walkable surface for the character. */
+ 	inline float GetWalkableFloorAngle() const { return WalkableFloorAngle; }
+@@ -1996,9 +2034,12 @@ protected:
+ 
+ 	/** @note Movement update functions should only be called through StartNewPhysics()*/
+ 	ENGINE_API virtual void PhysNavWalking(float deltaTime, int32 Iterations);
++	ENGINE_API virtual void PhysFlying(float, int, float, float); // [ARK]
+ 
+ 	/** @note Movement update functions should only be called through StartNewPhysics()*/
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void PhysFlying(float deltaTime, int32 Iterations);
++#endif // [ARK]
+ 
+ 	/** @note Movement update functions should only be called through StartNewPhysics()*/
+ 	ENGINE_API virtual void PhysSwimming(float deltaTime, int32 Iterations);
+@@ -2108,6 +2149,7 @@ public:
+ 	 * @param DownwardSweepResult	If non-null and it contains valid blocking hit info, this will be used as the result of a downward sweep test instead of doing it as part of the update.
+ 	 */
+ 	ENGINE_API virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = NULL) const;
++	ENGINE_API virtual void FindFloorWalking(const FVector&, FFindFloorResult&, bool, const FHitResult*); // [ARK]
+ 
+ 	/**
+ 	* Sweeps a vertical trace to find the floor for the capsule at the given location. Will attempt to perch if ShouldComputePerchResult() returns true for the downward sweep result.
+@@ -2301,6 +2343,9 @@ protected:
+ 	 * If full server-side control is desired, you may need to override ControlledCharacterMove as well.
+ 	 */
+ 	virtual void ServerAutonomousProxyTick(float DeltaSeconds) { }
++public:
++	ENGINE_API virtual void ExecuteStoredMoves(); // [ARK]
++protected:
+ 
+ public:
+ 
+@@ -2319,6 +2364,12 @@ public:
+ 
+ 	/** Round acceleration, for better consistency and lower bandwidth in networked games. */
+ 	ENGINE_API virtual FVector RoundAcceleration(FVector InAccel) const;
++protected:
++	ENGINE_API virtual void LocalClientPreAdjustPosition(); // [ARK]
++public:
++protected:
++	ENGINE_API virtual void LocalClientPostAdjustPosition(); // [ARK]
++public:
+ 
+ 	//--------------------------------
+ 	// INetworkPredictionInterface implementation
+@@ -2417,8 +2468,10 @@ protected:
+ 	 */
+ 	ENGINE_API virtual void CallServerMovePacked(const FSavedMove_Character* NewMove, const FSavedMove_Character* PendingMove, const FSavedMove_Character* OldMove);
+ 
++#if 0 // [ARK] removed
+ 	UE_DEPRECATED(5.8, "Movement functions using UPrimitiveComponents have been deprecated. Use functions using the FMovementBaseInterfaceData struct instead.")
+ 	ENGINE_API virtual void ServerMoveHandleClientError(float ClientTimeStamp, float DeltaTime, const FVector& Accel, const FVector& RelativeClientLocation, UPrimitiveComponent* ClientMovementBase, FName ClientBaseBoneName, uint8 ClientMovementMode);
++#endif // [ARK]
+ 	
+ 	/**
+ 	 * Have the server check if the client is outside an error tolerance, and queue a client adjustment if so.
+@@ -2426,7 +2479,11 @@ protected:
+ 	 * RelativeClientLocation will be a relative location if MovementBaseUtility::UseRelativePosition(ClientMovementBase) is true, or a world location if false.
+ 	 * @see ServerCheckClientError()
+ 	 */
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual void ServerMoveHandleClientError(float ClientTimeStamp, float DeltaTime, const FVector& Accel, const FVector& RelativeClientLocation, FMovementBaseInterfaceData* ClientMovementBaseInterfaceData, FName ClientBaseBoneName, uint8 ClientMovementMode);
++#endif // [ARK]
++	ENGINE_API virtual void ServerMoveHandleClientError(float, float, const FVector&, const FVector&, UPrimitiveComponent*, FName, uint8, bool*); // [ARK] signature changed
++	ENGINE_API virtual void ServerMoveHandleClientError(float, float, const FVector&, const FVector&, FMovementBaseInterfaceData*, FName, uint8, bool*); // [ARK] signature changed
+ 
+ 
+ 	UE_DEPRECATED(5.8, "Movement functions using UPrimitiveComponents have been deprecated. Use functions using the FMovementBaseInterfaceData struct instead.")
+@@ -2495,7 +2552,10 @@ public:
+ protected:
+ 
+ 	/** Clock time on the server of the last timestamp reset. */
++#if 0 // [ARK] removed
+ 	float LastTimeStampResetServerTime;
++#endif // [ARK]
++	double LastTimeStampResetServerTime; // [ARK] type changed
+ 
+ 	/** Internal const check for client timestamp validity without side-effects. 
+ 	  * @see VerifyClientTimeStamp */
+@@ -2620,6 +2680,7 @@ public:
+ 	 * or ClientAdjustPosition_Implementation depending on the payload.
+ 	 */
+ 	ENGINE_API virtual void ClientHandleMoveResponse(const FCharacterMoveResponseDataContainer& MoveResponse);
++	ENGINE_API virtual bool CharacterAlwaysDoFindFloor(); // [ARK]
+ 
+ 
+ public:
+@@ -2868,6 +2929,21 @@ public:
+ 	
+ 	// Delegate for modifying root motion post conversion from component space to world space.
+ 	FOnProcessRootMotion ProcessRootMotionPostConvertToWorld;
++	float MinimumImpulseToApply; // [ARK]
++	float MaxImpulseVelocityMagnitude; // [ARK]
++	float MaxImpulseVelocityZ; // [ARK]
++	uint32 bUseBPAcknowledgeServerCorrection : 1; // [ARK]
++	uint32 bUseBPAdjustServerMoveDeltaTime : 1; // [ARK]
++	uint32 bEnableSwimmingOutsideOfWater : 1; // [ARK]
++	uint32 bAlwaysCheckForInvallidFloor : 1; // [ARK]
++	bool bPreventExitingWaterForceExtraOverlap; // [ARK]
++	TSharedPtr<FSavedMove_Character> ClientSideNewMove; // [ARK]
++	uint8 bSaveNonLocallyControlledRootMotion : 1; // [ARK]
++	uint8 bSkipInitialFloorUpdate : 1; // [ARK]
++	float LastNonZeroAccel; // [ARK]
++private:
++	bool bNetlimitExploitFixEnabled; // [ARK]
++public:
+ 
+ 	/** Simulate Root Motion physics on Simulated Proxies */
+ 	ENGINE_API void SimulateRootMotion(float DeltaSeconds, const FTransform& LocalRootMotionTransform);
+@@ -2895,6 +2971,18 @@ public:
+ 	ENGINE_API virtual void PostProcessAvoidanceVelocity(FVector& NewVelocity);
+ 
+ 	ENGINE_API virtual void FlushServerMoves();
++	ENGINE_API virtual FRotator GetControllerPhysicsRotation(const FRotator&); // [ARK]
++	ENGINE_API virtual void DetermineRequestedMoveAcceleration(FVector&, const FVector&, float, float, float, float, float, const FVector&); // [ARK]
++	ENGINE_API virtual bool PreventSlidingWhileFalling() const; // [ARK]
++	ENGINE_API virtual void PhysRotationCheckDesiredRotation(FRotator&); // [ARK]
++	ENGINE_API virtual void HandlePostMovementExitWater(FMovementBaseInterfaceData*, FVector, FVector, FFindFloorResult, bool); // [ARK]
++	ENGINE_API virtual void PostPhysicsRotation(FRotator); // [ARK]
++	ENGINE_API virtual bool ModifySavedMoveAcceleration_PreRep(FVector&) const; // [ARK]
++	ENGINE_API virtual bool ModifySavedMoveAcceleration_PostRep(FVector&) const; // [ARK]
++	ENGINE_API virtual bool ShouldPreventWaterHopCorrection() const; // [ARK]
++	ENGINE_API virtual bool ForceControlledCharacterMove() const; // [ARK]
++	ENGINE_API virtual void PostCalcVelocity(float, float, bool, float); // [ARK]
++	ENGINE_API virtual FVector Primal_MoveSmoothAdjustDeltaMovement(const FVector&) const; // [ARK]
+ 
+ 	/** 
+ 	 * When moving the character, we should inform physics as to whether we are teleporting.
+@@ -2949,6 +3037,8 @@ public:
+ 
+ 	/** Stop completely when braking and velocity magnitude is lower than this. */
+ 	static ENGINE_API const float BRAKE_TO_STOP_VELOCITY;
++	ENGINE_API virtual void RegisterComponentTickFunctions(bool, bool); // [ARK]
++	ENGINE_API virtual bool IsCharacterMovementComponent() const; // [ARK]
+ };
+ 
+ 
+@@ -3009,11 +3099,14 @@ public:
+ 	// Information at the start of the move
+ 	uint8 StartPackedMovementMode;
+ 	uint8 EndPackedMovementMode;
++	uint32 bWantsToProne : 1; // [ARK]
++	uint32 bWantsToDodge : 1; // [ARK]
+ 
+ 	float TimeStamp;    // Time of this move.
+ 	float DeltaTime;    // amount of time for this move
+ 	float CustomTimeDilation;
+ 	float JumpKeyHoldTime;
++	float JumpOfWaterKeyHoldTime; // [ARK]
+ 	float JumpForceTimeRemaining;
+ 	int32 JumpMaxCount;
+ 	int32 JumpCurrentCount;
+@@ -3057,6 +3150,7 @@ public:
+ 	FRotator EndAttachRelativeRotation;
+ 
+ 	FVector Acceleration;
++	FVector RelativeAcceleration; // [ARK]
+ 	float MaxSpeed;
+ 
+ 	// Cached to speed up iteration over IsImportantMove().
+@@ -3124,6 +3218,8 @@ public:
+ 
+ 	/** Allows references to be considered during GC */
+ 	ENGINE_API virtual void AddStructReferencedObjects(FReferenceCollector& Collector) const;
++	ENGINE_API virtual void LogPreClientMove(ACharacter*, UCharacterMovementComponent*, float) const; // [ARK]
++	ENGINE_API virtual void LogPostClientMove(ACharacter*, UCharacterMovementComponent*) const; // [ARK]
+ 
+ 	// Bit masks used by GetCompressedFlags() to encode movement information.
+ 	enum CompressedFlags
+@@ -3162,13 +3258,19 @@ public:
+ 	ENGINE_API void AddStructReferencedObjects(FReferenceCollector& Collector) const override;
+ 
+ 	/** Timestamp of last time it sent a servermove() to the server. This is an increasing timestamp from the owning UWorld (undilated, real time seconds). Used for holding off on sending movement updates to save bandwidth. */
++#if 0 // [ARK] removed
+ 	float ClientUpdateRealTime;
++#endif // [ARK]
++	double ClientUpdateRealTime; // [ARK] type changed
+ 
+ 	/** Current TimeStamp for sending new Moves to the Server. This time resets to zero at a frequency of MinTimeBetweenTimeStampResets and increases with this component's tick delta time. */
+ 	float CurrentTimeStamp;
+ 
+ 	/** Last World timestamp (undilated, real time) at which we received a server ack for a move. This could be either a good move or a correction from the server. */
++#if 0 // [ARK] removed
+ 	float LastReceivedAckRealTime;
++#endif // [ARK]
++	double LastReceivedAckRealTime; // [ARK] type changed
+ 
+ 	TArray<FSavedMovePtr> SavedMoves;		// Buffered moves pending position updates, orderd oldest to newest. Moves that have been acked by the server are removed.
+ 	TArray<FSavedMovePtr> FreeMoves;		// freed moves, available for buffering
+@@ -3202,7 +3304,10 @@ public:
+ 	float LastCorrectionDelta;
+ 
+ 	/** Used to track time of last correction */
++#if 0 // [ARK] removed
+ 	float LastCorrectionTime;
++#endif // [ARK]
++	double LastCorrectionTime; // [ARK] type changed
+ 
+ 	/** Max time delta between server updates over which client smoothing is allowed to interpolate. */
+ 	float MaxClientSmoothingDeltaTime;
+@@ -3269,7 +3374,10 @@ public:
+ 	ENGINE_API float UpdateTimeStampAndDeltaTime(float DeltaTime, ACharacter & CharacterOwner, class UCharacterMovementComponent & CharacterMovementComponent);
+ 
+ 	/** Used for simulated packet loss in development builds. */
++#if 0 // [ARK] removed
+ 	float DebugForcedPacketLossTimerStart;
++#endif // [ARK]
++	double DebugForcedPacketLossTimerStart; // [ARK] type changed
+ };
+ 
+ 
+@@ -3292,10 +3400,16 @@ public:
+ 	double ServerAccumulatedClientTimeStamp;
+ 
+ 	/** Last time server updated client with a move correction */
++#if 0 // [ARK] removed
+ 	float LastUpdateTime;
++#endif // [ARK]
++	double LastUpdateTime; // [ARK] type changed
+ 
+ 	/** Server clock time when last server move was received from client (does NOT include forced moves on server) */
++#if 0 // [ARK] removed
+ 	float ServerTimeStampLastServerMove;
++#endif // [ARK]
++	double ServerTimeStampLastServerMove; // [ARK] type changed
+ 	
+ 	/** 
+ 	 * Max delta time for a given move, in real seconds
+@@ -3310,6 +3424,8 @@ public:
+ 
+ 	/** Accumulated timestamp difference between autonomous client and server for tracking long-term trends */
+ 	float LifetimeRawTimeDiscrepancy;
++	float ServerLingerBehindDelta; // [ARK]
++	double LastServerProcessTime; // [ARK]
+ 
+ 	/** 
+ 	 * Current time discrepancy between client-reported moves and time passed
+@@ -3337,7 +3453,10 @@ public:
+ 	float TimeDiscrepancyAccumulatedClientDeltasSinceLastServerTick;
+ 
+ 	/** Creation time of this prediction data, used to contextualize LifetimeRawTimeDiscrepancy */
++#if 0 // [ARK] removed
+ 	float WorldCreationTime;
++#endif // [ARK]
++	double WorldCreationTime; // [ARK] type changed
+ 
+ 	/** Returns time delta to use for the current ServerMove(). Takes into account time discrepancy resolution if active. */
+ 	ENGINE_API float GetServerMoveDeltaTime(float ClientTimeStamp, float ActorTimeDilation) const;

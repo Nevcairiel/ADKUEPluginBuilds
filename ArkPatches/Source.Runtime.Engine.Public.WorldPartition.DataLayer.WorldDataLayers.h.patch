@@ -1,0 +1,68 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/DataLayer/WorldDataLayers.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/DataLayer/WorldDataLayers.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/DataLayer/WorldDataLayers.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/DataLayer/WorldDataLayers.h
+@@ -285,11 +285,15 @@ private:
+ 	TSet<TObjectPtr<class UDEPRECATED_DataLayer>> WorldDataLayers_DEPRECATED;
+ 	PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient, Replicated, ReplicatedUsing=OnRep_ActiveDataLayerNames)
+ 	TArray<FName> RepActiveDataLayerNames;
++#endif // [ARK]
+ 		
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient, Replicated, ReplicatedUsing=OnRep_LoadedDataLayerNames)
+ 	TArray<FName> RepLoadedDataLayerNames;
++#endif // [ARK]
+ 
+ 	// TSet do not support replication so we replicate an array and update the set in the OnRep_ActiveDataLayerNames/OnRep_LoadedDataLayerNames
+ 	TSet<FName> ActiveDataLayerNames;
+@@ -298,11 +302,15 @@ private:
+ 	TSet<FName> LocalActiveDataLayerNames;
+ 	TSet<FName> LocalLoadedDataLayerNames;
+ 
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient, Replicated, ReplicatedUsing=OnRep_EffectiveActiveDataLayerNames)
+ 	TArray<FName> RepEffectiveActiveDataLayerNames;
++#endif // [ARK]
+ 		
++#if 0 // [ARK] removed
+ 	UPROPERTY(Transient, Replicated, ReplicatedUsing=OnRep_EffectiveLoadedDataLayerNames)
+ 	TArray<FName> RepEffectiveLoadedDataLayerNames;
++#endif // [ARK]
+ 
+ 	FWorldDataLayersEffectiveStates EffectiveStates;
+ 
+@@ -416,8 +424,7 @@ void AWorldDataLayers::OverwriteDataLayerRuntimeStates(const TArray<IdentifierTy
+ 					ActiveDataLayerNames.Add(DataLayerInstance->GetDataLayerFName());
+ 				}
+ 			}
+-			MARK_PROPERTY_DIRTY_FROM_NAME(AWorldDataLayers, RepActiveDataLayerNames, this);
+-			RepActiveDataLayerNames = ActiveDataLayerNames.Array();
++			/* [ARK] no RepActiveDataLayerNames */
+ 		}
+ 		
+ 
+@@ -432,8 +439,7 @@ void AWorldDataLayers::OverwriteDataLayerRuntimeStates(const TArray<IdentifierTy
+ 					LoadedDataLayerNames.Add(DataLayerInstance->GetDataLayerFName());
+ 				}
+ 			}
+-			MARK_PROPERTY_DIRTY_FROM_NAME(AWorldDataLayers, RepLoadedDataLayerNames, this);
+-			RepLoadedDataLayerNames = LoadedDataLayerNames.Array();
++			/* [ARK] no RepLoadedDataLayerNames */
+ 		}
+ 
+ 		ForEachDataLayerInstance([this](class UDataLayerInstance* DataLayerInstance)
+@@ -445,10 +451,8 @@ void AWorldDataLayers::OverwriteDataLayerRuntimeStates(const TArray<IdentifierTy
+ 			return true;
+ 		});
+ 
+-		MARK_PROPERTY_DIRTY_FROM_NAME(AWorldDataLayers, RepEffectiveActiveDataLayerNames, this);
+-		RepEffectiveActiveDataLayerNames = EffectiveStates.GetReplicatedEffectiveActiveDataLayerNames().Array();
+-		MARK_PROPERTY_DIRTY_FROM_NAME(AWorldDataLayers, RepEffectiveLoadedDataLayerNames, this);
+-		RepEffectiveLoadedDataLayerNames = EffectiveStates.GetReplicatedEffectiveLoadedDataLayerNames().Array();
++		/* [ARK] no RepEffectiveActiveDataLayerNames */
++		/* [ARK] no RepEffectiveLoadedDataLayerNames */
+ 	}
+ }
+ 

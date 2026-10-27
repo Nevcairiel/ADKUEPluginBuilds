@@ -1,0 +1,26 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/PhysicsVolume.h b/Engine/Source/Runtime/Engine/Classes/GameFramework/PhysicsVolume.h
+--- a/Engine/Source/Runtime/Engine/Classes/GameFramework/PhysicsVolume.h
++++ b/Engine/Source/Runtime/Engine/Classes/GameFramework/PhysicsVolume.h
+@@ -52,6 +52,13 @@ class APhysicsVolume : public AVolume
+ 	/**	By default, the origin of an AActor must be inside a PhysicsVolume for it to affect the actor. However if this flag is true, the other actor only has to touch the volume to be affected by it. */
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Volume)
+ 	uint32 bPhysicsOnContact:1;
++	float WaterDensity; // [ARK]
++	float WaterDamping; // [ARK]
++	float PhysicsMinWalkableFloorZ; // [ARK]
++	uint32 bOceanVolume : 1; // [ARK]
++	uint32 bPreventWaterSubmersion : 1; // [ARK]
++	uint32 bDynamicWaterVolume : 1; // [ARK]
++	uint32 bDontSetWaterNavCollision : 1; // [ARK]
+ 
+ public:
+ 	/** @Returns the Z component of the current world gravity. */
+@@ -65,4 +72,8 @@ public:
+ 
+ 	/** Given a known overlap with the given component, validate that it meets the rules imposed by bPhysicsOnContact. */
+ 	ENGINE_API virtual bool IsOverlapInVolume(const class USceneComponent& TestComponent) const;
++	ENGINE_API virtual float GetVolumeZAtPosition(FVector2D) const; // [ARK]
++	ENGINE_API virtual bool IsOceanVolume() const; // [ARK]
++	ENGINE_API virtual float GetVolumeZAtPosition2D(FVector2D) const; // [ARK]
++	ENGINE_API virtual bool IsPhysicsVolume() const; // [ARK]
+ };

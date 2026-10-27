@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODLayer.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODLayer.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODLayer.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODLayer.h
+@@ -121,6 +121,8 @@ private:
+ 	/** Whether HLOD actors generated for this layer will be spatially loaded */
+ 	UPROPERTY(EditAnywhere, Category=General)
+ 	uint32 bIsSpatiallyLoaded : 1;
++	uint32 bDisableLumenCards : 1; // [ARK]
++	uint32 bDisableIfPlatformAllows : 1; // [ARK]
+ 
+ 	/** Cell size of the runtime grid created to encompass HLOD actors generated for this HLOD Layer */
+ 	UPROPERTY(EditAnywhere, Category=General)

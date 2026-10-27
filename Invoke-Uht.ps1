@@ -27,13 +27,12 @@ function Read-UhtModules([string] $file) {
 }
 
 $modules = [Collections.Generic.List[object]]::new()
+$seen = @{}
 if ($EngineOnly) {
-    # engine modules of all plugins (deduplicated by name)
+    # engine modules of all modules of all plugins (deduplicated by name)
     $uhtDir = Join-Path $SharedIntDir 'Uht'
-    $seen = @{}
     $targetFile = $null
-    foreach ($p in Get-PluginFolders) {
-        $cfg = Join-Path $p.FullName 'Build\Config'
+    foreach ($cfg in Get-AllModuleConfigDirs) {
         if (-not (Test-Path "$cfg\UhtModules.json")) { continue }
         $targetFile = "$cfg\UhtTarget.json"
         foreach ($m in Read-UhtModules "$cfg\UhtModules.json") { if (-not $seen.ContainsKey($m.Name)) { $seen[$m.Name] = $true; $modules.Add($m) } }
@@ -43,23 +42,37 @@ if ($EngineOnly) {
     Initialize-Plugin $Plugin
     $uhtDir = Join-Path $IntDir 'Uht'
     $targetFile = "$ConfigDir\UhtTarget.json"
-    foreach ($m in Read-UhtModules "$ConfigDir\UhtModules.json") { $modules.Add($m) }
-
-    $src = Join-Path $PluginRoot "Source\$ModuleName"
+    foreach ($module in $ModuleNames) {
+        $cfg = Get-ModuleConfigDir $module
+        foreach ($m in Read-UhtModules "$cfg\UhtModules.json") { if (-not $seen.ContainsKey($m.Name)) { $seen[$m.Name] = $true; $modules.Add($m) } }
+    }
+    # the plugin's own modules with reflected types, in link order (a module after the modules it depends on)
+    foreach ($module in $ModuleNames) {
+    Select-PluginModule $module
+    if (-not (Test-Path "$ConfigDir\UhtPluginModule.json")) { continue }
+    $src = Join-Path $PluginSourceRoot $ModuleName
     $reflected = Get-ChildItem $src -Recurse -Filter *.h |
         Select-String -Pattern '^\s*(UCLASS|USTRUCT|UENUM|UINTERFACE|UDELEGATE)\s*\(|DECLARE_DYNAMIC_' -List |
         ForEach-Object { $_.Path }
     $pm = Get-Content "$ConfigDir\UhtPluginModule.json" -Raw | ConvertFrom-Json
     $out = Join-Path $IntDir "Inc\$ModuleName\UHT"
     $pm | Add-Member -Force BaseDirectory $src
-    $pm | Add-Member -Force IncludePaths @((Join-Path $PluginRoot 'Source'), "$src\Public", "$src\Private")
+    $pm | Add-Member -Force IncludePaths @($PluginSourceRoot, "$src\Public", "$src\Private")
     $pm | Add-Member -Force OutputDirectory $out
     $pm | Add-Member -Force GeneratedCPPFilenameBase (Join-Path $out "$ModuleName.gen")
     $pm | Add-Member -Force ClassesHeaders @()
-    $pm | Add-Member -Force PublicHeaders @($reflected | Where-Object { $_ -like "$src\Public\*" })
+    $pm | Add-Member -Force PublicHeaders @($reflected | Where-Object { $_ -like "$src\Public\*" -or $_ -like "$src\Classes\*" })
     $pm | Add-Member -Force InternalHeaders @()
-    $pm | Add-Member -Force PrivateHeaders @($reflected | Where-Object { $_ -like "$src\Private\*" })
+    $pm | Add-Member -Force PrivateHeaders @($reflected | Where-Object { -not ($_ -like "$src\Public\*" -or $_ -like "$src\Classes\*") })
     $modules.Add($pm)
+    }
+}
+# ARK-only classes (Config\ArkClasses.txt) are part of their module: the patched engine headers derive from them
+foreach ($spec in Get-ArkClasses) {
+    $m = $modules | Where-Object Name -eq $spec.Module
+    if (-not $m) { continue }
+    $h = Join-Path $SdkRoot $spec.Header
+    if ($m.PublicHeaders -notcontains $h) { $m.PublicHeaders = @($m.PublicHeaders) + $h }
 }
 New-Item -ItemType Directory -Force $uhtDir | Out-Null
 

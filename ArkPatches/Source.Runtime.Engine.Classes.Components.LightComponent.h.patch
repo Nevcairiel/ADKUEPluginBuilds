@@ -1,0 +1,30 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/LightComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/LightComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/LightComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/LightComponent.h
+@@ -183,6 +183,10 @@ class ULightComponent : public ULightComponentBase
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Light, meta = (EditCondition = "bOverrideRayEndBias", ClampMin = "0", UIMax = "100"), AdvancedDisplay)
+ 	float RayEndBias;
++	uint32 bPrimaryShadow : 1; // [ARK]
++	uint32 bInheritedShadow : 1; // [ARK]
++	uint32 bDummyPrimaryShadowLight : 1; // [ARK]
++	uint32 bPrimaryCloudShadowEnable : 1; // [ARK]
+ 
+ 	/** 
+ 	 * Channels that this light should affect.  
+@@ -404,6 +408,7 @@ public:
+ 	 * @param Bounds - The bounding volume to test.
+ 	 * @return True if the light affects the bounding volume
+ 	 */
++	ENGINE_API virtual void SetNewTurnOffShadowsAtDistanceFromViewer(float); // [ARK]
+ 	ENGINE_API virtual bool AffectsBounds(const FBoxSphereBounds& InBounds) const;
+ 
+ 	/**
+@@ -583,6 +588,7 @@ public:
+ 
+ 	/** Called When light color or brightness needs update */
+ 	static ENGINE_API FOnUpdateColorAndBrightness UpdateColorAndBrightnessEvent;
++	ENGINE_API virtual void SendRenderDynamicData_Concurrent(); // [ARK]
+ };
+ 
+ 

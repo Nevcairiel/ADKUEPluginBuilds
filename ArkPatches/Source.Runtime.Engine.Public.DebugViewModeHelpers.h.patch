@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/DebugViewModeHelpers.h b/Engine/Source/Runtime/Engine/Public/DebugViewModeHelpers.h
+--- a/Engine/Source/Runtime/Engine/Public/DebugViewModeHelpers.h
++++ b/Engine/Source/Runtime/Engine/Public/DebugViewModeHelpers.h
+@@ -36,7 +36,8 @@ enum EDebugViewShaderMode
+ 	DVSM_LWCComplexity,				// Visualize usage of LWC functions in materials.
+ 	DVSM_ShadowCasters,				// Visualize shadow casters
+ 	DVSM_StreamingDeficit,			// Visualize asset streaming deficit (texture mips or mesh LODs)
+-	DVSM_MAX
++	DVSM_GrassSliceColoration = 15, // [ARK]
++	DVSM_MAX = 0x10 /* [ARK] */
+ };
+ 
+ ENGINE_API const TCHAR* DebugViewShaderModeToString(EDebugViewShaderMode InShaderMode);

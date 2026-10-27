@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/CoreUObject/Public/Misc/WorldCompositionUtility.h b/Engine/Source/Runtime/CoreUObject/Public/Misc/WorldCompositionUtility.h
+--- a/Engine/Source/Runtime/CoreUObject/Public/Misc/WorldCompositionUtility.h
++++ b/Engine/Source/Runtime/CoreUObject/Public/Misc/WorldCompositionUtility.h
+@@ -16,6 +16,7 @@
+ #include "Math/UnrealMathSSE.h"
+ #include "Math/Vector.h"
+ #include "Serialization/StructuredArchive.h"
++#include "UObject/NameTypes.h" // [ARK] member type
+ 
+ class FArchive;
+ 
+@@ -54,6 +55,9 @@ public:
+ 	/** Distance starting from where tiles belonging to this layer will be streamed in */
+ 	int32					StreamingDistance;
+ 	bool					DistanceStreamingEnabled;
++	bool bForcedLevelAsDistanceStreamingEnabled; // [ARK]
++	bool bForcedHidden; // [ARK]
++	FName CachedName; // [ARK]
+ };
+ 
+ /** 

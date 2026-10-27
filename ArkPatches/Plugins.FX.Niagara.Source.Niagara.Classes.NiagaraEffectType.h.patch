@@ -1,0 +1,25 @@
+diff --git a/Engine/Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEffectType.h b/Engine/Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEffectType.h
+--- a/Engine/Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEffectType.h
++++ b/Engine/Plugins/FX/Niagara/Source/Niagara/Classes/NiagaraEffectType.h
+@@ -529,11 +529,21 @@ public:
+ 	void PopulatePerfStatNames();
+ 
+ 	//Cached CSV Stat names for this system.
++#if 0 // [ARK] removed
+ 	FName CSVStat_Count = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_Total = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_GTOnly = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_RT = NAME_None;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	FName CSVStat_GPU = NAME_None;
++#endif // [ARK]
+ #endif
+ };
+ 

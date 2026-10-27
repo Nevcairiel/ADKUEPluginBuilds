@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/PhysicsCore/Public/PhysicalMaterials/PhysicalMaterial.h b/Engine/Source/Runtime/PhysicsCore/Public/PhysicalMaterials/PhysicalMaterial.h
+--- a/Engine/Source/Runtime/PhysicsCore/Public/PhysicalMaterials/PhysicalMaterial.h
++++ b/Engine/Source/Runtime/PhysicsCore/Public/PhysicalMaterials/PhysicalMaterial.h
+@@ -219,6 +219,9 @@ public:
+ 	TUniquePtr<FPhysicsMaterialHandle> MaterialHandle;
+ 
+ 	FChaosUserData UserData;
++	bool bCanDigForWater; // [ARK]
++	float WaterRichness; // [ARK]
++	TEnumAsByte<ESoilType> SoilType; // [ARK]
+ 
+ 	//~ Begin UObject Interface
+ #if WITH_EDITOR

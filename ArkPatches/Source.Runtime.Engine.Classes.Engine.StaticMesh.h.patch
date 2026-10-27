@@ -1,0 +1,103 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h
+@@ -26,6 +26,7 @@
+ #include "MeshTypes.h"
+ #include "PerQualityLevelProperties.h"
+ 
++#include "UObject/NameTypes.h" // [ARK] member type
+ #include "StaticMesh.generated.h"
+ 
+ class FSpeedTreeWind;
+@@ -706,6 +707,7 @@ public:
+ 	UE_DEPRECATED(5.7, "Please do not access this member directly, it will become private soon; use UStaticMesh::GetNumStreamedLODs().")
+ 	UPROPERTY()
+ 	FPerPlatformInt NumStreamedLODs;
++	uint32 TriOrVertCountThreshold; // [ARK]
+ 
+ 	/* The last import version */
+ 	UE_DEPRECATED(5.7, "Please do not access this member directly, it will become private soon; use UStaticMesh::GetImportVersion() or UStaticMesh::SetImportVersion().")
+@@ -1384,6 +1386,7 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, Category = RayTracing)
+ 	uint8 bSupportRayTracing : 1;
++	uint8 bForceIntoHLOD : 1; // [ARK]
+ 
+ 	static FName GetSupportRayTracingMemberName()
+ 	{
+@@ -1591,6 +1594,7 @@ public:
+ 
+ 	/** This transient guid is use by the automation framework to modify the DDC key to force a build. */
+ 	FGuid BuildCacheAutomationTestGuid;
++	TArray<uint8> MeshWindSettings; // [ARK]
+ #endif
+ 
+ protected:
+@@ -2490,6 +2494,57 @@ private:
+ 	 * Guard to ignore re-entrant PostEditChange calls.
+ 	 */
+ 	bool bIsInPostEditChange = false;
++public:
++	float StreamingDistanceMultiplier; // [ARK]
++private:
++public:
++	int FarOverrideLOD; // [ARK]
++private:
++public:
++	uint32 bReallyDoesWantLightMapUVs : 1; // [ARK]
++private:
++public:
++	uint32 bHighQualityDistanceField : 1; // [ARK]
++private:
++public:
++	uint32 bCastFarShadow : 1; // [ARK]
++private:
++public:
++	uint32 bAllowLODStreaming : 1; // [ARK]
++private:
++public:
++	uint32 bPreventLODStreamingOnWindows : 1; // [ARK]
++private:
++public:
++	uint32 bIgnoreTriReductions : 1; // [ARK]
++private:
++public:
++	uint32 bForceAllowMeshStreaming : 1; // [ARK]
++private:
++public:
++	FPerPlatformBool bRemovingLOD0FromCook; // [ARK]
++private:
++public:
++	FName CustomTag; // [ARK]
++private:
++public:
++	uint64 MapCheck_CollisionMeshMaxTriangles; // [ARK]
++private:
++public:
++	uint64 MapCheck_CollisionMeshTrianglesDensity_TriangleCount; // [ARK]
++private:
++public:
++	FVector MapCheck_CollisionMeshTrianglesDensity_Area; // [ARK]
++private:
++public:
++	double MapCheck_CollisionMeshTriangleDensity; // [ARK]
++private:
++public:
++	uint32 bMapCheck_PreventCollisionMeshMaxTrianglesWarning : 1; // [ARK]
++private:
++public:
++	uint32 bMapCheck_PreventCollisionMeshTriangleDensityWarning : 1; // [ARK]
++private:
+ #endif // #if WITH_EDITOR
+ 
+ 	/**
+@@ -2506,6 +2561,9 @@ private:
+ 	 * Complete the static mesh postload process - Can't be done in parallel.
+ 	 */
+ 	void FinishPostLoadInternal(FStaticMeshPostLoadContext& Context);
++protected:
++	ENGINE_API virtual bool LegacyDecideIfLOD0ShouldExist(); // [ARK]
++private:
+ };
+ 
+ class FStaticMeshCompilationContext

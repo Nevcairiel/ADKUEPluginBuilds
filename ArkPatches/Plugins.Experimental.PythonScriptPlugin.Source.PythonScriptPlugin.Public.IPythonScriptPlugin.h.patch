@@ -1,0 +1,10 @@
+diff --git a/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/IPythonScriptPlugin.h b/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/IPythonScriptPlugin.h
+--- a/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/IPythonScriptPlugin.h
++++ b/Engine/Plugins/Experimental/PythonScriptPlugin/Source/PythonScriptPlugin/Public/IPythonScriptPlugin.h
+@@ -121,4 +121,6 @@ public:
+ 	 * @param Owner - Owner name whose entries should be removed
+ 	 */
+ 	virtual void RemoveStartupScriptAllowPath(FName Owner) = 0;
++	virtual void Primal_DisableLoadingOfSoftObjectsWhenWrapping() = 0; // [ARK]
++	virtual void Primal_EnableLoadingOfSoftObjectsWhenWrapping() = 0; // [ARK]
+ };

@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h b/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/TextureRenderTarget2D.h
+@@ -40,7 +40,8 @@ enum ETextureRenderTargetFormat : int
+ 	/** RGBA channels, 32 bit per channel floating point, range [-3.402823 x 10^38, 3.402823 x 10^38] */
+ 	RTF_RGBA32f,
+ 	/** RGBA channels, 10 bit per channel fixed point and 2 bit of alpha */
+-	RTF_RGB10A2
++	RTF_RGB10A2,
++	RTF_G16 = 11, // [ARK]
+ };
+ 
+ inline EPixelFormat GetPixelFormatFromRenderTargetFormat(ETextureRenderTargetFormat RTFormat)
+@@ -263,7 +264,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
+ 	ENGINE_API virtual FString GetDesc() override;
+ 	//~ End UObject Interface
+ 
+-	inline int32 GetNumMips() const
++	virtual /* [ARK] */ inline int32 GetNumMips() const
+ 	{
+ 		return NumMips;
+ 	}

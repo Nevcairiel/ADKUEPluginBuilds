@@ -1,0 +1,27 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/SceneManagement.h b/Engine/Source/Runtime/Engine/Public/SceneManagement.h
+--- a/Engine/Source/Runtime/Engine/Public/SceneManagement.h
++++ b/Engine/Source/Runtime/Engine/Public/SceneManagement.h
+@@ -218,15 +218,23 @@ public:
+ 	/**
+ 	* returns the path tracer sample index
+ 	*/
++#if 0 // [ARK] removed
+ 	virtual uint32 GetPathTracingSampleIndex() const = 0;
++#endif // [ARK]
+ 
+ 	/**
+ 	* returns the path tracer sample count
+ 	*/
++#if 0 // [ARK] removed
+ 	virtual uint32 GetPathTracingSampleCount() const = 0;
++#endif // [ARK]
+ 
++#if 0 // [ARK] removed
+ 	virtual void SetLandscapeRayTracingStates(TPimplPtr<FLandscapeRayTracingStateList>&& InLandscapeRayTracingStates) = 0;
++#endif // [ARK]
++#if 0 // [ARK] removed
+ 	virtual FLandscapeRayTracingStateList* GetLandscapeRayTracingStates() const = 0;
++#endif // [ARK]
+ #endif
+ 
+ 	/** Similar to above, but adds Lumen Scene Data */

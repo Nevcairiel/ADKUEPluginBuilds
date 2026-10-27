@@ -9,3 +9,11 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimBlueprintGenerat
  
  	FAnimBlueprintDebugData& GetAnimBlueprintDebugData()
  	{
+@@ -652,6 +653,7 @@ public:
+ 	ENGINE_API virtual void PostLoadDefaultObject(UObject* Object) override;
+ 	ENGINE_API virtual void PostLoad() override;
+ 	// End of UClass interface
++	ENGINE_API virtual bool CanBeInCluster() const; // [ARK]
+ };
+ 
+ template<typename NodeType>

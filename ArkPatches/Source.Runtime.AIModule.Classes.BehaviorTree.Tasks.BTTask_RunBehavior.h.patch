@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/Tasks/BTTask_RunBehavior.h b/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/Tasks/BTTask_RunBehavior.h
+--- a/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/Tasks/BTTask_RunBehavior.h
++++ b/Engine/Source/Runtime/AIModule/Classes/BehaviorTree/Tasks/BTTask_RunBehavior.h
+@@ -43,6 +43,8 @@ protected:
+ 	/** behavior to run */
+ 	UPROPERTY(Category = Node, EditAnywhere, BlueprintReadOnly)
+ 	TObjectPtr<UBehaviorTree> BehaviorAsset;
++	FString ControllerProperty; // [ARK]
++	TObjectPtr<UClass> CurrentControllerClass; // [ARK]
+ 
+ 	/** called when subtree is removed from active stack */
+ 	AIMODULE_API virtual void OnSubtreeDeactivated(UBehaviorTreeComponent& OwnerComp, EBTNodeResult::Type NodeResult);

@@ -1,0 +1,21 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCell.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCell.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCell.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartitionRuntimeCell.h
+@@ -283,7 +283,9 @@ class UWorldPartitionRuntimeCell : public UObject, public IWorldPartitionCell, p
+ 		return Algo::AnyOf(GetDataLayers(), [&InDataLayers](const FName& DataLayer) { return InDataLayers.Contains(DataLayer); });
+ 	}
+ 	ENGINE_API virtual FName GetLevelPackageName() const override;
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual FString GetDebugName() const override;
++#endif // [ARK]
+ 	ENGINE_API virtual UWorld* GetOwningWorld() const override;
+ 	ENGINE_API virtual UWorld* GetOuterWorld() const override;
+ 	//~End IWorldPartitionCell Interface
+@@ -447,6 +449,7 @@ public:
+ 
+ 	friend class UWorldPartitionStreamingPolicy;
+ 	friend struct FSpatialHashStreamingGrid;
++	ENGINE_API virtual FString Primal_GetHumanReadableName() const; // [ARK]
+ };
+ 
+ [[nodiscard]] constexpr bool operator == (EWorldPartitionRuntimeCellState a, EDataLayerRuntimeState b)

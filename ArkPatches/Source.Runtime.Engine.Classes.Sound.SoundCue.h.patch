@@ -1,0 +1,22 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Sound/SoundCue.h b/Engine/Source/Runtime/Engine/Classes/Sound/SoundCue.h
+--- a/Engine/Source/Runtime/Engine/Classes/Sound/SoundCue.h
++++ b/Engine/Source/Runtime/Engine/Classes/Sound/SoundCue.h
+@@ -14,6 +14,7 @@
+ #include "EdGraph/EdGraph.h"
+ #endif
+ 
++#include "UObject/SoftObjectPath.h" // [ARK] member type
+ #include "SoundCue.generated.h"
+ 
+ 
+@@ -105,6 +106,10 @@ class USoundCue : public USoundBase
+ 	/* Attenuation settings to use if Override Attenuation is set to true */
+ 	UPROPERTY(EditAnywhere, Category = "Sound")
+ 	FSoundAttenuationSettings AttenuationOverrides;
++	uint8 SubtitleColorIndex; // [ARK]
++	TArray<FSubtitleCue> Subtitles; // [ARK]
++	TArray<FLocalizedSpokenText> LocalizedSpokenTexts; // [ARK]
++	FSoftObjectPath AnimTexture; // [ARK]
+ 
+ #if WITH_EDITORONLY_DATA
+ 	UPROPERTY()

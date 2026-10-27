@@ -1,0 +1,42 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h b/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
+@@ -53,9 +53,28 @@ class APostProcessVolume : public AVolume, public IInterface_PostProcessVolume
+ 	/** Automatically generated GUID for this post process volume, used for deterministic sorting of equal priority volumes. */
+ 	UPROPERTY(TextExportTransient, NonPIEDuplicateTransient, NonTransactional)
+ 	FGuid VolumeGuid;
++	FPostprocessVolumeEnteredSignature OnPostProcessVolumeEntered; // [ARK]
++	FPostprocessVolumeLeftSignature OnPostProcessVolumeLeft; // [ARK]
++	TMap<TObjectPtr<UCurveFloat>,TObjectPtr<UCurveFloat>> PostProcessFloatCurveOverrides; // [ARK]
++	float GlobalExposureCompensationOffset; // [ARK]
++	TArray<TObjectPtr<AExponentialHeightFog>> DisabledHeightFogs; // [ARK]
++	TArray<TObjectPtr<AExponentialHeightFog>> PrimaryLerpingHeightFogs; // [ARK]
++	uint32 bAbsolutePriority : 1; // [ARK]
++	uint32 bWaterPP : 1; // [ARK]
++	uint32 bReverseVacuumCompartmentPP : 1; // [ARK]
++	uint32 bReallyWantToOverrideLumenSettingsOnlyJesseGetsToMakeThisCall : 1; // [ARK]
++	int WhatIsSquareRootOfFourtyNineCheckingYouReallyWantOverrideLumen; // [ARK]
++	float ViewDistanceMultiplier; // [ARK]
++	TEnumAsByte<EPostProcessVolumeType::Type> VolumeType; // [ARK]
++	float MaterialWaterLineParameterValue; // [ARK]
++private:
++	FPostProcessSettings CachedPostProcessSettings; // [ARK]
++public:
+ 
+ 	//~ Begin IInterface_PostProcessVolume Interface
++#if 0 // [ARK] removed
+ 	ENGINE_API virtual bool EncompassesPoint(FVector Point, float SphereRadius/*=0.f*/, float* OutDistanceToPoint) override;
++#endif // [ARK]
+ 	virtual FPostProcessVolumeProperties GetProperties() const override
+ 	{
+ 		FPostProcessVolumeProperties Ret;
+@@ -104,6 +123,9 @@ public:
+ 	/** Adds an Blendable (implements IBlendableInterface) to the array of Blendables (if it doesn't exist) and update the weight */
+ 	UFUNCTION(BlueprintCallable, Category="Rendering")
+ 	void AddOrUpdateBlendable(TScriptInterface<IBlendableInterface> InBlendableObject, float InWeight = 1.0f) { Settings.AddBlendable(InBlendableObject, InWeight); }
++	ENGINE_API virtual bool EncompassesPoint(FVector, float, float*, float*); // [ARK]
++	ENGINE_API virtual void SetEnabled(bool); // [ARK]
++	ENGINE_API virtual void BeginPlay(); // [ARK]
+ };
+ 
+ 

@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/LevelSequence/Public/LevelSequenceActor.h b/Engine/Source/Runtime/LevelSequence/Public/LevelSequenceActor.h
+--- a/Engine/Source/Runtime/LevelSequence/Public/LevelSequenceActor.h
++++ b/Engine/Source/Runtime/LevelSequence/Public/LevelSequenceActor.h
+@@ -333,6 +333,9 @@ private:
+ 
+ 	UPROPERTY()
+ 	FWorldPartitionResolveData WorldPartitionResolveData;
++public:
++	LEVELSEQUENCE_API virtual void Tick(float); // [ARK]
++private:
+ };
+ 
+ USTRUCT()

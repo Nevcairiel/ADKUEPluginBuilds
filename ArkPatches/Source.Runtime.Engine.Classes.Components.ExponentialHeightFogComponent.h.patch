@@ -1,0 +1,28 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/ExponentialHeightFogComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/ExponentialHeightFogComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/ExponentialHeightFogComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/ExponentialHeightFogComponent.h
+@@ -19,6 +19,7 @@ class UExponentialHeightFogComponent : public USceneComponent
+ 	GENERATED_UCLASS_BODY()
+ 
+ 	/** Global density factor. */
++	float Priority; // [ARK]
+ 	UPROPERTY(BlueprintReadOnly, interp, Category=ExponentialHeightFogComponent, meta=(UIMin = "0", UIMax = ".05"))
+ 	float FogDensity;
+ 
+@@ -134,6 +135,7 @@ class UExponentialHeightFogComponent : public USceneComponent
+ 	 */
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VolumetricFog, meta=(DisplayName = "Volumetric Fog"))
+ 	bool bEnableVolumetricFog;
++	float VolumetricFogProjection; // [ARK]
+ 
+ 	/** 
+ 	 * Controls the scattering phase function - how much incoming light scatters in various directions.
+@@ -182,6 +184,8 @@ class UExponentialHeightFogComponent : public USceneComponent
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = VolumetricFog, meta=(DisplayName = "Static Lighting Scattering Intensity", UIMin = "0", UIMax = "10"))
+ 	float VolumetricFogStaticLightingScatteringIntensity;
++	bool bAllowScalingLumenInVolumetricFog; // [ARK]
++	float ScaleLumenInVolumetricFog; // [ARK]
+ 
+ 	/** 
+ 	 * Whether to use FogInscatteringColor for the Sky Light volumetric scattering color and DirectionalInscatteringColor for the Directional Light scattering color. 

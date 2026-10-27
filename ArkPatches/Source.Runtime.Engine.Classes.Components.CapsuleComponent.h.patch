@@ -1,0 +1,11 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Components/CapsuleComponent.h b/Engine/Source/Runtime/Engine/Classes/Components/CapsuleComponent.h
+--- a/Engine/Source/Runtime/Engine/Classes/Components/CapsuleComponent.h
++++ b/Engine/Source/Runtime/Engine/Classes/Components/CapsuleComponent.h
+@@ -184,6 +184,7 @@ public:
+ 		CapsuleRadius = FMath::Max(0.f, InRadius);
+ 		CapsuleHalfHeight = FMath::Max3(0.f, InHalfHeight, InRadius);
+ 	}
++	ENGINE_API virtual bool IsSymmetricCollision(); // [ARK]
+ };
+ 
+ 

@@ -1,0 +1,13 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotifyState.h b/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotifyState.h
+--- a/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotifyState.h
++++ b/Engine/Source/Runtime/Engine/Classes/Animation/AnimNotifies/AnimNotifyState.h
+@@ -109,6 +109,9 @@ class UAnimNotifyState : public UObject
+ 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = AnimNotify, meta=(Bitmask, BitmaskEnum="/Script/Engine.EAnimNotifyStateBehaviorFlags"))
+ 	uint8 NotifyStateBehaviorFlags;
++	bool bIgnoreOnDediServer; // [ARK]
++	int LODThreshold; // [ARK]
++	bool bCanClobberEventReference; // [ARK]
+ 	
+ protected:
+ 	ENGINE_API UObject* GetContainingAsset() const;

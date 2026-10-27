@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/LevelScriptActor.h b/Engine/Source/Runtime/Engine/Classes/Engine/LevelScriptActor.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/LevelScriptActor.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/LevelScriptActor.h
+@@ -79,6 +79,15 @@ class ALevelScriptActor : public AActor
+ private:
+ 	UPROPERTY()
+ 	uint32 bInputEnabled:1;
++public:
++	uint32 bForceAbsoluteMaxDistance : 1; // [ARK]
++private:
++public:
++	uint32 bEnableScriptReplication : 1; // [ARK]
++private:
++public:
++	ENGINE_API virtual void BeginPlay(); // [ARK]
++private:
+ };
+ 
+ 

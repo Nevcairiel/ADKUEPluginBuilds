@@ -1,0 +1,54 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/LevelStreaming.h b/Engine/Source/Runtime/Engine/Classes/Engine/LevelStreaming.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/LevelStreaming.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/LevelStreaming.h
+@@ -208,6 +208,15 @@ protected:
+ 
+ private:
+ 	TOptional<int32> StreamingPriorityOverrideBackup;
++public:
++	uint32 bLevelStreamingVisibilityOnly : 1; // [ARK]
++private:
++public:
++	uint32 bLevelStreamingDesiredVisibility : 1; // [ARK]
++private:
++public:
++	uint32 bHasLoadRequestPending : 1; // [ARK]
++private:
+ 
+ public:
+ 
+@@ -342,7 +351,10 @@ public:
+ 	float MinTimeBetweenVolumeUnloadRequests;
+ 
+ 	/** Time of last volume unload request.  Used in preventing spurious unload requests. */
++#if 0 // [ARK] removed
+ 	float LastVolumeUnloadRequestTime;
++#endif // [ARK]
++	double LastVolumeUnloadRequestTime; // [ARK] type changed
+ 
+ #if WITH_EDITORONLY_DATA
+ 	/** List of keywords to filter on in the level browser */
+@@ -582,6 +594,7 @@ public:
+ 
+ 	/** Returns the UWorld that triggered the streaming of this streaming level. */
+ 	ENGINE_API virtual UWorld* GetStreamingWorld() const;
++	ENGINE_API virtual void SetLevelVisibility(bool, bool); // [ARK]
+ 
+ 	/** Returns whether streaming level is visible */
+ 	UFUNCTION(BlueprintCallable, Category="Game")
+@@ -646,6 +659,7 @@ public:
+ 	/** Called when level is no longer visible, may not be removed from world yet  */
+ 	UPROPERTY(BlueprintAssignable)
+ 	FLevelStreamingVisibilityStatus		OnLevelHidden;
++	bool bEnableTileStreaming; // [ARK]
+ 
+ 	/** Whether client should be using making invisible transaction requests to the server (default value). */
+ 	static ENGINE_API bool DefaultAllowClientUseMakingInvisibleTransactionRequests();
+@@ -768,6 +782,7 @@ private:
+ 
+ 	/** State for server handshake of NetLevelVisibilty requests */
+ 	FNetLevelVisibilityState NetVisibilityState;
++	bool bHasHadMapActorsDestroyedByActorChannel; // [ARK]
+ 
+ 	/** Whether streaming level is concerned by net visibility transactions */
+ 	ENGINE_API bool IsConcernedByNetVisibilityTransactionAck() const;

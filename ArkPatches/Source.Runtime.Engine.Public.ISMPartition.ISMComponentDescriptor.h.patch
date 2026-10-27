@@ -1,0 +1,30 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/ISMPartition/ISMComponentDescriptor.h b/Engine/Source/Runtime/Engine/Public/ISMPartition/ISMComponentDescriptor.h
+--- a/Engine/Source/Runtime/Engine/Public/ISMPartition/ISMComponentDescriptor.h
++++ b/Engine/Source/Runtime/Engine/Public/ISMPartition/ISMComponentDescriptor.h
+@@ -226,6 +226,9 @@ public:
+ 
+ 	UPROPERTY(EditAnywhere, Category = "Component Settings", meta = (DisplayAfter = "CustomDepthStencilWriteMask"))
+ 	uint8 bGenerateOverlapEvents : 1;
++	uint8 bProjectLandscapeGrass : 1; // [ARK]
++	uint32 bIgnoreMaterialGrassOutput : 1; // [ARK]
++	uint8 GrassSliceIndex; // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, Category = "Component Settings")
+ 	uint8 bOverrideNavigationExport : 1;
+@@ -238,6 +241,8 @@ public:
+ 
+ 	UPROPERTY(EditAnywhere, Category = "Component Settings")
+ 	uint8 bFillCollisionUnderneathForNavmesh : 1;
++	uint8 bForceDisablePerInstanceDynamicCustomDataOut : 1; // [ARK]
++	int PerInstanceDynamicCustomDataOutDisableDistance; // [ARK]
+ 
+ 	UPROPERTY(EditAnywhere, Category = "Component Settings")
+ 	uint8 bRasterizeAsFilledConvexVolume : 1;
+@@ -253,6 +258,7 @@ public:
+ 
+ 	UPROPERTY(EditAnywhere, Category = "Component Settings")
+ 	TEnumAsByte<enum EDetailMode> DetailMode;
++	ETwoSidedDistanceFieldSetting DistanceFieldMostlyTwoSidedOverride; // [ARK]
+ };
+ 
+ USTRUCT()

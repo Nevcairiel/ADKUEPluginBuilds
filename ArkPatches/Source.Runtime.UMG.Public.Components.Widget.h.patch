@@ -17,7 +17,7 @@ diff --git a/Engine/Source/Runtime/UMG/Public/Components/Widget.h b/Engine/Sourc
  #endif
  
  protected:
-@@ -1250,4 +1259,82 @@ private:
+@@ -1250,4 +1259,85 @@ private:
  	PROPERTY_BINDING_IMPLEMENTATION(FText, AccessibleText);
  	PROPERTY_BINDING_IMPLEMENTATION(FText, AccessibleSummaryText);
  #endif
@@ -98,5 +98,8 @@ diff --git a/Engine/Source/Runtime/UMG/Public/Components/Widget.h b/Engine/Sourc
 +private:
 +public:
 +TWeakObjectPtr<UWidget> AdjacentLeft; // [ARK]
++private:
++public:
++UMG_API virtual void PostLoad(); // [ARK]
 +private:
  };

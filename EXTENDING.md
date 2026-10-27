@@ -104,10 +104,13 @@ Typical first-build problems and their fix:
 bash .\Tools\Apply-ManualArkEdits.sh       # re-apply hand edits in headers the patcher also touched
 .\Build.ps1 <Folder>
 .\Tools\Test-ArkAbi.ps1 <Folder>           # repeat until "0 types with unexplained ABI differences"
-.\Tools\Export-ArkPatches.ps1              # store the result as ArkPatches\*.patch
-.\Tools\Test-LayoutIndependence.ps1 <Folder>
+.\Tools\Test-LayoutIndependence.ps1 <Folder> -Jobs 4
 .\Tools\Test-DllLoad.ps1 <Folder>
+.\Tools\Export-ArkPatches.ps1              # last: store the result as ArkPatches\*.patch
 ```
+
+Export only at the very end, when every plugin passes the three tests. If you re-create the patches with
+`Repatch-ArkSdk.ps1` (2.7), an export in between makes the next repatch apply the same changes twice.
 
 `-Patch` uses the plugin's own PDB as reference, so only types that still differ are touched. Look at
 `Plugins\<Folder>\Build\Intermediate\patch-report.txt` for `MANUAL` entries (templates, macro generated enums,
@@ -126,13 +129,51 @@ Decide for every reported type whether it matters for the plugin:
 
 ### 2.5 Multi-module plugins
 
-`Build.ps1` builds exactly one module; `Initialize-Plugin` (Common.ps1) refuses `.uplugin` files with several
-modules. To support them, make `$ModuleName` a list and loop over the modules in `Capture-UbtBaseline.ps1`
-(one Config set per module), `Invoke-Uht.ps1` (one manifest entry per module, created from
-`UhtPluginModule.json`) and `Build.ps1` (compile per module; link in dependency order, adding the import libraries
-of the plugin's own modules); `ShooterGameEditor.modules` must list all of them.
+Handled automatically (first used for ue_mcp_bridge). With several modules in the `.uplugin`, the capture writes
+one configuration per module to `Build\Config\<Module>\` (single-module plugins keep `Build\Config\`),
+`Invoke-Uht.ps1` adds one manifest entry per module, and `Build.ps1` compiles each module into `Obj\<Module>` and
+links them in dependency order (`PluginModules.txt`: the import libraries of the plugin's own modules linked
+before). `ShooterGameEditor.modules` lists all of them. The tests check every module (one ABI audit per module).
 
-### 2.6 Install / test in the devkit
+### 2.6 Adapting the plugin sources
+
+Some plugins call engine API that ARK changed or removed. Do not edit `Source\`: put unified diffs (relative to
+`Source\`, `git apply -p1`) into `Plugins\<Folder>\Build\SourcePatches\*.patch`. `Build.ps1` applies them in name
+order to a copy of the sources in `Build\Intermediate\Source` and compiles that copy; the copy is refreshed
+whenever a patch or a source file changes. Mark each change with `[ARK]` and the reason.
+
+Definitions that UBT derives from the vanilla engine but that must differ in the devkit (ue_mcp_bridge:
+`WITH_FAB_PLUGIN=0`, because the devkit has no Fab binaries) go to `Plugins\<Folder>\Build\DefinitionOverrides.txt`
+(`NAME=VALUE` per line); rerun `Capture-UbtBaseline.ps1` after changing it.
+
+ThirdParty libraries that UBT links (ue_mcp_bridge: ICU) are captured to `ThirdPartyLibs.txt` and linked from the
+vanilla engine copy in the SDK. They are static libraries, so the plugin gets its own copy next to the devkit's.
+
+### 2.7 Re-creating the SDK patches from scratch
+
+`Test-ArkAbi.ps1 -Patch` patches incrementally, on top of earlier patches. When a patcher change makes the
+patches come out differently, `Tools\Repatch-ArkSdk.ps1` re-creates them all at once:
+
+1. It resets the SDK to vanilla headers + `ArkPatches\` + `ArkHeaders\` (`New-ArkSdk.ps1 -Clean -HeadersOnly`).
+2. It patches every type from the **baseline PDBs** in `Intermediate\BaselinePdb`: plugin PDBs built against that
+   reset SDK. Currently GitSourceControl and the three ue_mcp_bridge modules; together they reference every
+   patched type.
+3. It runs `Update-ArkTypes` and `Apply-ManualArkEdits.sh`.
+
+Then run `New-ArkSdk.ps1`, build and test all plugins, and export (2.4).
+
+The baseline PDBs only fit the `ArkPatches\` they were built against. `-SaveBaseline` records a hash of
+`ArkPatches\` in `Intermediate\BaselinePdb\ArkPatches.stamp`, and the repatch refuses to run if the patches
+changed since. After an export, rebuild the baseline before the next repatch:
+
+```powershell
+.\New-ArkSdk.ps1 -Clean
+.\Build.ps1 GitSourceControl -ForceLink
+.\Build.ps1 ue_mcp_bridge -ForceLink -Jobs 4      # unresolved externals are expected here: only the PDB is used
+.\Tools\Repatch-ArkSdk.ps1 -SaveBaseline GitSourceControl, ue_mcp_bridge
+```
+
+### 2.8 Install / test in the devkit
 
 Copy `Plugins\<Folder>\Build\Output\<Plugin>\Binaries` into the plugin folder below `<Devkit>\Engine\Plugins\...` (or a project
 `Plugins` folder) and enable the plugin (`-EnablePlugins=<Plugin>` on the command line or the Plugins window).
@@ -151,9 +192,16 @@ automatically); after a devkit update the plugin must be rebuilt (new BuildId, p
 * ARK changed many core types (see README). For a new plugin, everything in `ArkPatches` is already correct;
   only types the new plugin uses for the first time can show up in the audit.
 * Gameplay framework re-based on ARK classes (`UPrimalActor`, `UPrimalActorComponent`, `UPrimalWorld`,
-  `APrimalController`, `FPrimalViewportClient`). **A plugin that subclasses or deeply uses actors, components,
-  worlds or player controllers needs these reconstructed** (full `UCLASS` definitions of the ARK base classes
-  from the PDBs: members, vtable, UHT macros). This was out of scope for BlueprintAssist and is not done yet.
+  `APrimalController`, `FPrimalViewportClient`, ...). `Tools\New-ArkClassHeaders.ps1` generates them from the PDBs
+  into `ArkHeaders\` (list in `Config\ArkClasses.txt`): devkit bases, the data as opaque storage of the devkit's
+  size, all virtual functions in vtable order. ARK data members are not named, so a plugin can only use the vanilla
+  members of `AActor` & co. If ARK added a base class that is not listed yet, add a line to `ArkClasses.txt`,
+  run the script and derive the engine class from it (patcher, `SetBases`).
+* Members the devkit renamed at the same position (`ULevel::Actors2`) keep their vanilla name in the SDK
+  (`Config\AbiRenames.txt`), so engine inline code and plugins compile unchanged.
+* ARK changed some non-virtual signatures (extra parameters, e.g. `USceneComponent::SetVisibility`). These are
+  unresolved externals, not audit findings; they are edited by hand in `Apply-ManualArkEdits.sh` with the mangled
+  names from `SDK\Lib\*.def` and defaults that keep the vanilla behavior.
 
 ---
 
@@ -216,7 +264,8 @@ $T layout <pdb> SWidget "SButton::FArguments"          # members with offsets, b
 $T diff <our.pdb> <devkit.pdb> UObject FArchive         # what changed
 $T audit <our.pdb> <report.txt> <devkit pdbs...>        # all types (Test-ArkAbi.ps1 wraps this)
 $T patch <our.pdb> <sdkRoot> <engineRootInPdb> <report> <devkit pdbs...> [--exclude AbiExclusions.txt]
-$T probe <our.pdb> <sdkRoot> <engineRootInPdb> <exclusions>   # Test-LayoutIndependence.ps1 uses this
+$T probe <our.pdb> <sdkRoot> <engineRootInPdb> <exclusions> <devkit pdbs...> [--renames AbiRenames.txt]   # Test-LayoutIndependence.ps1
+$T genclass <devkit.pdb> <out.h> <sdkRoot> <API macro> <includes> <types...>   # New-ArkClassHeaders.ps1
 $T scan <header> <line> <class|struct> <Name> [sdkRoot]  # debug the header scanner on one type
 ```
 
@@ -258,5 +307,16 @@ the SDK root for PDBs built by `Build.ps1`.
 * **Runtime hot patches:** a plugin that overwrites engine functions in memory (ElectronicNodes `FHotPatch`)
   replaces the *devkit's* function. Disassemble the devkit function (address from `llvm-pdbutil dump --symbols`,
   then `dumpbin /disasm /range:`) and compare it with the vanilla source before trusting the replacement.
+* **Patches applied twice:** exporting before a `Repatch-ArkSdk.ps1` run puts the patcher's changes into
+  `ArkPatches\`, and the repatch adds them again (redefinition errors). The stamp guard (2.7) now refuses that;
+  export only at the end.
+* **Members by value of new types:** an ARK member like `FWorldCachedViewInfo::FinalPostProcessSettings` needs the
+  definition of its type. The patcher adds the include of the type's header (`// [ARK] member type`), taken from the
+  type's PDB location; `.inl` locations (`FString`) are skipped because they cannot be included on their own.
+* **Layout test noise:** the probe build has different paths, so the comparison normalizes MSVC anonymous
+  namespace names (`?A0x<hash>@`), UHT file IDs and package hashes, drops `.bss` sizes and compares instructions
+  without their bytes. Types declared outside the SDK (Windows SDK) are not probed; exclusions marked `[no probe]`
+  in `AbiExclusions.txt` are skipped (e.g. a template the plugin instantiates with its own copy).
+* **Memory:** big plugins (ue_mcp_bridge) exhaust memory with one compiler per CPU; use `-Jobs 4`.
 * **Do not modify the devkit** (`D:\ASA\ARKDevkitBeta`): everything reads from it only; REA needs copies on NTFS.
 * **Disk:** `Intermediate\PdbCache` grows to ~12 GB (text dumps of the devkit PDBs); safe to delete.

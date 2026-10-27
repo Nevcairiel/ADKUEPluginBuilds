@@ -3,8 +3,8 @@
 Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
-BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries)
-and ElectronicNodes.
+BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
+ElectronicNodes and ue_mcp_bridge (three modules).
 
 The devkit only ships binaries + PDBs. The headers are reconstructed from a vanilla UE 5.8 source tree and
 patched to match the ARK engine's ABI; every patch was recovered from the devkit's PDB type information and
@@ -22,15 +22,20 @@ PluginBuild\
   Common.ps1             paths, toolchain discovery, plugin folder handling
   README.md, EXTENDING.md
   ArkPatches\*.patch     ARK ABI patches for the engine headers (unified diffs against vanilla UE 5.8), shared
+  ArkHeaders\            headers of the ARK-only engine classes (UPrimalActor, UPrimalWorld, ...), generated from the PDBs
   Config\                shared configuration
     ArkForwardDeclarations.h  forward declarations of ARK-only types (force-included)
     AbiExclusions.txt         ARK types whose changes are not reproduced, with the reason
+    AbiRenames.txt            members the devkit renamed that the SDK keeps under their vanilla name
+    ArkClasses.txt            the ARK-only classes New-ArkClassHeaders.ps1 generates into ArkHeaders\
     SdkHeaders.Extra.txt      headers needed only by ARK additions
   Tools\
     Capture-UbtBaseline.ps1   captures a plugin's build environment from a stock UBT build against vanilla UE 5.8
     New-ImportLibs.ps1        import libraries from the export tables of ShooterGameEditor-*.dll
     Update-GeneratedCode.ps1  remaps reflection flag literals in UHT output to ARK values
+    Repatch-ArkSdk.ps1        re-creates the SDK patches from scratch from the baseline PDBs (EXTENDING.md, 2.7)
     Export-ArkPatches.ps1     turns edits of SDK\ headers into ArkPatches\*.patch
+    New-ArkClassHeaders.ps1   generates ArkHeaders\ from the devkit PDBs (after a devkit update)
     Apply-ManualArkEdits.sh   hand-recovered edits in headers that the patcher also touches (re-run after PdbLayout patch)
     Test-ArkAbi.ps1, Test-LayoutIndependence.ps1, Test-DllLoad.ps1 (+ LoadTest\)   verification, see below
     PdbLayout\                PDB layout tool: layout / diff / audit / patch / probe (llvm-pdbutil based)
@@ -45,10 +50,14 @@ PluginBuild\
     AutoSizeComments\                same structure (sources only, no Resources: the devkit stub has them)
     GitSourceControl\                same structure (vanilla UE 5.8 sources, no Resources: the devkit stub has them)
     ElectronicNodes\                 same structure (complete plugin: the devkit has no stub)
+    ue_mcp_bridge\                   multi-module plugin (complete plugin: the devkit has no stub)
+      Build\Config\<Module>\         one captured build environment per module
+      Build\SourcePatches\*.patch    ARK adaptations of the plugin sources, applied to a copy in Build\Intermediate
+      Build\DefinitionOverrides.txt  definitions whose devkit value differs from what UBT derives (WITH_FAB_PLUGIN=0)
 ```
 
 Plugin and module names come from the plugin's `.uplugin`; the plugin folder name is what the scripts take as
-argument (`BlueprintAssist`). Only single-module plugins are supported so far (see EXTENDING.md).
+argument (`BlueprintAssist`). Plugins with several modules are built in dependency order into one plugin folder.
 
 ## Prerequisites
 
@@ -73,8 +82,13 @@ cd <root>                               # this folder (D:\Modding\ARK\PluginBuil
 .\Build.ps1 BlueprintAssist             # incremental build
 .\Build.ps1 BlueprintAssist -Rebuild    # recompile everything
 .\Build.ps1 BlueprintAssist -Clean      # remove the plugin's intermediates and output
+.\Build.ps1 ue_mcp_bridge -Jobs 4       # limit parallel compiler processes (default: one per CPU)
 .\New-ArkSdk.ps1 -Clean                 # regenerate the shared SDK (headers, UHT output, import libraries)
 ```
+
+Large plugins need a lot of memory per compiler process: ue_mcp_bridge takes about 33 minutes with `-Jobs 4`;
+with one job per CPU the machine can run out of memory. `-ForceLink` links despite unresolved externals; the DLL
+is unusable and only serves as a PDB to patch the SDK from (EXTENDING.md, 2.7).
 
 The result is a complete plugin folder in `Plugins\BlueprintAssist\Build\Output\BlueprintAssist`:
 
@@ -113,12 +127,25 @@ the start of `FNodeFactory::CreateConnectionPolicy` in `ShooterGameEditor-GraphE
 with its own copy of that function. The devkit's version was checked against vanilla UE 5.8: they are the same,
 so the replacement loses no ARK behaviour.
 
+ue_mcp_bridge has no stub either: copy `Plugins\ue_mcp_bridge\Build\Output\UE_MCP_Bridge` (three DLLs, one per
+module) to `<Devkit>\Engine\Plugins\Marketplace\UE_MCP_Bridge` and enable it with `-EnablePlugins=UE_MCP_Bridge`.
+Differences from the upstream plugin, all in `Build\SourcePatches` and `Build\DefinitionOverrides.txt`:
+
+* The devkit ships the Fab plugin without binaries: the bridge is built with `WITH_FAB_PLUGIN=0` and uses its
+  fallback paths instead of linking Fab.
+* ARK removed the `ECC_Camera` collision channel (see `FCollisionResponseContainer` in `Apply-ManualArkEdits.sh`);
+  the collision query test uses `ECC_Visibility` instead.
+* ARK replaced `UInstancedStaticMeshComponent::RemoveInstance(int32)`; the bridge calls `RemoveInstances({ Index })`.
+* The bridge validates regex patterns of `pie(uat_run)` scenarios with ICU. It links the vanilla UE 5.8 static
+  `icu.lib` (copied into the SDK), so it carries its own ICU copy next to the devkit's. This was not tested in the
+  devkit.
+
 ## Verification
 
 | Script | What it checks |
 |---|---|
 | `Tools\Test-ArkAbi.ps1 <Plugin>` | Compares every class/struct/union/enum the plugin was compiled against (from the plugin's PDB; ~36 600 types for BlueprintAssist) with the devkit PDBs: data layout, vtable order of introduced virtual functions, enumerator values, method access. Expected result: `0 types with unexplained ABI differences`; the remaining differences are the types listed in `Config\AbiExclusions.txt`. |
-| `Tools\Test-LayoutIndependence.ps1 <Plugin>` | Proves the excluded types do not matter for this plugin: injects a 64 byte member and a virtual function at the start of every excluded class, recompiles, and requires the machine code of all object files to be identical. |
+| `Tools\Test-LayoutIndependence.ps1 <Plugin> [-Jobs N]` | Proves the excluded types do not matter for this plugin: injects a 64 byte member at the first member whose layout differs from the devkit (and a virtual function if the vtables differ) into every excluded type, recompiles, and requires the machine code of all object files to be identical. Path-dependent names (anonymous namespaces, UHT file IDs and package hashes, `.bss` padding) are normalized before the comparison. |
 | `Tools\Test-DllLoad.ps1 <Plugin>` | Loads the built DLL with the devkit's `Binaries\Win64` as DLL search path: all imports are bound against the real `ShooterGameEditor-*.dll` files and the module's static initialization (UObject and module registration) runs. |
 
 ## Updating a plugin
@@ -127,7 +154,7 @@ so the replacement loses no ARK behaviour.
   `.\Tools\Capture-UbtBaseline.ps1 <Plugin>` (the new sources must build with stock UBT against vanilla UE 5.8; this
   also refreshes the header list), `.\Build.ps1 <Plugin> -Rebuild` and the three verification scripts.
 * If the audit reports new types: `.\Tools\Test-ArkAbi.ps1 <Plugin> -Patch`, check `patch-report.txt`, rebuild,
-  repeat; then `.\Tools\Export-ArkPatches.ps1`. See EXTENDING.md.
+  repeat; then `.\Tools\Export-ArkPatches.ps1`, but only once **all** plugins pass the three tests. See EXTENDING.md.
 
 ## How the headers were recovered
 
@@ -158,7 +185,7 @@ devkit binaries:
    `EPropertyFlags` bits (`CPF_TObjectPtr` 56→59, ...); UHT writes these as literals, so
    `Tools\Update-GeneratedCode.ps1` remaps them in the plugin's generated code.
 
-Notable ARK changes reproduced in `ArkPatches` (58 headers):
+Notable ARK changes reproduced in `ArkPatches` (251 headers):
 
 * `SWidget`: 10 new members (highlighting, UMG back pointer, sounds) and 5 new virtual functions, two of them in the
   middle of the vtable (`IsObjectWidget`, `GetObjectWidget`) – every Slate widget's vtable is shifted.
@@ -171,8 +198,12 @@ Notable ARK changes reproduced in `ArkPatches` (58 headers):
 * Enums: `EName` (`NAME_BattlEye` inserted at 262), `EPropertyFlags`, `EFunctionFlags`, `ECollisionChannel`,
   `EViewModeIndex`, `EWidgetClipping`, show flags, `MAX_TEXCOORDS` = 6, ...
 
-Not reproduced (`Config\AbiExclusions.txt`): ARK re-based the gameplay framework on its own classes (`AActor` derives
-from `UPrimalActor`, `UActorComponent` from `UPrimalActorComponent`, `UWorld` from `UPrimalWorld`, `APlayerController`
-from `APrimalController`) and changed rendering types deeply. BlueprintAssist only handles these as opaque pointers;
-`Test-LayoutIndependence.ps1` proves that none of its code depends on their layout. Every new plugin must pass that
-test too.
+ARK re-based the gameplay framework on its own classes (`AActor` derives from `UPrimalActor`, `UActorComponent` from
+`UPrimalActorComponent`, `UWorld` from `UPrimalWorld`, `APlayerController` from `APrimalController`, ...). These
+classes have no source; `Tools\New-ArkClassHeaders.ps1` generates them from the PDBs (`ArkHeaders\`: devkit bases,
+opaque data of the devkit's size, all virtual functions in vtable order) and the patched engine headers derive from
+them, so `AActor`, `UWorld` & co. have the devkit's layout and vtables (needed by ue_mcp_bridge).
+
+Not reproduced (`Config\AbiExclusions.txt`): mostly rendering types that ARK changed deeply. The plugins only handle
+these as opaque pointers; `Test-LayoutIndependence.ps1` proves that none of their code depends on the layout. Every
+new plugin must pass that test too.

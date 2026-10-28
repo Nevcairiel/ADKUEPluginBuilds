@@ -86,6 +86,8 @@ additions need go to the shared `Config\SdkHeaders.Extra.txt`.
 
 Typical first-build problems and their fix:
 
+* **Unresolved externals of a devkit module no plugin linked before** → `Build.ps1` runs the full `New-ArkSdk.ps1`
+  when an import library is missing; after a manual SDK reset run it yourself.
 * **Unknown type in an ARK declaration** (`'FModInfo': undeclared identifier`) → add a forward declaration to
   `Config\ArkForwardDeclarations.h`. Use the class/struct key of the devkit PDB (it is part of the mangled name):
   `.?AV` = class, `.?AU` = struct (see `pdb-type-sizes.sh`). Types used by value need a definition (layout from
@@ -146,7 +148,7 @@ Definitions that UBT derives from the vanilla engine but that must differ in the
 `WITH_FAB_PLUGIN=0`, because the devkit has no Fab binaries) go to `Plugins\<Folder>\Build\DefinitionOverrides.txt`
 (`NAME=VALUE` per line); rerun `Capture-UbtBaseline.ps1` after changing it.
 
-ThirdParty libraries that UBT links (ue_mcp_bridge: ICU) are captured to `ThirdPartyLibs.txt` and linked from the
+ThirdParty libraries that UBT links (earlier ue_mcp_bridge versions: ICU) are captured to `ThirdPartyLibs.txt` and linked from the
 vanilla engine copy in the SDK. They are static libraries, so the plugin gets its own copy next to the devkit's.
 
 ### 2.7 Re-creating the SDK patches from scratch
@@ -174,7 +176,23 @@ changed since. After an export or an update of a baseline plugin, rebuild the ba
 .\Tools\Repatch-ArkSdk.ps1 -SaveBaseline GitSourceControl, ue_mcp_bridge
 ```
 
-### 2.8 Install / test in the devkit
+### 2.8 Dependencies on other plugins and on engine modules the devkit lacks
+
+* **Another plugin built here** (EditorToolset links ToolsetRegistry, which the devkit only has as a stub without
+  binaries): `Build.ps1` finds the plugin folder that declares the module (`Get-OtherPluginModule`, Common.ps1) and
+  links its import library (build that plugin first). `Test-DllLoad.ps1` loads its DLL first.
+* **Vanilla engine modules the devkit does not ship** (ToolsetRegistry needs `JsonUtilitiesEditor`): the build links
+  without them (`devkit has no ... module, not linked`), but a runtime `LoadModuleChecked` crashes the editor. Check
+  every such module in the build log against the plugin's sources. If the plugin really loads it, add it to
+  `Config\EngineModulePlugins.txt`: `Tools\New-EngineModulePlugins.ps1` (run by `Build.ps1`) creates
+  `Plugins\<Module>` from the vanilla source with a generated `.uplugin`, and from then on it is a plugin like any
+  other (capture, build, the three tests). Check that the devkit exports what the module builds on
+  (`SDK\Lib\*.def`; for JsonUtilitiesEditor: `IJsonUtilitiesModularFeature` in JsonUtilities).
+* In both cases the staged `.uplugin` gets the providing plugin added to its `Plugins` list (only the staged copy;
+  the source descriptor stays as distributed), so the devkit enables it together with the plugin. This is computed on
+  every build, so new plugin versions and rebuilds keep it.
+
+### 2.9 Install / test in the devkit
 
 Copy `Plugins\<Folder>\Build\Output\<Plugin>\Binaries` into the plugin folder below `<Devkit>\Engine\Plugins\...` (or a project
 `Plugins` folder) and enable the plugin (`-EnablePlugins=<Plugin>` on the command line or the Plugins window).
@@ -318,6 +336,22 @@ the SDK root for PDBs built by `Build.ps1`.
   namespace names (`?A0x<hash>@`), UHT file IDs and package hashes, drops `.bss` sizes and compares instructions
   without their bytes. Types declared outside the SDK (Windows SDK) are not probed; exclusions marked `[no probe]`
   in `AbiExclusions.txt` are skipped (e.g. a template the plugin instantiates with its own copy).
+* **Engine plugins/modules with dependents:** the capture of a plugin or module that also exists in the engine
+  (ToolsetRegistry, JsonUtilitiesEditor) fails ("should not reference module"): the engine's `UnrealEditor` target
+  builds all engine modules (`bBuildAllModules`), and UBT rejects engine modules referencing a project plugin, even
+  disabled ones. When an engine `.uplugin` names the plugin or an engine `.Build.cs` names one of its modules,
+  `Capture-UbtBaseline.ps1` builds a project editor target (`HostEditor`, same shared build environment) instead,
+  which only includes enabled plugins.
+* **Inline generated code:** sources with `#include UE_INLINE_GENERATED_CPP_BY_NAME(X)` compile `X.gen.cpp`
+  themselves; `Build.ps1` leaves those out of the `.gen.cpp` unity file (as UBT does), else LNK2005.
+* **Headers new to the SDK:** a header no plugin compiled before contains only `ArkPatches` changes of its own; an
+  override of a virtual ARK replaced elsewhere still has the vanilla signature (`LevelBounds.h`:
+  `GetComponentsBoundingBox`, error C3668). Fix it in `Apply-ManualArkEdits.sh` (rules that match all overrides),
+  re-run it, export at the end.
+* **Templates ARK changed:** a template instantiation the plugin compiles itself (`SComboBox<TSharedPtr<FString>>`:
+  ARK added `OnComboBoxClosing`) shows up in the audit as an unexplained difference of the instantiation and its
+  `FArguments`. Compare `PdbLayout layout` of the devkit instantiation, find the uses in its member functions
+  (disassemble the COMDAT copies, 4.1) and edit the template in `Apply-ManualArkEdits.sh`.
 * **Memory:** big plugins (ue_mcp_bridge) exhaust memory with one compiler per CPU; use `-Jobs 4`.
 * **Do not modify the devkit** (`D:\ASA\ARKDevkitBeta`): everything reads from it only; REA needs copies on NTFS.
 * **Disk:** `Intermediate\PdbCache` grows to ~12 GB (text dumps of the devkit PDBs); safe to delete.

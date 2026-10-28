@@ -50,13 +50,13 @@ diff --git a/Engine/Source/Runtime/UMG/Public/Blueprint/UserWidget.h b/Engine/So
  	*/
  	UMG_API virtual void DestroyInputComponent();
 +public:
-+	virtual bool OnMimickDroppedWidget(UWidget*, UWidget*); // [ARK]
++	virtual bool OnMimickDroppedWidget(UWidget*, UWidget*) { return false; } // [ARK]
 +protected:
 +public:
-+	virtual bool OnDragOverEx(const FGeometry&, const FDragDropEvent&); // [ARK]
++	virtual bool OnDragOverEx(const FGeometry&, const FDragDropEvent&) { return false; } // [ARK]
 +protected:
 +public:
-+	virtual bool OnDropWidgetEx(const FGeometry&, const FDragDropEvent&); // [ARK]
++	virtual bool OnDropWidgetEx(const FGeometry&, const FDragDropEvent&) { return false; } // [ARK]
 +protected:
 +public:
 +	virtual void AddToScreen(ULocalPlayer*, int); // [ARK]

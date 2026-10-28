@@ -4,7 +4,9 @@ Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
-ElectronicNodes and ue_mcp_bridge (1.4.10, two modules).
+ElectronicNodes, ue_mcp_bridge (1.4.10, two modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
+NiagaraToolsets, UMGToolSet, SlateInspectorToolset and AnimationAssistantToolset (with JsonUtilitiesEditor, an engine
+module the devkit lacks).
 
 The devkit only ships binaries + PDBs. The headers are reconstructed from a vanilla UE 5.8 source tree and
 patched to match the ARK engine's ABI; every patch was recovered from the devkit's PDB type information and
@@ -28,6 +30,7 @@ PluginBuild\
     AbiExclusions.txt         ARK types whose changes are not reproduced, with the reason
     AbiRenames.txt            members the devkit renamed that the SDK keeps under their vanilla name
     ArkClasses.txt            the ARK-only classes New-ArkClassHeaders.ps1 generates into ArkHeaders\
+    EngineModulePlugins.txt   vanilla engine modules the devkit lacks, built here as plugins (JsonUtilitiesEditor)
     SdkHeaders.Extra.txt      headers needed only by ARK additions
   Tools\
     Capture-UbtBaseline.ps1   captures a plugin's build environment from a stock UBT build against vanilla UE 5.8
@@ -36,6 +39,7 @@ PluginBuild\
     Repatch-ArkSdk.ps1        re-creates the SDK patches from scratch from the baseline PDBs (EXTENDING.md, 2.7)
     Export-ArkPatches.ps1     turns edits of SDK\ headers into ArkPatches\*.patch
     New-ArkClassHeaders.ps1   generates ArkHeaders\ from the devkit PDBs (after a devkit update)
+    New-EngineModulePlugins.ps1  creates Plugins\<Module> for Config\EngineModulePlugins.txt (called by Build.ps1)
     Apply-ManualArkEdits.sh   hand-recovered edits in headers that the patcher also touches (re-run after PdbLayout patch)
     Test-ArkAbi.ps1, Test-LayoutIndependence.ps1, Test-DllLoad.ps1 (+ LoadTest\)   verification, see below
     PdbLayout\                PDB layout tool: layout / diff / audit / patch / probe (llvm-pdbutil based)
@@ -136,9 +140,20 @@ Differences from the upstream plugin, all in `Build\SourcePatches` and `Build\De
 * ARK removed the `ECC_Camera` collision channel (see `FCollisionResponseContainer` in `Apply-ManualArkEdits.sh`);
   the collision query test uses `ECC_Visibility` instead.
 * ARK replaced `UInstancedStaticMeshComponent::RemoveInstance(int32)`; the bridge calls `RemoveInstances({ Index })`.
-* The bridge validates regex patterns of `pie(uat_run)` scenarios with ICU. It links the vanilla UE 5.8 static
-  `icu.lib` (copied into the SDK), so it carries its own ICU copy next to the devkit's. This was not tested in the
-  devkit.
+
+ToolsetRegistry and the toolsets (EditorToolset, NiagaraToolsets, UMGToolSet, SlateInspectorToolset,
+AnimationAssistantToolset) are UE 5.8 engine plugins (unmodified sources). The devkit has stubs without binaries of all
+of them (`Engine\Plugins\Experimental\ToolsetRegistry`, `...\Experimental\Toolsets\<Name>`): copy the staged
+`Binaries` folders and `.uplugin` files there. The toolsets link our ToolsetRegistry build. They need another plugin,
+**JsonUtilitiesEditor**: ToolsetRegistry loads that engine module with `LoadModuleChecked` and NiagaraToolsets links
+it, and the devkit does not ship it (the editor asserts at startup with `ModuleName=JsonUtilitiesEditor,
+Failure=FileNotFound`). It is built here from the vanilla engine source as a plugin of its own
+(`Config\EngineModulePlugins.txt`); copy the whole staged folder
+`Plugins\JsonUtilitiesEditor\Build\Output\JsonUtilitiesEditor` to `<Devkit>\Engine\Plugins\Marketplace\`. The staged
+`ToolsetRegistry.uplugin` and `NiagaraToolsets.uplugin` list it under `Plugins` (added by `Build.ps1`, the source
+descriptors stay vanilla), so enabling either enables it too, e.g.
+`-EnablePlugins=ToolsetRegistry,EditorToolset,NiagaraToolsets`. AnimationAssistantToolset is mostly Python
+(`Content\Python`) and needs the devkit's PythonScriptPlugin; SlateInspectorToolsetTests holds automation tests only.
 
 ## Verification
 

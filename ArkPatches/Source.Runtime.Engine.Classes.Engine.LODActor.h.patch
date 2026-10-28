@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/LODActor.h b/Engine/Source/Runtime/Engine/Classes/Engine/LODActor.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/LODActor.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/LODActor.h
+@@ -113,7 +113,7 @@ public:
+ 	ENGINE_API virtual void EditorApplyScale(const FVector& DeltaScale, const FVector* PivotLocation, bool bAltDown, bool bShiftDown, bool bCtrlDown) override;
+ 	ENGINE_API virtual void EditorApplyMirror(const FVector& MirrorScale, const FVector& PivotLocation) override;
+ #endif // WITH_EDITOR	
+-	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false) const override;
++	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const override; // [ARK]
+ 	ENGINE_API virtual void PostRegisterAllComponents() override;
+ 	ENGINE_API virtual void Tick(float DeltaSeconds) override;	
+ 	virtual bool IsLevelBoundsRelevant() const override { return false; }

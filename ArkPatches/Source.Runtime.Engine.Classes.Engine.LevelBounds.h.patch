@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/LevelBounds.h b/Engine/Source/Runtime/Engine/Classes/Engine/LevelBounds.h
+--- a/Engine/Source/Runtime/Engine/Classes/Engine/LevelBounds.h
++++ b/Engine/Source/Runtime/Engine/Classes/Engine/LevelBounds.h
+@@ -36,7 +36,7 @@ public:
+ 	//~ End UObject Interface
+ 	
+ 	//~ Begin AActor Interface.
+-	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false) const override;
++	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const override; // [ARK]
+ 	virtual bool IsLevelBoundsRelevant() const override { return false; }
+ 	//~ End AActor Interface.
+ 

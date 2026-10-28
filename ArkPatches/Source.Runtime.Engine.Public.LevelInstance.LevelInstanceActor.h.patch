@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/LevelInstance/LevelInstanceActor.h b/Engine/Source/Runtime/Engine/Public/LevelInstance/LevelInstanceActor.h
+--- a/Engine/Source/Runtime/Engine/Public/LevelInstance/LevelInstanceActor.h
++++ b/Engine/Source/Runtime/Engine/Public/LevelInstance/LevelInstanceActor.h
+@@ -104,7 +104,7 @@ public:
+ 	ENGINE_API virtual void EditorGetUnderlyingActors(TSet<AActor*>& OutUnderlyingActors) const override;
+ 	ENGINE_API virtual void PushSelectionToProxies() override;
+ 	ENGINE_API virtual void PushLevelInstanceEditingStateToProxies(bool bInEditingState) override;
+-	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false) const override;
++	ENGINE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const override; // [ARK]
+ 	ENGINE_API virtual void GetStreamingBounds(FBox& OutRuntimeBounds, FBox& OutEditorBounds) const override;
+ 	ENGINE_API virtual bool IsLockLocation() const override;
+ 	ENGINE_API virtual bool IsActorLabelEditable() const override;

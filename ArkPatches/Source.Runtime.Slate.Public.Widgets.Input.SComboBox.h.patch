@@ -1,0 +1,35 @@
+diff --git a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SComboBox.h b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SComboBox.h
+--- a/Engine/Source/Runtime/Slate/Public/Widgets/Input/SComboBox.h
++++ b/Engine/Source/Runtime/Slate/Public/Widgets/Input/SComboBox.h
+@@ -31,6 +31,7 @@
+ #endif
+ 
+ DECLARE_DELEGATE( FOnComboBoxOpening )
++DECLARE_DELEGATE( FOnComboBoxClosing ) // [ARK]
+ 
+ namespace SlateComboRow
+ {
+@@ -154,6 +155,7 @@ public:
+ 
+ 		/** Called when combo box is opened, before list is actually created */
+ 		SLATE_EVENT( FOnComboBoxOpening, OnComboBoxOpening )
++		SLATE_EVENT( FOnComboBoxClosing, OnComboBoxClosing ) // [ARK]
+ 
+ 		/** The custom scrollbar to use in the ListView */
+ 		SLATE_ARGUMENT(TSharedPtr<SScrollBar>, CustomScrollbar)
+@@ -594,6 +596,7 @@ private:
+ 		if (bOpen == false)
+ 		{
+ 			bControllerInputCaptured = false;
++			OnComboBoxClosing.ExecuteIfBound(); // [ARK]
+ 
+ 			if (TListTypeTraits<OptionType>::IsPtrValid(SelectedItem))
+ 			{
+@@ -723,5 +726,7 @@ private:
+ 	bool bReselectionTriggersOnSelectionChanged;
+ 
+ 	TSharedPtr<SBox> ComboBoxMenuContent;
++public:
++	FOnComboBoxClosing OnComboBoxClosing; // [ARK]
+ };
+ 

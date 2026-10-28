@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/AIModule/Classes/Navigation/NavLinkProxy.h b/Engine/Source/Runtime/AIModule/Classes/Navigation/NavLinkProxy.h
+--- a/Engine/Source/Runtime/AIModule/Classes/Navigation/NavLinkProxy.h
++++ b/Engine/Source/Runtime/AIModule/Classes/Navigation/NavLinkProxy.h
+@@ -93,7 +93,7 @@ protected:
+ public:
+ #endif // ENABLE_VISUAL_LOG
+ 
+-	AIMODULE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false) const override;
++	AIMODULE_API virtual FBox GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const override; // [ARK]
+ 
+ 	//////////////////////////////////////////////////////////////////////////
+ 	// Blueprint interface for smart links

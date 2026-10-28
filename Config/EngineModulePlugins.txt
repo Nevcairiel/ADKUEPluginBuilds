@@ -1,0 +1,8 @@
+# Engine modules of vanilla UE 5.8 that the ARK devkit does not ship, but that a plugin needs at runtime.
+# Tools\New-EngineModulePlugins.ps1 (called by Build.ps1) packages each one as a plugin folder Plugins\<Module> with the
+# unmodified vanilla source and a generated .uplugin. It is then captured, built and tested like any other plugin, and
+# Build.ps1 adds it to the "Plugins" list of the staged descriptor of every plugin that links the module, so the
+# devkit enables it together with that plugin.
+#
+# <module> | <module folder, relative to the engine root> | <module type> | <loading phase> | <why>
+JsonUtilitiesEditor | Engine\Source\Editor\JsonUtilitiesEditor | Editor | Default | ToolsetRegistry loads it with LoadModuleChecked (editor metadata of the JSON schemas of its tools); missing in the devkit, so the editor crashes at startup without it; NiagaraToolsets links it

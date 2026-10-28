@@ -5,3 +5,6 @@ For example:
 GitSourceControl
 GitSourceControl\GitSourceControl.uplugin
 GitSourceControl\Source -- contains all source files
+
+Folders of engine modules the devkit lacks (Config\EngineModulePlugins.txt, e.g. JsonUtilitiesEditor) are created
+automatically from the vanilla engine by Tools\New-EngineModulePlugins.ps1 (Build.ps1 runs it): do not delete them.

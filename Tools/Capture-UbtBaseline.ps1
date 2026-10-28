@@ -49,8 +49,37 @@ Get-ChildItem $hostSource -Directory | Where-Object { $_.Name -notin $declared }
 foreach ($m in $declared) {
     if (-not (Test-Path "$hostSource\$m")) { New-Item -ItemType Junction -Path "$hostSource\$m" -Target "$PluginRoot\Source\$m" | Out-Null }
 }
+# The engine's UnrealEditor target builds all engine modules (bBuildAllModules). If the plugin replaces an engine
+# plugin or module that other engine modules depend on (ToolsetRegistry, JsonUtilitiesEditor), UBT rejects those
+# engine modules referencing a project plugin, enabled or not. A project editor target (same shared build environment,
+# same compiler settings) only builds the enabled plugins.
+$targetName = 'UnrealEditor'
+$hostTarget = Join-Path $hostDir 'Source\HostEditor.Target.cs'
+$engineRefs = @(Get-ChildItem (Join-Path $EngineRoot 'Engine\Plugins') -Recurse -Filter *.uplugin |
+    Where-Object { $_.BaseName -ne $PluginName -and (Select-String -Path $_.FullName -SimpleMatch "`"$PluginName`"" -Quiet) })
+$modulePattern = '"(' + (($declared | ForEach-Object { [regex]::Escape($_) }) -join '|') + ')"'
+$engineRefs += @(Get-ChildItem (Join-Path $EngineRoot 'Engine\Source'), (Join-Path $EngineRoot 'Engine\Plugins') -Recurse -Filter *.Build.cs |
+    Where-Object { $_.BaseName -replace '\.Build$' -notin $declared -and (Select-String -Path $_.FullName -Pattern $modulePattern -Quiet) })
+if ($engineRefs) {
+    $targetName = 'HostEditor'
+    Write-Host "Engine plugins/modules depend on $PluginName or its modules ($($engineRefs.Count)): using a project editor target"
+    New-Item -ItemType Directory -Force (Split-Path $hostTarget) | Out-Null
+    Set-Content $hostTarget @'
+using UnrealBuildTool;
+public class HostEditorTarget : TargetRules
+{
+	public HostEditorTarget(TargetInfo Target) : base(Target)
+	{
+		Type = TargetType.Editor;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+	}
+}
+'@
+}
+elseif (Test-Path $hostTarget) { Remove-Item $hostTarget }
 if (-not $SkipBuild) {
-    & $UbtExe UnrealEditor Win64 Development `
+    & $UbtExe $targetName Win64 Development `
         "-Project=$hostDir\Host.uproject" "-Plugin=$hostPlugin\$PluginName.uplugin" -NoHotReload -NoUBA -WaitMutex "-MaxParallelActions=$Jobs"
     if ($LASTEXITCODE -ne 0) { throw "UBT baseline build failed" }
 }
@@ -164,7 +193,7 @@ $defs += @(
 Set-Content "$configDir\Definitions.h" $defs
 
 # --- 5. UHT module closure ------------------------------------------------------------------------------------
-$manifestPath = Join-Path $hostDir 'Intermediate\Build\Win64\UnrealEditor\UnrealEditor.uhtmanifest'
+$manifestPath = Join-Path $hostDir "Intermediate\Build\Win64\$targetName\$targetName.uhtmanifest"
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 $byName = @{}; foreach ($m in $manifest.Modules) { $byName[$m.Name] = $m }
 $closure = [Collections.Generic.HashSet[string]]::new(); $queue = [Collections.Generic.Queue[string]]::new(); $queue.Enqueue($ModuleName)

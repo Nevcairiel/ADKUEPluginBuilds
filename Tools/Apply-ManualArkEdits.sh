@@ -78,8 +78,12 @@ sub Slate/Public/Framework/Application/SlateUser.h 'SLATE_SCOPE:(\r?\n)(\tstatic
 # AActor virtuals whose signature ARK changed: parameter names from the devkit's S_LOCAL records, defaults of the
 # vanilla declaration (Destroy, the first two GetComponentsBoundingBox flags) and false for the new opt-in flags
 # (bIsForRagdoll, bForLevelBounds). Default arguments are not inherited, so every override in the SDK gets them too.
-for f in $(grep -rlE --include=*.h 'GetVelocity\(bool\) const|Destroy\(bool, bool\)|GetComponentsBoundingBox\(bool, bool, bool\) const' ..); do
-  perl -pi -e 's/GetVelocity\(bool\) const/GetVelocity(bool bIsForRagdoll = false) const/g; s/\bDestroy\(bool, bool\)/Destroy(bool bNetForce = false, bool bShouldModifyLevel = true)/g; s/GetComponentsBoundingBox\(bool, bool, bool\) const/GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const/g' "$f"
+# Overrides the patcher never saw (headers no plugin compiled before) still have the vanilla two-flag signature of the
+# removed GetComponentsBoundingBox; every devkit override takes the three flags (ALevelBounds, ALODActor,
+# ALevelInstance, ANavLinkProxy in the devkit PDBs).
+VANILLA_BOX='GetComponentsBoundingBox\(bool bNonColliding = false, bool bIncludeFromChildActors = false\) const override'
+for f in $(grep -rlE --include=*.h "GetVelocity\(bool\) const|Destroy\(bool, bool\)|GetComponentsBoundingBox\(bool, bool, bool\) const|$VANILLA_BOX" ..); do
+  perl -pi -e 's/GetVelocity\(bool\) const/GetVelocity(bool bIsForRagdoll = false) const/g; s/\bDestroy\(bool, bool\)/Destroy(bool bNetForce = false, bool bShouldModifyLevel = true)/g; s/GetComponentsBoundingBox\(bool, bool, bool\) const/GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const/g; s/GetComponentsBoundingBox\(bool bNonColliding = false, bool bIncludeFromChildActors = false\) const override;/GetComponentsBoundingBox(bool bNonColliding = false, bool bIncludeFromChildActors = false, bool bForLevelBounds = false) const override; \/\/ [ARK]/g' "$f"
 done
 # enums whose underlying type ARK changed but that have no source location in the PDBs (nested, unused by name)
 sub Engine/Public/Engine/ScopedMovementUpdate.h '(\tenum class EOverlapState)(\r?\n)' '"$1 : uint8 // [ARK] 1 byte in the devkit$2"' '1 byte in the devkit'
@@ -118,6 +122,25 @@ body $A 'virtual bool UsingSaveOverride()' '{ return false; }'
 body SlateCore/Public/Layout/ChildrenBase.h 'virtual bool IsChildValid(int) const' '{ return true; }'
 body SlateCore/Public/Widgets/SWidget.h 'virtual bool IsObjectWidget() const' '{ return false; }'
 body SlateCore/Public/Widgets/SWidget.h 'virtual UWidget* GetObjectWidget()' '{ return nullptr; }'
+# UWidget/UUserWidget: ARK virtuals defined in ARK's headers (COMDAT copies in ShooterGameEditor-UMG.dll; the two
+# getters read bUseCustomTooltip at +0x2B8 and CustomToolTipBlueprintOverride at +0x2C8)
+W=UMG/Public/Components/Widget.h
+body $W 'virtual bool UseCustomToolTip(bool) const' '{ return bUseCustomTooltip; }'
+body $W 'virtual bool AllowDragging()' '{ return true; }'
+body $W 'virtual TSubclassOf<UUserWidget> GetCustomToolTipBlueprintOverride()' '{ return CustomToolTipBlueprintOverride; }'
+U=UMG/Public/Blueprint/UserWidget.h
+body $U 'virtual bool OnMimickDroppedWidget(UWidget*, UWidget*)' '{ return false; }'
+body $U 'virtual bool OnDragOverEx(const FGeometry&, const FDragDropEvent&)' '{ return false; }'
+body $U 'virtual bool OnDropWidgetEx(const FGeometry&, const FDragDropEvent&)' '{ return false; }'
+# SComboBox<T> (template, compiled into every plugin): ARK added an OnComboBoxClosing event (FArguments +0x2F8, after
+# _OnComboBoxOpening) and a public member of the same name (+0x628, after ComboBoxMenuContent), executed by
+# OnMenuOpenChanged(false) right after bControllerInputCaptured = false. The devkit's Construct does not copy the
+# argument into the member (SComboBox<TSharedPtr<FString>> in ShooterGameEditor-Slate.dll).
+B=Slate/Public/Widgets/Input/SComboBox.h
+sub $B '(DECLARE_DELEGATE\( FOnComboBoxOpening \))' '"$1\r\nDECLARE_DELEGATE( FOnComboBoxClosing ) // [ARK]"' 'DECLARE_DELEGATE( FOnComboBoxClosing )'
+sub $B '(SLATE_EVENT\( FOnComboBoxOpening, OnComboBoxOpening \))' '"$1\r\n\t\tSLATE_EVENT( FOnComboBoxClosing, OnComboBoxClosing ) // [ARK]"' 'SLATE_EVENT( FOnComboBoxClosing'
+sub $B '(\t\t\tbControllerInputCaptured = false;\r?\n)(\r?\n\t\t\tif \(TListTypeTraits<OptionType>::IsPtrValid\(SelectedItem\)\))' '"$1\t\t\tOnComboBoxClosing.ExecuteIfBound(); // [ARK]\r\n$2"' 'OnComboBoxClosing.ExecuteIfBound'
+sub $B '(\tTSharedPtr<SBox> ComboBoxMenuContent;)' '"$1\r\npublic:\r\n\tFOnComboBoxClosing OnComboBoxClosing; // [ARK]"' 'FOnComboBoxClosing OnComboBoxClosing;'
 # UActorComponent: ARK virtuals defined in ARK's header (COMDAT copies in ShooterGameEditor-Engine.dll)
 C=Engine/Classes/Components/ActorComponent.h
 body $C 'virtual bool CanSkipInstancingWhenPrevented() const' '{ return true; }'

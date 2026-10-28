@@ -31,6 +31,23 @@ function Get-PluginFolders {
     Get-ChildItem $PluginsDir -Directory -ErrorAction SilentlyContinue | Where-Object { Get-ChildItem $_.FullName -Filter *.uplugin -File -ErrorAction SilentlyContinue }
 }
 
+# A module the devkit has no binary of but another plugin folder here declares (EditorToolset -> ToolsetRegistry):
+# returns that plugin folder, its plugin name and the import library / staged DLL of its build (they may not exist yet).
+function Get-OtherPluginModule([string] $Module) {
+    foreach ($p in Get-PluginFolders) {
+        if ($p.FullName -eq $script:PluginRoot) { continue }
+        $uplugin = Get-ChildItem $p.FullName -Filter *.uplugin -File | Select-Object -First 1
+        if ($Module -notin (Get-Content $uplugin.FullName -Raw | ConvertFrom-Json).Modules.Name) { continue }
+        $build = Join-Path $p.FullName 'Build'
+        return [pscustomobject]@{
+            Folder = $p.Name
+            Plugin = $uplugin.BaseName
+            Lib   = Join-Path $build "Intermediate\Bin\$ModulePrefix$Module.lib"
+            Dll    = Join-Path $build "Output\$($uplugin.BaseName)\Binaries\Win64\$ModulePrefix$Module.dll"
+        }
+    }
+}
+
 # Selects the plugin to work on and sets the per-plugin variables in the caller's (script) scope:
 #   $PluginRoot, $PluginName, $UpluginPath, $ModuleNames, $PluginBuildDir, $IntDir, $OutDir
 # and, for the first module (the only one of a single-module plugin), the per-module variables of Select-PluginModule.

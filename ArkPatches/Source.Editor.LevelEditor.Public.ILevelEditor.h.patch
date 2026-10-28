@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Editor/LevelEditor/Public/ILevelEditor.h b/Engine/Source/Editor/LevelEditor/Public/ILevelEditor.h
+--- a/Engine/Source/Editor/LevelEditor/Public/ILevelEditor.h
++++ b/Engine/Source/Editor/LevelEditor/Public/ILevelEditor.h
+@@ -34,9 +34,13 @@ public:
+ 	/** Get the element selection set used by this level editor */
+ 	virtual const UTypedElementSelectionSet* GetElementSelectionSet() const = 0;
+ 	virtual UTypedElementSelectionSet* GetMutableElementSelectionSet() = 0;
++	virtual void SummonLevelViewportContextMenu(const FTypedElementHandle&, UMaterialInterface*, UActorComponent*) = 0; // [ARK]
++	virtual void PickMaterial(UMaterialInterface*) = 0; // [ARK]
+ 
+ 	/** Summons a context menu for this level editor at the mouse cursor's location */
++#if 0 // [ARK] removed
+ 	virtual void SummonLevelViewportContextMenu(const FTypedElementHandle& HitProxyElement = FTypedElementHandle()) = 0;
++#endif // [ARK]
+ 
+ 	/** Gets the title for the context menu for this level editor */
+ 	virtual FText GetLevelViewportContextMenuTitle() const = 0;

@@ -13,6 +13,12 @@ param([Parameter(Position = 0)] [string] $Plugin)   # plugin folder name below P
 Initialize-Plugin $Plugin
 $dlls = @($ModuleNames | ForEach-Object { Join-Path $OutDir "$PluginName\Binaries\Win64\$ModulePrefix$_.dll" })   # link order
 foreach ($dll in $dlls) { if (-not (Test-Path $dll)) { throw "Build the plugin first ($dll missing)" } }
+# modules of other plugins built here (not in the devkit) are loaded first, so the imports bind to them
+$deps = @($ModuleNames | ForEach-Object { Get-Content (Join-Path (Get-ModuleConfigDir $_) 'EngineModules.txt') } | Sort-Object -Unique |
+    Where-Object { -not (Test-Path (Join-Path $DevkitBinaries "$ModulePrefix$_.dll")) } |
+    ForEach-Object { Get-OtherPluginModule $_ } | Where-Object { $_ } | ForEach-Object Dll)
+foreach ($dll in $deps) { if (-not (Test-Path $dll)) { throw "Build the plugin of $dll first" } }
+$dlls = $deps + $dlls
 
 $msvc = Find-Msvc
 $exe = Join-Path $IntDir 'LoadTest\LoadTest.exe'

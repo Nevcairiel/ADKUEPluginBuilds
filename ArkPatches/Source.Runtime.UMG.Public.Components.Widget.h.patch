@@ -6,13 +6,13 @@ diff --git a/Engine/Source/Runtime/UMG/Public/Components/Widget.h b/Engine/Sourc
  	/** Gets the widget that accessibility properties should synchronize to. */
  	UMG_API virtual TSharedPtr<SWidget> GetAccessibleWidget() const;
 +public:
-+	virtual bool UseCustomToolTip(bool) const; // [ARK]
++	virtual bool UseCustomToolTip(bool) const { return bUseCustomTooltip; } // [ARK]
 +protected:
 +public:
-+	virtual bool AllowDragging(); // [ARK]
++	virtual bool AllowDragging() { return true; } // [ARK]
 +protected:
 +public:
-+	virtual TSubclassOf<UUserWidget> GetCustomToolTipBlueprintOverride(); // [ARK]
++	virtual TSubclassOf<UUserWidget> GetCustomToolTipBlueprintOverride() { return CustomToolTipBlueprintOverride; } // [ARK]
 +protected:
  #endif
  

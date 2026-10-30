@@ -4,7 +4,7 @@ Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
-ElectronicNodes, ue_mcp_bridge (1.4.10, two modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
+ElectronicNodes, ue_mcp_bridge (1.4.11, three modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
 NiagaraToolsets, UMGToolSet, SlateInspectorToolset and AnimationAssistantToolset (with JsonUtilitiesEditor, an engine
 module the devkit lacks).
 
@@ -132,7 +132,7 @@ with its own copy of that function. The devkit's version was checked against van
 so the replacement loses no ARK behaviour.
 
 ue_mcp_bridge has no stub either: copy `Plugins\ue_mcp_bridge\Build\Output\UE_MCP_Bridge` (DLLs of
-`UE_MCP_BridgeStatus` and `UE_MCP_Bridge`) to `<Devkit>\Engine\Plugins\Marketplace\UE_MCP_Bridge` and enable it with `-EnablePlugins=UE_MCP_Bridge`.
+`UE_MCP_BridgeStatus`, `UE_MCP_BridgeRuntime` and `UE_MCP_Bridge`) to `<Devkit>\Engine\Plugins\Marketplace\UE_MCP_Bridge` and enable it with `-EnablePlugins=UE_MCP_Bridge`.
 Differences from the upstream plugin, all in `Build\SourcePatches` and `Build\DefinitionOverrides.txt`:
 
 * The devkit ships the Fab plugin without binaries: the bridge is built with `WITH_FAB_PLUGIN=0` and uses its

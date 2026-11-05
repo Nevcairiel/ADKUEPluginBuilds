@@ -5,6 +5,8 @@
 /SDP/
 # Shared intermediates: PDB text dumps (~12 GB), engine UHT run, logs
 /Intermediate/
+# Distribution zips of the staged plugins
+/Dist/
 
 # Per plugin: objects, UHT output, link output, UBT baseline host project, probe build, staged plugin.
 # Plugins/<Plugin>/Build/Config/ is NOT ignored: the captured build environment is input to Build.ps1

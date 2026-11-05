@@ -42,10 +42,12 @@ PluginBuild\
     New-EngineModulePlugins.ps1  creates Plugins\<Module> for Config\EngineModulePlugins.txt (called by Build.ps1)
     Apply-ManualArkEdits.sh   hand-recovered edits in headers that the patcher also touches (re-run after PdbLayout patch)
     Test-ArkAbi.ps1, Test-LayoutIndependence.ps1, Test-DllLoad.ps1 (+ LoadTest\)   verification, see below
+    Package-Dist.ps1          zips of the staged plugins in Dist\, see *Distribution*
     PdbLayout\                PDB layout tool: layout / diff / audit / patch / probe (llvm-pdbutil based)
     pdb-type-sizes.sh, compare-type-sizes.sh, filter-audit.sh   quick sizeof comparisons
   SDK\                   generated, shared by all plugins (union of their header needs)
   Intermediate\          generated, shared: PdbCache (PDB text dumps, 30-50 GB, safe to delete), engine UHT run
+  Dist\                  generated: distribution zips (Share\, WithPdb\)
   Plugins\
     BlueprintAssist\                 a plugin as distributed: BlueprintAssist.uplugin, Source\, Resources\
       Build\Config\                  captured build environment of this plugin (flags, defines, header list, UHT modules)
@@ -156,6 +158,28 @@ Failure=FileNotFound`). It is built here from the vanilla engine source as a plu
 descriptors stay vanilla), so enabling either enables it too, e.g.
 `-EnablePlugins=ToolsetRegistry,EditorToolset,NiagaraToolsets`. AnimationAssistantToolset is mostly Python
 (`Content\Python`) and needs the devkit's PythonScriptPlugin; SlateInspectorToolsetTests holds automation tests only.
+
+## Distribution
+
+After building and testing the plugins, `.\Tools\Package-Dist.ps1` writes zips that unpack directly into the devkit root
+(their paths start at `Engine\Plugins\...`). Each run replaces the previous zips.
+
+| Folder | Contents | Name |
+|---|---|---|
+| `Dist\Share` | no PDBs, for sharing | `<Name>-<BuildId8>.zip` |
+| `Dist\WithPdb` | with PDBs, for your own use: PDBs contain paths of your user profile | `<Name>-<BuildId8>-pdb.zip` |
+
+`<BuildId8>` is the start of the devkit's BuildId; a zip only works with that devkit build. There are five packages:
+AutoSizeComments, GitSourceControl, ElectronicNodes, UE_MCP_Bridge and MCP_Toolsets. MCP_Toolsets holds ToolsetRegistry,
+JsonUtilitiesEditor and the five toolsets, because the toolsets need the other two. BlueprintAssist is not packaged
+because the devkit ships it (see *Installing*). The plugins still need to be enabled after unpacking.
+
+The script reads every zip back and fails if a file doesn't match its staged copy, if a staged plugin doesn't match the
+devkit's BuildId or its last build, or if a file in `Share` contains your user profile path or git name or email. That
+search doesn't cover other paths: the DLLs can still contain paths from the build folder.
+
+Check the licence terms before sharing: AutoSizeComments and ElectronicNodes are Marketplace products, and the toolsets
+and JsonUtilitiesEditor are built from Epic's engine code.
 
 ## Verification
 

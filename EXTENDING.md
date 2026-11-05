@@ -218,6 +218,8 @@ An update changes the BuildId of every module, so all plugins must be rebuilt ev
    Everything in `Apply-ManualArkEdits.sh` that cites a disassembly belongs here, and so do runtime hot patches.
 6. All plugins pass the three tests: `Export-ArkPatches.ps1`, then `.\New-ArkSdk.ps1 -Clean` and rebuild everything to
    prove that vanilla + patches reproduces the result, then `Repatch-ArkSdk.ps1 -SaveBaseline` (2.7).
+7. Package the new builds with `Tools\Package-Dist.ps1` (README, *Distribution*): the old zips only work with the old
+   BuildId. A new plugin also needs an entry in the script's tables.
 
 ---
 

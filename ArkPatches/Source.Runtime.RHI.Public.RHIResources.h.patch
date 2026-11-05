@@ -1,0 +1,19 @@
+diff --git a/Engine/Source/Runtime/RHI/Public/RHIResources.h b/Engine/Source/Runtime/RHI/Public/RHIResources.h
+--- a/Engine/Source/Runtime/RHI/Public/RHIResources.h
++++ b/Engine/Source/Runtime/RHI/Public/RHIResources.h
+@@ -2552,6 +2552,7 @@ public:
+ 	 *
+ 	 * @return	The pointer to the native resource or NULL if it not initialized or not supported for this resource type for some reason
+ 	 */
++	virtual void PrimalPrepareForRelease() {} // [ARK]
+ 	virtual void* GetNativeSwapChain() const { return nullptr; }
+ 	/**
+ 	 * Returns access to the platform-specific native resource pointer to a backbuffer texture.  This is designed to be used to provide plugins with access
+@@ -2581,6 +2582,7 @@ public:
+ 	 * Sets custom Present handler on the viewport
+ 	 */
+ 	virtual void SetCustomPresent(class FRHICustomPresent*) {}
++	virtual bool HasPrimalCadenceControl() const { return false; } // [ARK]
+ 	
+ 	/**
+ 	 * Creates a platform-level native slate rendering layer for handling rendering order with platform-native views.

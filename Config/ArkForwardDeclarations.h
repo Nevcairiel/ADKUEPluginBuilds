@@ -27,6 +27,13 @@ class ULevelSequenceDirector;
 class UMaterialInterface;
 class UWidget;
 
+// engine enum used by UStaticMesh::OnCookEvent: gentypes does not see the one-line declaration in Object.h and would
+// declare it with the PDB's type. On its own line for gentypes; uint32 is not defined yet here.
+namespace UE::Cook
+{
+enum class ECookEvent : unsigned int;
+}
+
 // ARK enums (opaque declarations with the devkit's underlying types)
 namespace EPrimalEquipmentType { enum Type : int; }
 namespace EAlignHorizontalUI { enum Type : int; }

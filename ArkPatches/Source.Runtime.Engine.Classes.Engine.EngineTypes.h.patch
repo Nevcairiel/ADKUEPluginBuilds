@@ -430,3 +430,11 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/EngineTypes.h b/Engine/
  			&& DistanceFieldReplacementMesh == Other.DistanceFieldReplacementMesh
  			&& MaxLumenMeshCards == Other.MaxLumenMeshCards;
  	}
+@@ -3384,6 +3417,7 @@ struct FMeshNaniteSettings
+ 	/** Nanite Assembly data set up by the import */
+ 	UPROPERTY(VisibleAnywhere, Category = NaniteSettings)
+ 	FNaniteAssemblyData NaniteAssemblyData;
++	bool bForceKeepPreserveArea; // [ARK]
+ 
+ 	FMeshNaniteSettings()
+ 	: bEnabled(false)

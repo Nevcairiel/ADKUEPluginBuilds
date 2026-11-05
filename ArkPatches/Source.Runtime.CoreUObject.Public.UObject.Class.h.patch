@@ -51,7 +51,7 @@ diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h b/Engine/S
  
  public:
  	// Constructors
-@@ -4903,8 +4918,13 @@ protected:
+@@ -4903,8 +4918,14 @@ protected:
  	 * Internal helper method for GetReinstancedClassPathName(). Subclasses can choose to override the default
  	 * implementation to return a valid class path for recompiled class objects based on how reinstancing is handled.
  	 */
@@ -61,6 +61,7 @@ diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/Class.h b/Engine/S
  #endif
 +public:
 +COREUOBJECT_API virtual void Primal_TrySerializeAsSparseClassData(uint8*, FArchive&, FPropertyTag&, FStructuredArchiveRecord&); // [ARK]
++COREUOBJECT_API static bool Primal_IsBlacklistedForExposingToBlueprints(const FName&, UClass*); // [ARK] FProperty::Has*PropertyFlags
 +protected:
  };
  

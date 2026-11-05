@@ -91,12 +91,15 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h b/Engine/S
  #endif // #if WITH_EDITOR
  
  	/**
-@@ -2506,6 +2561,9 @@ private:
+@@ -2506,6 +2561,12 @@ private:
  	 * Complete the static mesh postload process - Can't be done in parallel.
  	 */
  	void FinishPostLoadInternal(FStaticMeshPostLoadContext& Context);
 +protected:
 +	ENGINE_API virtual bool LegacyDecideIfLOD0ShouldExist(); // [ARK]
++private:
++public:
++ENGINE_API virtual void OnCookEvent(UE::Cook::ECookEvent, UE::Cook::FCookEventContext&); // [ARK]
 +private:
  };
  

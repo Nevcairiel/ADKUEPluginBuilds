@@ -1,7 +1,15 @@
 diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h b/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
 --- a/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
 +++ b/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h
-@@ -53,9 +53,28 @@ class APostProcessVolume : public AVolume, public IInterface_PostProcessVolume
+@@ -26,6 +26,7 @@ class APostProcessVolume : public AVolume, public IInterface_PostProcessVolume
+ 	/** Post process settings to use for this volume. */
+ 	UPROPERTY(interp, Category=PostProcessVolumeSettings, meta=(ShowPostProcessCategories))
+ 	struct FPostProcessSettings Settings;
++	FPostProcessSettings HDR_Override_Settings; // [ARK]
+ 
+ 	/**
+ 	 * Priority of this volume. In the case of overlapping volumes the one with the highest priority
+@@ -53,9 +54,28 @@ class APostProcessVolume : public AVolume, public IInterface_PostProcessVolume
  	/** Automatically generated GUID for this post process volume, used for deterministic sorting of equal priority volumes. */
  	UPROPERTY(TextExportTransient, NonPIEDuplicateTransient, NonTransactional)
  	FGuid VolumeGuid;
@@ -30,7 +38,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Engine/PostProcessVolume.h b/E
  	virtual FPostProcessVolumeProperties GetProperties() const override
  	{
  		FPostProcessVolumeProperties Ret;
-@@ -104,6 +123,9 @@ public:
+@@ -104,6 +124,9 @@ public:
  	/** Adds an Blendable (implements IBlendableInterface) to the array of Blendables (if it doesn't exist) and update the weight */
  	UFUNCTION(BlueprintCallable, Category="Rendering")
  	void AddOrUpdateBlendable(TScriptInterface<IBlendableInterface> InBlendableObject, float InWeight = 1.0f) { Settings.AddBlendable(InBlendableObject, InWeight); }

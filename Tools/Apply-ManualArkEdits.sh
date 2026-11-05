@@ -155,6 +155,13 @@ body $C 'virtual TArray<TWeakObjectPtr<USkinnedMeshComponent>>* GetFollowersSkin
 body $C 'virtual bool HasLeaderForEndOfFrameUpdate() const' '{ return false; }'
 body $C 'virtual bool HasFollowersForEndOfFrameUpdate() const' '{ return false; }'
 sub $C 'ENGINE_API virtual bool Primal_IsComponent\(\) const;' '"virtual bool Primal_IsComponent() const override { return true; }"' 'Primal_IsComponent() const override { return true; }'
+# ARK virtuals defined in ARK's headers (COMDAT copies in ShooterGameEditor-Engine.dll, -RHI.dll, -D3D12RHI.dll);
+# GetJumpZVelocity reads JumpZVelocity at +0x220
+body Engine/Classes/GameFramework/GameModeBase.h 'virtual bool RequireWelcomeBeforeJoin(UNetConnection*)' '{ return false; }'
+body Engine/Classes/GameFramework/CharacterMovementComponent.h 'virtual float GetJumpZVelocity() const' '{ return JumpZVelocity; }'
+body RHI/Public/DynamicRHI.h 'virtual bool RHIAddPrimalProducerProgressPrerequisite(UE::Tasks::FTaskEvent&)' '{ return false; }'
+body RHI/Public/RHIResources.h 'virtual void PrimalPrepareForRelease()' '{}'
+body RHI/Public/RHIResources.h 'virtual bool HasPrimalCadenceControl() const' '{ return false; }'
 # ISourceControlState: the COMDAT copies in ShooterGameEditor-SubversionSourceControl.dll throw std::runtime_error
 S=../Developer/SourceControl/Public/ISourceControlState.h
 ins $S '#include "Textures/SlateIcon.h"' '#include <stdexcept> // [ARK] std::runtime_error in IsOurLock / IsOtherLock'
@@ -205,4 +212,11 @@ sub UMG/Public/Components/CheckBox.h '(\r?\n)(PRAGMA_DISABLE_DEPRECATION_WARNING
 # EFunctionInputType (no source location in the reference PDB): ARK enumerator from ShooterGameEditor-Engine.pdb
 sub Engine/Public/Materials/MaterialExpressionFunctionInput.h '(\tFunctionInput_Substrate UMETA\(DisplayName = "Substrate"\),)(\r?\n)' '"$1$2\tFunctionInput_AuxSceneTexture, // [ARK]$2"' 'FunctionInput_AuxSceneTexture, // [ARK]'
 sub Engine/Public/Materials/MaterialExpressionFunctionInput.h '#define EXPECTED_NUM_INPUT_TYPES 13' '"#define EXPECTED_NUM_INPUT_TYPES 14 // [ARK]"' 'EXPECTED_NUM_INPUT_TYPES 14'
+# FProperty::HasAny/HasAllPropertyFlags: a property with ARK's Primal_bForceExposeToBlueprints (+0x4A) counts as
+# CPF_BlueprintVisible unless blacklisted. Inline in every devkit module (e.g. ShooterGameEditor-BlueprintGraph.dll: or rax,4
+# before the test), invisible to the ABI audit; only the visible flag is affected (CPF_Edit, CPF_BlueprintReadOnly are not).
+U=CoreUObject/Public/UObject
+ins $U/Class.h 'COREUOBJECT_API virtual void Primal_TrySerializeAsSparseClassData' 'COREUOBJECT_API static bool Primal_IsBlacklistedForExposingToBlueprints(const FName&, UClass*); // [ARK] FProperty::Has*PropertyFlags'
+sub $U/UnrealType.h 'return \(PropertyFlags & FlagsToCheck\) != 0 \|\| FlagsToCheck == CPF_AllFlags;' '"return ((Primal_bForceExposeToBlueprints && !UClass::Primal_IsBlacklistedForExposingToBlueprints(GetFName(), GetOwnerClass()) ? (uint64)PropertyFlags | CPF_BlueprintVisible : (uint64)PropertyFlags) & FlagsToCheck) != 0 || FlagsToCheck == CPF_AllFlags; // [ARK] force-exposed: HasAny"' '[ARK] force-exposed: HasAny'
+sub $U/UnrealType.h 'return \(\(PropertyFlags & FlagsToCheck\) == FlagsToCheck\);' '"return (((Primal_bForceExposeToBlueprints && !UClass::Primal_IsBlacklistedForExposingToBlueprints(GetFName(), GetOwnerClass()) ? (uint64)PropertyFlags | CPF_BlueprintVisible : (uint64)PropertyFlags) & FlagsToCheck) == FlagsToCheck); // [ARK] force-exposed: HasAll"' '[ARK] force-exposed: HasAll'
 echo "inline ARK virtual bodies applied"

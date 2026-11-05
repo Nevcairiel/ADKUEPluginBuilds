@@ -1,7 +1,7 @@
 # ARK Devkit plugin build system
 
 Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
-(Unreal Engine 5.8.1 licensee build `++ARK1+Dev-UE5-Integration`, BuildId `ca365fbf-4765-4cb3-b720-c2ba301003d5`)
+(Unreal Engine 5.8.3 licensee build, BuildId `2f049af0-6843-4873-a139-8cf09a58e308`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
 ElectronicNodes, ue_mcp_bridge (1.4.11, three modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
@@ -45,7 +45,7 @@ PluginBuild\
     PdbLayout\                PDB layout tool: layout / diff / audit / patch / probe (llvm-pdbutil based)
     pdb-type-sizes.sh, compare-type-sizes.sh, filter-audit.sh   quick sizeof comparisons
   SDK\                   generated, shared by all plugins (union of their header needs)
-  Intermediate\          generated, shared: PdbCache (PDB text dumps, ~12 GB, safe to delete), engine UHT run
+  Intermediate\          generated, shared: PdbCache (PDB text dumps, 30-50 GB, safe to delete), engine UHT run
   Plugins\
     BlueprintAssist\                 a plugin as distributed: BlueprintAssist.uplugin, Source\, Resources\
       Build\Config\                  captured build environment of this plugin (flags, defines, header list, UHT modules)
@@ -107,26 +107,28 @@ BlueprintAssist\
 
 ## Installing
 
-The devkit already contains stubs of the first three plugins (descriptor + resources, no binaries):
-`<Devkit>\Engine\Plugins\Marketplace\BlueprintAssist`, `...\Marketplace\AutoSizeComments` and
-`...\Developer\GitSourceControl`. Copy the `Binaries` folder from the staged output
-(`Plugins\<Plugin>\Build\Output\<Plugin>`) into that folder, together with the staged `.uplugin` (the newer
-descriptor; identical for GitSourceControl). The build never writes into the devkit itself.
+The devkit already contains stubs of AutoSizeComments and GitSourceControl (descriptor + resources, no binaries):
+`<Devkit>\Engine\Plugins\Marketplace\AutoSizeComments` and `...\Developer\GitSourceControl`. Copy the `Binaries`
+folder from the staged output (`Plugins\<Plugin>\Build\Output\<Plugin>`) into that folder, together with the staged
+`.uplugin` (the newer descriptor; identical for GitSourceControl). The build never writes into the devkit itself.
 
-The stubs are disabled by default. BlueprintAssist and GitSourceControl are disabled through their entries in
+The stubs are disabled by default. GitSourceControl is disabled through its entry in
 `Projects\ShooterGame\ShooterGame.uproject`; AutoSizeComments has `"EnabledByDefault": false` in its descriptor
 and no project entry. Enable them either in *Edit → Plugins* (this edits `ShooterGame.uproject`), or for one
 session, without changing any file, by starting the devkit with
-`-EnablePlugins=BlueprintAssist,AutoSizeComments,GitSourceControl,ElectronicNodes`. Then select Git under *Revision Control*.
+`-EnablePlugins=AutoSizeComments,GitSourceControl,ElectronicNodes`. Then select Git under *Revision Control*.
 
-The *Find in files* / *Open file* menus need the `AssetSearch` engine plugin, which the devkit does not ship;
-BlueprintAssist detects this and shows a notification instead (no crash). Everything else is available.
+The devkit now ships BlueprintAssist complete with binaries, enabled in `ShooterGame.uproject`
+(`Engine\Plugins\Marketplace\Blueprin0b23223502eaV17`, version 4.9.5, DLL and PDB in `Engine\Binaries\Win64`), and the
+`AssetSearch` engine plugin the plugin's *Find in files* / *Open file* menus need. Our build of the same version is not
+needed to use it. Do not install it next to the shipped one: both have the same plugin and module name. It stays in
+this repository because ARK's own build of it is a reference for the SDK (see *Verification*).
 BlueprintAssist and AutoSizeComments work independently; each integrates with the other when both are loaded.
 
 ElectronicNodes has no stub in the devkit: copy the whole staged folder `Plugins\ElectronicNodes\Build\Output\ElectronicNodes`
 to `<Devkit>\Engine\Plugins\Marketplace\ElectronicNodes` and enable it like the others (its descriptor has no
 `EnabledByDefault`, so in the engine folder it starts disabled):
-`-EnablePlugins=BlueprintAssist,AutoSizeComments,GitSourceControl,ElectronicNodes`. With its default setting `UseHotPatch`, the plugin overwrites
+`-EnablePlugins=AutoSizeComments,GitSourceControl,ElectronicNodes`. With its default setting `UseHotPatch`, the plugin overwrites
 the start of `FNodeFactory::CreateConnectionPolicy` in `ShooterGameEditor-GraphEditor.dll` in memory, replacing it
 with its own copy of that function. The devkit's version was checked against vanilla UE 5.8: they are the same,
 so the replacement loses no ARK behaviour.
@@ -163,6 +165,10 @@ descriptors stay vanilla), so enabling either enables it too, e.g.
 | `Tools\Test-LayoutIndependence.ps1 <Plugin> [-Jobs N]` | Proves the excluded types do not matter for this plugin: injects a 64 byte member at the first member whose layout differs from the devkit (and a virtual function if the vtables differ) into every excluded type, recompiles, and requires the machine code of all object files to be identical. Path-dependent names (anonymous namespaces, UHT file IDs and package hashes, `.bss` padding) are normalized before the comparison. |
 | `Tools\Test-DllLoad.ps1 <Plugin>` | Loads the built DLL with the devkit's `Binaries\Win64` as DLL search path: all imports are bound against the real `ShooterGameEditor-*.dll` files and the module's static initialization (UObject and module registration) runs. |
 
+These tests cover layouts, signatures and binding, not the logic of inline code in ARK's headers. For that, ARK's own
+build of BlueprintAssist (`ShooterGameEditor-BlueprintAssist.dll/.pdb`, shipped since the update of 2026-11-05) is an
+independent reference: see EXTENDING.md, 4.4.
+
 ## Updating a plugin
 
 * New plugin version: replace the plugin's `Source\` (and `.uplugin`/`Resources\` if needed), then
@@ -176,7 +182,7 @@ descriptors stay vanilla), so enabling either enables it too, e.g.
 
 ## How the headers were recovered
 
-The devkit is `ShooterGameEditor` built from ARK's UE 5.8.1 licensee branch with MSVC 14.50; every module has a
+The devkit is `ShooterGameEditor` built from ARK's UE 5.8.3 licensee branch with MSVC 14.50; every module has a
 full PDB. The vanilla UE 5.8 headers are the starting point, everything ARK changed was recovered from the
 devkit binaries:
 
@@ -203,7 +209,7 @@ devkit binaries:
    `EPropertyFlags` bits (`CPF_TObjectPtr` 56→59, ...); UHT writes these as literals, so
    `Tools\Update-GeneratedCode.ps1` remaps them in the plugin's generated code.
 
-Notable ARK changes reproduced in `ArkPatches` (251 headers):
+Notable ARK changes reproduced in `ArkPatches` (262 headers):
 
 * `SWidget`: 10 new members (highlighting, UMG back pointer, sounds) and 5 new virtual functions, two of them in the
   middle of the vtable (`IsObjectWidget`, `GetObjectWidget`) – every Slate widget's vtable is shifted.
@@ -215,6 +221,9 @@ Notable ARK changes reproduced in `ArkPatches` (251 headers):
   gamepad navigation), `FSlateFontInfo`, `FTextBlockStyle`, `SButton`, `STextBlock`, `SScrollBox`, `SListView`, ...
 * Enums: `EName` (`NAME_BattlEye` inserted at 262), `EPropertyFlags`, `EFunctionFlags`, `ECollisionChannel`,
   `EViewModeIndex`, `EWidgetClipping`, show flags, `MAX_TEXCOORDS` = 6, ...
+* `FProperty::HasAnyPropertyFlags` / `HasAllPropertyFlags` (inline): a property with ARK's
+  `Primal_bForceExposeToBlueprints` counts as `CPF_BlueprintVisible` unless `UClass::Primal_IsBlacklistedForExposingToBlueprints`
+  says otherwise. Same layout, so no audit reports this; it was found by comparing with ARK's own BlueprintAssist build.
 
 ARK re-based the gameplay framework on its own classes (`AActor` derives from `UPrimalActor`, `UActorComponent` from
 `UPrimalActorComponent`, `UWorld` from `UPrimalWorld`, `APlayerController` from `APrimalController`, ...). These

@@ -16,5 +16,5 @@ diff --git a/Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h 
  	DECLARE_DELEGATE(FOnEvaluationCallback);
  	TArray<FOnEvaluationCallback> PreEvaluationCallbacks;
  	TArray<FOnEvaluationCallback> PostEvaluationCallbacks;
-+	alignas(4) uint8 LastSentPlaybackPosition[12]; // [ARK]
++	alignas(8) uint8 LastSentPlaybackPosition[32]; // [ARK]
  };

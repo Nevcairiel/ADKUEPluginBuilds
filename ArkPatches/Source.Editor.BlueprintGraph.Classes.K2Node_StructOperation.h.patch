@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Editor/BlueprintGraph/Classes/K2Node_StructOperation.h b/Engine/Source/Editor/BlueprintGraph/Classes/K2Node_StructOperation.h
+--- a/Engine/Source/Editor/BlueprintGraph/Classes/K2Node_StructOperation.h
++++ b/Engine/Source/Editor/BlueprintGraph/Classes/K2Node_StructOperation.h
+@@ -78,5 +78,8 @@ protected:
+ 	/** Utility function to set up menu actions to set the struct type and promote category */
+ 	DECLARE_DELEGATE_RetVal_TwoParams(bool, FMakeStructSpawnerAllowedDelegate, const UScriptStruct*, bool);
+ 	void SetupMenuActions(FBlueprintActionDatabaseRegistrar& ActionRegistrar, const FMakeStructSpawnerAllowedDelegate& AllowedDelegate, EEdGraphPinDirection PinDirectionToPromote) const;
++public:
++	virtual void ReconstructNode(); // [ARK]
++protected:
+ };
+ 

@@ -9,3 +9,21 @@ diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h b/Eng
  
  private:
  	TEnumAsByte<ELifetimeCondition> BlueprintReplicationCondition;
+@@ -1287,7 +1288,7 @@ public:
+ 	 */
+ 	UE_FORCEINLINE_HINT bool HasAnyPropertyFlags( uint64 FlagsToCheck ) const
+ 	{
+-		return (PropertyFlags & FlagsToCheck) != 0 || FlagsToCheck == CPF_AllFlags;
++		return ((Primal_bForceExposeToBlueprints && !UClass::Primal_IsBlacklistedForExposingToBlueprints(GetFName(), GetOwnerClass()) ? (uint64)PropertyFlags | CPF_BlueprintVisible : (uint64)PropertyFlags) & FlagsToCheck) != 0 || FlagsToCheck == CPF_AllFlags; // [ARK] force-exposed: HasAny
+ 	}
+ 	/**
+ 	 * Used to safely check whether all of the passed in flags are set.
+@@ -1298,7 +1299,7 @@ public:
+ 	 */
+ 	UE_FORCEINLINE_HINT bool HasAllPropertyFlags( uint64 FlagsToCheck ) const
+ 	{
+-		return ((PropertyFlags & FlagsToCheck) == FlagsToCheck);
++		return (((Primal_bForceExposeToBlueprints && !UClass::Primal_IsBlacklistedForExposingToBlueprints(GetFName(), GetOwnerClass()) ? (uint64)PropertyFlags | CPF_BlueprintVisible : (uint64)PropertyFlags) & FlagsToCheck) == FlagsToCheck); // [ARK] force-exposed: HasAll
+ 	}
+ 
+ 	/**

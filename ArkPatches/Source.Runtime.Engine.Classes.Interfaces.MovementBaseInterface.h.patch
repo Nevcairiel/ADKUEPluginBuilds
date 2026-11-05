@@ -1,0 +1,17 @@
+diff --git a/Engine/Source/Runtime/Engine/Classes/Interfaces/MovementBaseInterface.h b/Engine/Source/Runtime/Engine/Classes/Interfaces/MovementBaseInterface.h
+--- a/Engine/Source/Runtime/Engine/Classes/Interfaces/MovementBaseInterface.h
++++ b/Engine/Source/Runtime/Engine/Classes/Interfaces/MovementBaseInterface.h
+@@ -1,4 +1,4 @@
+-﻿// Copyright Epic Games, Inc. All Rights Reserved.
++// Copyright Epic Games, Inc. All Rights Reserved.
+ 
+ #pragma once
+ 
+@@ -20,6 +20,7 @@ struct FMovementBaseInterfaceData
+ protected:
+ 	// IPhysicsBodyInstanceOwner reference that implements movement base functionality 
+ 	const IPhysicsBodyInstanceOwner* BodyInstanceOwner;
++	TWeakObjectPtr<UObject> WeakBodyInstanceOwnerSourcePtr; // [ARK]
+ 	
+ public:
+ 	UE_API FMovementBaseInterfaceData();

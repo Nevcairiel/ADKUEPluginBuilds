@@ -282,7 +282,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  
  	/** Simulate Root Motion physics on Simulated Proxies */
  	ENGINE_API void SimulateRootMotion(float DeltaSeconds, const FTransform& LocalRootMotionTransform);
-@@ -2895,6 +2971,18 @@ public:
+@@ -2895,6 +2971,19 @@ public:
  	ENGINE_API virtual void PostProcessAvoidanceVelocity(FVector& NewVelocity);
  
  	ENGINE_API virtual void FlushServerMoves();
@@ -298,10 +298,11 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
 +	ENGINE_API virtual bool ForceControlledCharacterMove() const; // [ARK]
 +	ENGINE_API virtual void PostCalcVelocity(float, float, bool, float); // [ARK]
 +	ENGINE_API virtual FVector Primal_MoveSmoothAdjustDeltaMovement(const FVector&) const; // [ARK]
++	virtual float GetJumpZVelocity() const { return JumpZVelocity; } // [ARK]
  
  	/** 
  	 * When moving the character, we should inform physics as to whether we are teleporting.
-@@ -2949,6 +3037,8 @@ public:
+@@ -2949,6 +3038,8 @@ public:
  
  	/** Stop completely when braking and velocity magnitude is lower than this. */
  	static ENGINE_API const float BRAKE_TO_STOP_VELOCITY;
@@ -310,7 +311,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  };
  
  
-@@ -3009,11 +3099,14 @@ public:
+@@ -3009,11 +3100,14 @@ public:
  	// Information at the start of the move
  	uint8 StartPackedMovementMode;
  	uint8 EndPackedMovementMode;
@@ -325,7 +326,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  	float JumpForceTimeRemaining;
  	int32 JumpMaxCount;
  	int32 JumpCurrentCount;
-@@ -3057,6 +3150,7 @@ public:
+@@ -3057,6 +3151,7 @@ public:
  	FRotator EndAttachRelativeRotation;
  
  	FVector Acceleration;
@@ -333,7 +334,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  	float MaxSpeed;
  
  	// Cached to speed up iteration over IsImportantMove().
-@@ -3124,6 +3218,8 @@ public:
+@@ -3124,6 +3219,8 @@ public:
  
  	/** Allows references to be considered during GC */
  	ENGINE_API virtual void AddStructReferencedObjects(FReferenceCollector& Collector) const;
@@ -342,7 +343,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  
  	// Bit masks used by GetCompressedFlags() to encode movement information.
  	enum CompressedFlags
-@@ -3162,13 +3258,19 @@ public:
+@@ -3162,13 +3259,19 @@ public:
  	ENGINE_API void AddStructReferencedObjects(FReferenceCollector& Collector) const override;
  
  	/** Timestamp of last time it sent a servermove() to the server. This is an increasing timestamp from the owning UWorld (undilated, real time seconds). Used for holding off on sending movement updates to save bandwidth. */
@@ -362,7 +363,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  
  	TArray<FSavedMovePtr> SavedMoves;		// Buffered moves pending position updates, orderd oldest to newest. Moves that have been acked by the server are removed.
  	TArray<FSavedMovePtr> FreeMoves;		// freed moves, available for buffering
-@@ -3202,7 +3304,10 @@ public:
+@@ -3202,7 +3305,10 @@ public:
  	float LastCorrectionDelta;
  
  	/** Used to track time of last correction */
@@ -373,7 +374,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  
  	/** Max time delta between server updates over which client smoothing is allowed to interpolate. */
  	float MaxClientSmoothingDeltaTime;
-@@ -3269,7 +3374,10 @@ public:
+@@ -3269,7 +3375,10 @@ public:
  	ENGINE_API float UpdateTimeStampAndDeltaTime(float DeltaTime, ACharacter & CharacterOwner, class UCharacterMovementComponent & CharacterMovementComponent);
  
  	/** Used for simulated packet loss in development builds. */
@@ -384,7 +385,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  };
  
  
-@@ -3292,10 +3400,16 @@ public:
+@@ -3292,10 +3401,16 @@ public:
  	double ServerAccumulatedClientTimeStamp;
  
  	/** Last time server updated client with a move correction */
@@ -401,7 +402,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  	
  	/** 
  	 * Max delta time for a given move, in real seconds
-@@ -3310,6 +3424,8 @@ public:
+@@ -3310,6 +3425,8 @@ public:
  
  	/** Accumulated timestamp difference between autonomous client and server for tracking long-term trends */
  	float LifetimeRawTimeDiscrepancy;
@@ -410,7 +411,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/CharacterMovemen
  
  	/** 
  	 * Current time discrepancy between client-reported moves and time passed
-@@ -3337,7 +3453,10 @@ public:
+@@ -3337,7 +3454,10 @@ public:
  	float TimeDiscrepancyAccumulatedClientDeltasSinceLastServerTick;
  
  	/** Creation time of this prediction data, used to contextualize LifetimeRawTimeDiscrepancy */

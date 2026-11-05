@@ -1,7 +1,15 @@
 diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
 --- a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
 +++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
-@@ -636,6 +636,9 @@ private:
+@@ -610,6 +610,7 @@ private:
+ 	// Default HLOD layer
+ 	UPROPERTY(EditAnywhere, Category = WorldPartitionSetup, meta = (DisplayName = "Default HLOD Layer", EditCondition="bEnableStreaming", EditConditionHides, HideEditConditionToggle))
+ 	TObjectPtr<class UHLODLayer> DefaultHLODLayer;
++	TObjectPtr<UHLODLayer> DefaultFoliageHLODLayer; // [ARK]
+ 
+ 	TArray<FWorldPartitionReference> LoadedSubobjects;
+ 
+@@ -636,6 +637,9 @@ private:
  	private:
  		TSet<TPair<TWeakObjectPtr<AActor>, FWorldPartitionReference>> NonDirtyActors;
  		bool bIsNonDirtyTrackingDisabled = false;
@@ -11,7 +19,7 @@ diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/WorldPartition.h
  	};
  
  	TUniquePtr<FWorldPartitionExternalDirtyActorsTracker> ExternalDirtyActorsTracker;
-@@ -819,6 +822,15 @@ private:
+@@ -819,6 +823,15 @@ private:
  	ENGINE_API void GetOnScreenMessages(FCoreDelegates::FSeverityMessageMap& OutMessages);
  #endif
  	class AWorldPartitionReplay* Replay;

@@ -17,3 +17,14 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Components/RuntimeVirtualTextu
  
  public:
  	/**
+@@ -294,6 +303,9 @@ protected:
+ public:
+ 	/** Scene proxy object. Managed by the scene but stored here. */
+ 	class FRuntimeVirtualTextureSceneProxy* SceneProxy;
++protected:
++	ENGINE_API virtual void PreSave(FObjectPreSaveContext); // [ARK]
++public:
+ };
+ 
+ ENUM_CLASS_FLAGS(URuntimeVirtualTextureComponent::EStreamingTextureStatusFlags);
+\ No newline at end of file

@@ -9,3 +9,11 @@ diff --git a/Engine/Source/Runtime/RHI/Public/DynamicRHI.h b/Engine/Source/Runti
  	RHI_API virtual void RHIBindDebugLabelName(FRHICommandListBase& RHICmdList, FRHIBuffer* Buffer, const TCHAR* Name);
  	RHI_API virtual void RHIBindDebugLabelName(FRHICommandListBase& RHICmdList, FRHIUnorderedAccessView* UnorderedAccessViewRHI, const TCHAR* Name);
  
+@@ -915,6 +916,7 @@ public:
+ 
+ 	virtual FRHIFlipDetails RHIWaitForFlip(double TimeoutInSeconds) { return FRHIFlipDetails(); }
+ 	virtual void RHISignalFlipEvent() { }
++	virtual bool RHIAddPrimalProducerProgressPrerequisite(UE::Tasks::FTaskEvent&) { return false; } // [ARK]
+ 
+ 
+ 	virtual uint16 RHIGetPlatformTextureMaxSampleCount() { return 8; };

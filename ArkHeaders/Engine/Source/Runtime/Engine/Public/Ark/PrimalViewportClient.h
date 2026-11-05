@@ -15,6 +15,6 @@ class ENGINE_API FPrimalViewportClient
 public:
 	// introduced virtual functions (devkit vtable order)
 	virtual FString GetSuperResolutionQualityMode() const;
-	virtual void RenderStatFPS(FCanvas*, int, int, int, UFont*, FColor) const;
+	virtual void RenderStatFPS(FCanvas*, int, int&, int, UFont*, FColor) const;
 };
 

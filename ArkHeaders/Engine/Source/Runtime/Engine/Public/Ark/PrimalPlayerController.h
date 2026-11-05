@@ -13,6 +13,7 @@ class APawn;
 struct FBPNetExecParams;
 class FName;
 struct FNetExecParams;
+struct FPrimalMulticastRepIndex;
 class UActorComponent;
 
 UCLASS()
@@ -23,10 +24,10 @@ public:
 	// 10 data members at +0xBB0..+0xBF8 (ARK only, not accessed by plugins)
 	alignas(8) uint8 ArkData_APrimalPlayerController[0x48];
 	// introduced virtual functions (devkit vtable order)
-	virtual void ComponentPropertyServerToClientsUnreliable_Implementation(UActorComponent*, const FName, const TArray<uint8>&);
-	virtual void ComponentPropertyServerToClients_Implementation(UActorComponent*, const FName, const TArray<uint8>&);
-	virtual void PropertyServerToClientsUnreliable_Implementation(AActor*, const FName, const TArray<uint8>&);
-	virtual void PropertyServerToClients_Implementation(AActor*, const FName, const TArray<uint8>&);
+	virtual void ComponentPropertyServerToClientsUnreliable_Implementation(UActorComponent*, const FPrimalMulticastRepIndex&, const TArray<uint8>&);
+	virtual void ComponentPropertyServerToClients_Implementation(UActorComponent*, const FPrimalMulticastRepIndex&, const TArray<uint8>&);
+	virtual void PropertyServerToClientsUnreliable_Implementation(AActor*, const FPrimalMulticastRepIndex&, const TArray<uint8>&);
+	virtual void PropertyServerToClients_Implementation(AActor*, const FPrimalMulticastRepIndex&, const TArray<uint8>&);
 	virtual void ServerProcessNetExecCommandUnreliable_Implementation(AActor*, FName, FBPNetExecParams);
 	virtual void ServerProcessNetExecCommand_Implementation(AActor*, FName, FBPNetExecParams);
 	virtual void ClientProcessSimpleNetExecCommandUnreliableBP_Implementation(AActor*, FName);

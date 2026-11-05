@@ -1,7 +1,7 @@
 # Using this setup for other editor plugins
 
 This build system was written for BlueprintAssist, but nothing in the approach is specific to it. This document
-collects everything needed to compile another UE editor plugin for the ARK Devkit (ShooterGameEditor, UE 5.8.1
+collects everything needed to compile another UE editor plugin for the ARK Devkit (ShooterGameEditor, UE 5.8.3
 licensee build), plus the lessons learned that are not obvious from the scripts.
 
 See `README.md` for what the individual scripts do and for the recovered ARK ABI changes.
@@ -37,7 +37,8 @@ Copy the plugin as distributed (its `.uplugin`, `Source\`, `Resources\`, `Conten
 `Plugins\<Folder>\`, e.g. `Plugins\AutoSizeComments\`. Plugin and module names are read from the `.uplugin`
 (module name = DLL name `ShooterGameEditor-<Module>.dll`); nothing in the scripts needs to change for a
 single-module plugin. If the source drop has no `.uplugin`, take the devkit's stub descriptor from
-`<Devkit>\Engine\Plugins\Marketplace\<Plugin>\` (that also guarantees the names the devkit expects).
+`<Devkit>\Engine\Plugins\Marketplace\<Plugin>\` (that also guarantees the names the devkit expects; hashed folder
+names like `Blueprin0b23223502eaV17` are possible, search for the `.uplugin`).
 
 ### 2.2 Capture the build environment
 
@@ -55,7 +56,7 @@ separate AutoSizeComments plugin); UBT rejects undeclared modules inside a plugi
 
 Check the plugin's `Build\Config\EngineModules.txt` against the devkit: every module must exist as
 `D:\ASA\ARKDevkitBeta\Engine\Binaries\Win64\ShooterGameEditor-<Module>.dll` (all plugin modules of the devkit are
-in that one folder too). Missing modules (BlueprintAssist: `AssetSearch`) are skipped at link time - make sure the
+in that one folder too). Missing modules (ue_mcp_bridge: `Fab`) are skipped at link time - make sure the
 plugin only uses them through header-inline code guarded by `IsAvailable()`-style checks, otherwise the plugin
 cannot work in the devkit at all.
 
@@ -158,8 +159,7 @@ patches come out differently, `Tools\Repatch-ArkSdk.ps1` re-creates them all at 
 
 1. It resets the SDK to vanilla headers + `ArkPatches\` + `ArkHeaders\` (`New-ArkSdk.ps1 -Clean -HeadersOnly`).
 2. It patches every type from the **baseline PDBs** in `Intermediate\BaselinePdb`: plugin PDBs built against that
-   reset SDK. Currently GitSourceControl and the ue_mcp_bridge modules; together they reference every
-   patched type.
+   reset SDK. Currently the 15 modules of all 12 plugins.
 3. It runs `Update-ArkTypes` and `Apply-ManualArkEdits.sh`.
 
 Then run `New-ArkSdk.ps1`, build and test all plugins, and export (2.4).
@@ -167,13 +167,14 @@ Then run `New-ArkSdk.ps1`, build and test all plugins, and export (2.4).
 The baseline PDBs only fit the `ArkPatches\` they were built against. `-SaveBaseline` records a hash of
 `ArkPatches\` in `Intermediate\BaselinePdb\ArkPatches.stamp`, and the repatch refuses to run if the patches
 changed since. After an export or an update of a baseline plugin, rebuild the baseline before the next repatch
-(remove the old PDBs from `Intermediate\BaselinePdb` first if a module was dropped):
+(remove the old PDBs from `Intermediate\BaselinePdb` first if a module was dropped). The stamp covers the whole
+folder, so a `-SaveBaseline` with only some plugins also marks the PDBs of the others as current: list every plugin
+that has PDBs there, or remove the others first.
 
 ```powershell
 .\New-ArkSdk.ps1 -Clean
-.\Build.ps1 GitSourceControl -ForceLink
-.\Build.ps1 ue_mcp_bridge -ForceLink -Jobs 4      # unresolved externals are expected here: only the PDB is used
-.\Tools\Repatch-ArkSdk.ps1 -SaveBaseline GitSourceControl, ue_mcp_bridge
+.\Build.ps1 <Plugin> -Rebuild -Jobs 8             # every plugin; -ForceLink if it doesn't link yet: only the PDB is used
+.\Tools\Repatch-ArkSdk.ps1 -SaveBaseline AutoSizeComments, BlueprintAssist, GitSourceControl, ElectronicNodes, JsonUtilitiesEditor, ToolsetRegistry, EditorToolset, NiagaraToolsets, UMGToolSet, SlateInspectorToolset, AnimationAssistantToolset, ue_mcp_bridge
 ```
 
 ### 2.8 Dependencies on other plugins and on engine modules the devkit lacks
@@ -197,7 +198,26 @@ changed since. After an export or an update of a baseline plugin, rebuild the ba
 Copy `Plugins\<Folder>\Build\Output\<Plugin>\Binaries` into the plugin folder below `<Devkit>\Engine\Plugins\...` (or a project
 `Plugins` folder) and enable the plugin (`-EnablePlugins=<Plugin>` on the command line or the Plugins window).
 The `.modules` file must carry the devkit's BuildId (taken from `Engine\Binaries\Win64\ShooterGameEditor.modules`
-automatically); after a devkit update the plugin must be rebuilt (new BuildId, possibly new ABI - rerun the audit).
+automatically); after a devkit update the plugin must be rebuilt (new BuildId, possibly new ABI, see 2.10).
+
+### 2.10 After a devkit update
+
+An update changes the BuildId of every module, so all plugins must be rebuilt even if no type changed.
+
+1. Save `SDK\Lib\*.def` (the old export tables) before anything else; diff them afterwards to see which exports
+   ARK removed or added. Removed ones are signature changes.
+2. `.\Tools\New-ArkClassHeaders.ps1` regenerates `ArkHeaders\`; `git diff` shows ARK's vtable changes.
+   `.\New-ArkSdk.ps1 -Clean` then rebuilds the SDK from the new import libraries.
+3. Audit the PDBs of the old plugin builds against the new devkit (`Test-ArkAbi.ps1`, no rebuild needed): this lists
+   the types ARK changed. PDB dumps are cached by file size and time, so a changed PDB is dumped again; the old dumps
+   only take up disk space (`Intermediate\PdbCache`).
+4. Build the plugins with `-Rebuild` (`Build.ps1` is incremental by file time, and refreshed plugin sources can keep
+   their old times). Fix what comes up: `Test-ArkAbi.ps1 -Patch` for layouts (2.4), `Apply-ManualArkEdits.sh` for
+   inline bodies (4.3) and changed signatures.
+5. Re-read the values that are not in the type information (section 4): they can change without any layout changing.
+   Everything in `Apply-ManualArkEdits.sh` that cites a disassembly belongs here, and so do runtime hot patches.
+6. All plugins pass the three tests: `Export-ArkPatches.ps1`, then `.\New-ArkSdk.ps1 -Clean` and rebuild everything to
+   prove that vanilla + patches reproduces the result, then `Repatch-ArkSdk.ps1 -SaveBaseline` (2.7).
 
 ---
 
@@ -267,6 +287,24 @@ are tiny; read the bytes (REA `read_bytes`, or raw file bytes):
 | `B0 01 C3` | `return true;` |
 
 Anything longer: decompile it. Add the bodies to `Apply-ManualArkEdits.sh` (`body` helper).
+
+### 4.4 Comparing with a plugin ARK built itself
+
+The devkit ships BlueprintAssist with its PDB, the same version we build. That makes it a reference for the SDK as a
+whole, and it finds what the three tests cannot: changed logic in header-inline code, where layout and signatures
+stay the same (`FProperty::HasAnyPropertyFlags`).
+
+* **Layouts:** `PdbLayout audit <our.pdb> <report> <shipped.pdb>`, then `filter-audit.sh`. Only excluded types may differ.
+* **Imports:** diff `dumpbin /imports` of both DLLs. Each difference needs an explanation: a function only the shipped
+  DLL imports is either called by inline code our headers lack or a difference in the plugin's sources.
+* **Call sites:** for such a function, list the callers in the shipped DLL (`dumpbin /disasm:nobytes` prints imported
+  names; function ranges come from `llvm-pdbutil dump --symbols`).
+
+The compilers differ (14.44 here, 14.50 in the devkit), so comparing whole functions is mostly noise from inlining and
+register choice: function sizes, callees and member offsets per function produced thousands of differences, and those
+read by hand turned out to be noise or the documented initializers of uninitialized `FArguments` members. Exports
+differ too: the shipped DLL has 24 additional `TSharedFromThis::AsSharedPtr` instantiations, an inline ARK addition
+without ABI impact.
 
 ---
 
@@ -352,6 +390,16 @@ the SDK root for PDBs built by `Build.ps1`.
   ARK added `OnComboBoxClosing`) shows up in the audit as an unexplained difference of the instantiation and its
   `FArguments`. Compare `PdbLayout layout` of the devkit instantiation, find the uses in its member functions
   (disassemble the COMDAT copies, 4.1) and edit the template in `Apply-ManualArkEdits.sh`.
+* **`-Patch` needs a rebuild in between:** the patcher works from the PDB, which still shows the old layout until the
+  plugin is rebuilt. A second `-Patch` without a rebuild inserts the same members again. A multi-module plugin runs it
+  once per module, and so does one call each for several plugins: patch from one PDB, rebuild, then audit again.
+* **Check the diff after `-Patch`:** it also expands the opaque `ArkData` of the `Public\Ark\*.h` copies in the SDK into
+  named members (`New-ArkSdk.ps1 -HeadersOnly` restores them from `ArkHeaders\`), re-inserts members of opaque
+  types (`OnClosing`, `ActiveExcludedBoxesChangedDelegate`) and un-opaques `FRayTracingGeometry SourceRayTracingGeometry`.
+* **Enums declared on one line:** `gentypes` (`Update-ArkTypes`) only recognizes an enum declaration on a line of its
+  own. An engine enum declared inside a one-line `namespace X { enum class Y : T; }` looks like an ARK-only type and
+  is declared in `ArkTypes.h` with the PDB's type (C3431/C3433 for `UE::Cook::ECookEvent`). Declare it across several
+  lines in `Config\ArkForwardDeclarations.h`.
 * **Memory:** big plugins (ue_mcp_bridge) exhaust memory with one compiler per CPU; use `-Jobs 4`.
 * **Do not modify the devkit** (`D:\ASA\ARKDevkitBeta`): everything reads from it only; REA needs copies on NTFS.
-* **Disk:** `Intermediate\PdbCache` grows to ~12 GB (text dumps of the devkit PDBs); safe to delete.
+* **Disk:** `Intermediate\PdbCache` grows to 30-50 GB (text dumps of the devkit PDBs); safe to delete.

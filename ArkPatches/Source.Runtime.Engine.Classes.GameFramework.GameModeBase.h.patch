@@ -10,7 +10,7 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h b
  
  	/**
  	 * Overridable function to determine whether an Actor should have Reset called when the game has Reset called on it.
-@@ -483,6 +485,10 @@ public:
+@@ -483,6 +485,11 @@ public:
  
  	/** Used in the editor to spawn a PIE player after the game has already started */
  	ENGINE_API virtual bool SpawnPlayerFromSimulate(const FVector& NewLocation, const FRotator& NewRotation);
@@ -18,10 +18,11 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/GameFramework/GameModeBase.h b
 +	ENGINE_API virtual void ActorDestroyed(AActor*); // [ARK]
 +	ENGINE_API virtual void ActorUnstasised(AActor*); // [ARK]
 +	ENGINE_API virtual bool ExtraPreLoginChecksBeforeWelcomePlayer(UNetConnection*); // [ARK]
++	virtual bool RequireWelcomeBeforeJoin(UNetConnection*) { return false; } // [ARK]
  
  	//~ Begin AActor Interface
  	ENGINE_API virtual void PreInitializeComponents() override;
-@@ -601,6 +607,7 @@ protected:
+@@ -601,6 +608,7 @@ protected:
  private:
  	// Hidden functions that don't make sense to use on this class.
  	HIDE_ACTOR_TRANSFORM_FUNCTIONS();

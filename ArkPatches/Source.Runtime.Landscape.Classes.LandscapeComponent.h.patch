@@ -52,3 +52,12 @@ diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeComponent.h b/Engi
  
  #if WITH_EDITOR
  	/** Physical material update task */
+@@ -1272,8 +1288,6 @@ public:
+ 	LANDSCAPE_API void RequestHeightmapUpdate(bool bUpdateAll = false, bool bUpdateCollision = true, bool bInUserTriggered = false);
+ 	LANDSCAPE_API void RequestEditingClientUpdate(bool bInUserTriggered = false);
+ 	LANDSCAPE_API void RequestDeferredClientUpdate();
+-	/** Requests the update on the landscape actor, or defers it on the streaming proxy until its landscape actor is registered */
+-	void RequestLayersContentUpdateOnLandscape(ELandscapeLayerUpdateMode InUpdateModes);
+ 	uint32 GetLayerUpdateFlagPerMode() const { return LayerUpdateFlagPerMode; }
+ 	LANDSCAPE_API uint32 ComputeWeightmapsHash();
+ 

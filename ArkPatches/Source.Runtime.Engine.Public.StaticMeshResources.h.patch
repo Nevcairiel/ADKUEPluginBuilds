@@ -9,3 +9,14 @@ diff --git a/Engine/Source/Runtime/Engine/Public/StaticMeshResources.h b/Engine/
  
  	/** True if the depth only index buffers contained data at init. Needed as it will not be available to the CPU afterwards. */
  	uint32 bHasDepthOnlyIndices : 1;
+@@ -794,9 +795,7 @@ public:
+ 	/** Bounds of the renderable mesh. */
+ 	FBoxSphereBounds Bounds;
+ 
+-#if RHI_RAYTRACING
+-	RayTracing::FGeometryGroupHandle RayTracingGeometryGroupHandle;
+-#endif
++	// [ARK] removed: RayTracing::FGeometryGroupHandle RayTracingGeometryGroupHandle
+ 
+ 	bool IsInitialized() const
+ 	{

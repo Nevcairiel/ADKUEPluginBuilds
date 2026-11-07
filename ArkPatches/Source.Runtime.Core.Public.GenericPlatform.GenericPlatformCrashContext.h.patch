@@ -1,0 +1,28 @@
+diff --git a/Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformCrashContext.h b/Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformCrashContext.h
+--- a/Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformCrashContext.h
++++ b/Engine/Source/Runtime/Core/Public/GenericPlatform/GenericPlatformCrashContext.h
+@@ -126,10 +126,8 @@ enum class ECrashContextType
+ /** In development mode we can cause crashes in order to test reporting systems. */
+ enum class ECrashTrigger
+ {
+-	Deliberate = -1,
+-	Normal = 0,
+-
+-	Debug = Deliberate // Kept for backward compatibility
++	Debug = -1,
++	Normal = 0
+ };
+ 
+ /**
+@@ -813,11 +811,6 @@ public:
+ 	 */
+ 	CORE_API static void SetCrashTrigger(ECrashTrigger Type);
+ 
+-	/**
+-	 * Returns the type of crash triggered, defaulting to ECrashTrigger::Normal when nothing set one.
+-	 */
+-	CORE_API static ECrashTrigger GetCrashTrigger();
+-
+ protected:
+ 	/**
+ 	 * @OutStr - a stream of Thread XML elements containing info (e.g. callstack) specific to an active thread

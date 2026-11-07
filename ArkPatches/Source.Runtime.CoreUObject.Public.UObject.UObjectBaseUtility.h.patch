@@ -10,3 +10,17 @@ diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility
  
  	/**
  	 * Determines whether this object is a template object by checking flags on the object and the outer chain.
+@@ -642,11 +642,8 @@ public:
+ 
+ 		const UClass* ThisClass = GetClass();
+ 
+-		// Stop the compiler doing some unnecessary branching for nullptr checks
+-		UE_ASSUME(SomeBaseClass);
+-		UE_ASSUME(ThisClass);
+-
+-		return IsChildOfWorkaround(ThisClass, SomeBaseClass);
++		// [ARK] null-safe: no UE_ASSUME of either class
++		return SomeBaseClass && IsChildOfWorkaround(ThisClass, SomeBaseClass);
+ 	}
+ 
+ 	/** Returns true if this object is of the template type. */

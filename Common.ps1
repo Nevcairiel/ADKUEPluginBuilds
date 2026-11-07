@@ -18,8 +18,12 @@ $EngineRoot  = if ($env:ARK_UE_ROOT) { $env:ARK_UE_ROOT } else { 'D:\ASA\UE_5.8'
 $DevkitRoot  = if ($env:ARK_DEVKIT_ROOT) { $env:ARK_DEVKIT_ROOT } else { 'D:\ASA\ARKDevkitBeta' } # ARK Devkit (read only)
 $SdkRoot     = if ($env:ARK_SDK_ROOT) { $env:ARK_SDK_ROOT } else { Join-Path $BuildDir 'SDK' }     # generated ARK SDK (shared)
 $PdbCacheDir = if ($env:ARK_PDB_CACHE) { $env:ARK_PDB_CACHE } else { Join-Path $SharedIntDir 'PdbCache' }  # PDB text dumps (~12 GB)
-# Tools found automatically: Visual Studio via vswhere (ARK_MSVC_VERSION / ARK_WINSDK_VERSION pick versions),
-# llvm-pdbutil from the VS LLVM component or PATH (ARK_LLVM_PDBUTIL), bash from PATH or Git for Windows (ARK_BASH).
+# The exact toolchain the devkit was built with (from its PDBs: compiler 19.50.35739). Never the newest one installed:
+# Find-Msvc stops if these are missing. Update them when a devkit update changes its compiler (EXTENDING.md 2.10).
+$MsvcToolset  = if ($env:ARK_MSVC_VERSION) { $env:ARK_MSVC_VERSION } else { '14.50.35717' }
+$WinSdkKit    = if ($env:ARK_WINSDK_VERSION) { $env:ARK_WINSDK_VERSION } else { '10.0.22621.0' }
+# Tools found automatically: Visual Studio via vswhere, llvm-pdbutil from the VS LLVM component or PATH
+# (ARK_LLVM_PDBUTIL), bash from PATH or Git for Windows (ARK_BASH).
 
 $DevkitBinaries = Join-Path $DevkitRoot 'Engine\Binaries\Win64'
 $ModulePrefix   = 'ShooterGameEditor-'
@@ -117,10 +121,12 @@ function Get-VsInstallPath {
 
 function Find-Msvc {
     $vs = Get-VsInstallPath
-    $ver = if ($env:ARK_MSVC_VERSION) { $env:ARK_MSVC_VERSION } else { (Get-Content "$vs\VC\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt").Trim() }
+    $ver = $MsvcToolset
     $tools = "$vs\VC\Tools\MSVC\$ver"
+    if (-not (Test-Path "$tools\bin\Hostx64\x64\cl.exe")) { throw "MSVC toolset $ver not found in $vs`: install it in the Visual Studio Installer (individual components) or set ARK_MSVC_VERSION" }
     $kitRoot = "${env:ProgramFiles(x86)}\Windows Kits\10"
-    $kitVer = if ($env:ARK_WINSDK_VERSION) { $env:ARK_WINSDK_VERSION } else { (Get-ChildItem "$kitRoot\Include" -Directory | Where-Object { Test-Path "$($_.FullName)\um\windows.h" } | Sort-Object { [version]$_.Name } | Select-Object -Last 1).Name }
+    $kitVer = $WinSdkKit
+    if (-not (Test-Path "$kitRoot\Include\$kitVer\um\windows.h")) { throw "Windows SDK $kitVer not found in $kitRoot`: install it or set ARK_WINSDK_VERSION" }
     [pscustomobject]@{
         Bin      = "$tools\bin\Hostx64\x64"
         Cl       = "$tools\bin\Hostx64\x64\cl.exe"

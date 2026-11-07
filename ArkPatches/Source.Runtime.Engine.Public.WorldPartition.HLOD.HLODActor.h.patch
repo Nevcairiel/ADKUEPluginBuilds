@@ -1,0 +1,33 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODActor.h b/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODActor.h
+--- a/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODActor.h
++++ b/Engine/Source/Runtime/Engine/Public/WorldPartition/HLOD/HLODActor.h
+@@ -108,6 +108,10 @@ public:
+ 
+ 	void SetRequireWarmup(bool InRequireWarmup) { bRequireWarmup = InRequireWarmup; }
+ 	ENGINE_API void SetIsStandalone(bool bInIsStandalone);
++	ENGINE_API bool DisableLumenCards() const; // [ARK]
++	ENGINE_API void SetDisableLumenCards(bool bInDisableLumenCards); // [ARK]
++	ENGINE_API bool DisableIfPlatformAllows() const; // [ARK]
++	ENGINE_API void SetDisableIfPlatformAllows(bool bInDisableIfPlatformAllows); // [ARK]
+ 
+ 	ENGINE_API void SetSourceCellGuid(const FGuid& InSourceCellGuid);
+ 	inline void SetLODLevel(uint32 InLODLevel) { LODLevel = InLODLevel; }
+@@ -244,6 +248,9 @@ private:
+ 	UPROPERTY()
+ 	bool bRequireWarmup;
+ 
++	bool bDisableLumenCards; // [ARK]
++	bool bDisableIfPlatformAllows; // [ARK]
++
+ 	UPROPERTY()
+ 	FGuid SourceCellGuid;
+ 
+@@ -267,6 +274,8 @@ private:
+ 	uint32 HLODHash_DEPRECATED;
+ #endif
+ 
++	TFunction<void(int32)> SetVisibilityOnTickFunc; // [ARK]
++
+ #if WITH_EDITOR
+ 	static FWorldPartitionHLODBuildEventDelegate HLODBuildEventDelegate;
+ 	static FWorldPartitionHLODActorEditorRegisteredDelegate HLODActorEditorRegisteredDelegate;

@@ -204,6 +204,9 @@ automatically); after a devkit update the plugin must be rebuilt (new BuildId, p
 
 An update changes the BuildId of every module, so all plugins must be rebuilt even if no type changed.
 
+0. Check the devkit's compiler: `llvm-pdbutil dump --symbols --modi=0 <devkit>.pdb` shows it in `S_COMPILE3`, and
+   `llvm-pdbutil dump --ids` the toolset path. If it changed, install it and update `$MsvcToolset` and `$WinSdkKit` in
+   `Common.ps1`. The build deliberately ignores newer installed versions: the comparison in 4.4 needs the same compiler.
 1. Save `SDK\Lib\*.def` (the old export tables) before anything else; diff them afterwards to see which exports
    ARK removed or added. Removed ones are signature changes.
 2. `.\Tools\New-ArkClassHeaders.ps1` regenerates `ArkHeaders\`; `git diff` shows ARK's vtable changes.
@@ -218,8 +221,22 @@ An update changes the BuildId of every module, so all plugins must be rebuilt ev
    Everything in `Apply-ManualArkEdits.sh` that cites a disassembly belongs here, and so do runtime hot patches.
 6. All plugins pass the three tests: `Export-ArkPatches.ps1`, then `.\New-ArkSdk.ps1 -Clean` and rebuild everything to
    prove that vanilla + patches reproduces the result, then `Repatch-ArkSdk.ps1 -SaveBaseline` (2.7).
-7. Package the new builds with `Tools\Package-Dist.ps1` (README, *Distribution*): the old zips only work with the old
+7. Compare with ARK's BlueprintAssist (4.4). New entries in `functions-real.txt` point at inline changes of the update.
+8. Package the new builds with `Tools\Package-Dist.ps1` (README, *Distribution*): the old zips only work with the old
    BuildId. A new plugin also needs an entry in the script's tables.
+
+**The vanilla engine can move ahead of the devkit.** An Epic hotfix replaces headers in `D:\ASA\UE_5.8`, and the old
+version cannot be installed again. `SDK\` is unaffected until `New-ArkSdk.ps1 -Clean` copies the new headers, so compare
+`Engine\Build\Build.version` of both trees first. If they differ, `Export-ArkPatches.ps1` turns the SDK's older headers
+into patches that undo the hotfix, which is what keeps the SDK matching the devkit. Run it before any `-Clean`, because
+it needs the old headers in `SDK\`. These patches are not ARK changes, so the set then only applies to that engine
+version. Headers a later capture adds come straight from the new tree: check them against the hotfix (files with a newer
+time than the rest of the tree). Engine sources copied into `Plugins\` keep their version until you replace them.
+
+Currently the engine is 5.8.4 and the devkit 5.8.3. Undone by patches: `Version.h`, `GenericPlatformCrashContext.h`,
+`LevelViewportClickSelection.h`, `SimpleStreamableAssetManagerHandle.h` and parts of `LandscapeComponent.h` and
+`LandscapeInfo.h`. `Plugins\ToolsetRegistry` is deliberately the 5.8.4 version: a fix limited to private files
+(`SetObjectProperties` refuses child actor instances).
 
 ---
 
@@ -294,19 +311,39 @@ Anything longer: decompile it. Add the bodies to `Apply-ManualArkEdits.sh` (`bod
 
 The devkit ships BlueprintAssist with its PDB, the same version we build. That makes it a reference for the SDK as a
 whole, and it finds what the three tests cannot: changed logic in header-inline code, where layout and signatures
-stay the same (`FProperty::HasAnyPropertyFlags`).
+stay the same (`FProperty::HasAnyPropertyFlags`, `UObjectBaseUtility::IsA`).
 
-* **Layouts:** `PdbLayout audit <our.pdb> <report> <shipped.pdb>`, then `filter-audit.sh`. Only excluded types may differ.
-* **Imports:** diff `dumpbin /imports` of both DLLs. Each difference needs an explanation: a function only the shipped
-  DLL imports is either called by inline code our headers lack or a difference in the plugin's sources.
-* **Call sites:** for such a function, list the callers in the shipped DLL (`dumpbin /disasm:nobytes` prints imported
-  names; function ranges come from `llvm-pdbutil dump --symbols`).
+`.\Tools\Compare-ShippedPlugin.ps1 BlueprintAssist` compares both builds. It only means something with the devkit's
+compiler (`Common.ps1`, 2.10): with another one, whole functions differ through inlining and register choice.
 
-The compilers differ (14.44 here, 14.50 in the devkit), so comparing whole functions is mostly noise from inlining and
-register choice: function sizes, callees and member offsets per function produced thousands of differences, and those
-read by hand turned out to be noise or the documented initializers of uninitialized `FArguments` members. Exports
-differ too: the shipped DLL has 24 additional `TSharedFromThis::AsSharedPtr` instantiations, an inline ARK addition
-without ABI impact.
+* **Layouts:** `PdbLayout audit` of our PDB against the shipped one. Only excluded types may differ.
+* **Imports and exports:** each difference needs an explanation. A function only the shipped DLL imports is either
+  called by inline code our headers lack or a difference in the plugin's sources. For call sites, `dumpbin
+  /disasm:nobytes` prints imported names and `llvm-pdbutil dump --symbols` the function ranges.
+* **Compile commands:** `llvm-pdbutil dump --ids` holds each object's full command line (`LF_BUILDINFO`), split over
+  linked `LF_STRING_ID` and `LF_SUBSTR_LIST` records.
+* **Sources:** `llvm-pdbutil dump -l` gives a SHA-256 for every source file that contributed code, plus its line table.
+  That tells exactly which headers differ from ARK's, including those with no ABI change, and the line shifts show where
+  (`sources-differing.txt`, `L3095:+5` means ARK has 5 more lines before our line 3095). It only covers code the plugin
+  uses, and a header can differ without affecting that code.
+* **Functions:** normalized instructions per function. String literals with build paths, `ensure()` state, anonymous
+  namespaces, addresses and jump tables depend on the build; `check()` line numbers on the header. What is left is listed
+  in `functions-real.txt`, with the instructions in `bodies-ours.txt` and `bodies-shipped.txt`.
+
+To recover an inline change, edit it in `Apply-ManualArkEdits.sh`, rebuild and compare again: the same compiler produces
+the same instructions from the same source, so a match confirms the wording, not just the behaviour. `IsA` took three
+tries. `return SomeBaseClass && ...` matched its shape, and removing `UE_ASSUME(ThisClass)` as well removed 94 of the
+remaining differences.
+
+Known differences that remain for BlueprintAssist (33 of 16,329 compared functions, 2026-11-07):
+* `FBACommandsImpl::RegisterCommands`: ARK edited `BlueprintAssistCommands.cpp`, the only plugin source that differs.
+* `StaticStruct`, `__DefaultConstructor` and `__VTableCtorCaller` of its reflected types are inlined differently.
+* `FArguments` constructors: the documented initializers of members the devkit leaves uninitialized.
+* The shipped DLL has 24 additional exports, from 12 `TSharedFromThis::AsSharedPtr` instantiations: an inline ARK
+  addition without ABI impact. It does not import `EKeys::Tilde`, which ours does.
+* Not analysed yet: about a dozen JSON reader/writer/serializer and property functions (`ShouldSkipProperty`,
+  `AttachPropertyNamesToValue`, `SetPinDefaultValue`, `RefreshPropertyTree`) and two switch functions
+  (`GraphTypeToString`, `EHttpResponseCodes::GetDescription`, probably jump table layout).
 
 ---
 

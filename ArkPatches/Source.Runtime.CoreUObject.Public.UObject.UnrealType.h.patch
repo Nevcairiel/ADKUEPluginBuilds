@@ -27,3 +27,12 @@ diff --git a/Engine/Source/Runtime/CoreUObject/Public/UObject/UnrealType.h b/Eng
  	}
  
  	/**
+@@ -7286,7 +7287,7 @@ protected:
+ 				if (FieldClass->HasAllCastFlags(CASTCLASS_FProperty))
+ 				{
+ 					FProperty* Prop = (FProperty*)CurrentField;
+-					if (Prop->HasAllPropertyFlags(CPF_Deprecated) && !bIncludeDeprecated)
++					if (!bIncludeDeprecated && Prop->HasAllPropertyFlags(CPF_Deprecated)) // [ARK] order
+ 					{
+ 						continue;
+ 					}

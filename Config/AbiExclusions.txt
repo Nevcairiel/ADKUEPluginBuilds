@@ -16,6 +16,7 @@
 FRHICommandDispatchComputeShaderBundle
 FRHICommandDispatchGraphicsShaderBundle
 FRHICommandSetStaticUniformBuffers
+FRHICommandCopyTexture
 # thread-local cleanup helper inside a header template: every DLL instantiates its own private copy (not probed by
 # Tools\Test-LayoutIndependence.ps1: the plugin uses its own copy, whose layout it compiles itself)
 TBlockAllocationCache<65536,FAlignedAllocator>::FTLSCleanup   # [no probe]
@@ -43,7 +44,6 @@ FMeshBatch
 FPrimitiveSceneProxy
 FMaterialShaderParametersBase
 FStaticMeshInstanceData
-FStaticMeshRenderData
 # network driver internals (the gameplay classes only hold pointers to connections and drivers)
 FNetPacketNotify
 FNetPacketNotify::FSentAckData
@@ -63,5 +63,6 @@ Chaos::FPhysicsSolverBase
 <unnamed-enum-MAX_PACKET_RELIABLE_SEQUENCE_HEADER_BITS>
 FNetPacketNotify::<unnamed-enum-MaxSequenceHistoryLength>
 FNetPacketNotify::<unnamed-enum-SequenceNumberBits>
-# Windows SDK struct (winnt.h): a field renamed between SDK versions (Identifier -> SpareWORD), same layout
+# Windows SDK struct (winnt.h): the devkit's Core was built with an older SDK that names the last field SpareWORD
+# (22621 and 26100: Identifier), same layout
 _RTL_CRITICAL_SECTION_DEBUG

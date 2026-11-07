@@ -1,7 +1,28 @@
 diff --git a/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h b/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
 --- a/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
 +++ b/Engine/Source/Runtime/Landscape/Classes/LandscapeInfo.h
-@@ -371,7 +371,7 @@ public:
+@@ -240,8 +240,6 @@ public:
+ 	LANDSCAPE_API bool SupportsLandscapeEditing() const;
+ 	// False if landscape editing not supported, in PIE world, or in a Commandlet
+ 	LANDSCAPE_API bool IsLandscapeEditableWorld() const;
+-	/** Returns true if InLandscapeComponent is the component XYtoComponentMap holds for its key, i.e. false for an overlapped component */
+-	bool IsLandscapeComponentMapped(const ULandscapeComponent* InLandscapeComponent) const;
+ 
+ 	LANDSCAPE_API bool AreAllComponentsRegistered() const;
+ 	LANDSCAPE_API void GetComponentsInRegion(int32 X1, int32 Y1, int32 X2, int32 Y2, TSet<ULandscapeComponent*>& OutComponents, bool bOverlap = true) const;
+@@ -252,11 +250,6 @@ public:
+ 	LANDSCAPE_API FIntRect GetCompleteLandscapeExtent() const;
+ 	LANDSCAPE_API bool GetLandscapeXYComponentBounds(FIntRect& OutXYComponentBounds) const;
+ 	LANDSCAPE_API void ForAllLandscapeComponents(TFunctionRef<void(ULandscapeComponent*)> Fn) const;
+-	/**
+-	 * Unlike ForAllLandscapeComponents, only visits the component mapped to each key in XYtoComponentMap, so overlapped components are skipped.
+-	 * Fn must not register or unregister landscape components, since the map is iterated directly.
+-	 */
+-	void ForEachMappedLandscapeComponent(TFunctionRef<void(ULandscapeComponent*)> Fn) const;
+ 	LANDSCAPE_API void ExportHeightmap(const FString& Filename);
+ 	LANDSCAPE_API void ExportHeightmap(const FString& Filename, const FIntRect& ExportRegion);
+ 	LANDSCAPE_API void ExportLayer(ULandscapeLayerInfoObject* LayerInfo, const FString& Filename);
+@@ -378,7 +371,7 @@ public:
  	 *  requires LandscapeActor to be loaded
  	 *  Does not work in World composition mode!
  	 */

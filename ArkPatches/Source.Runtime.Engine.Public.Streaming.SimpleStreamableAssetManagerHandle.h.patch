@@ -1,0 +1,14 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Streaming/SimpleStreamableAssetManagerHandle.h b/Engine/Source/Runtime/Engine/Public/Streaming/SimpleStreamableAssetManagerHandle.h
+--- a/Engine/Source/Runtime/Engine/Public/Streaming/SimpleStreamableAssetManagerHandle.h
++++ b/Engine/Source/Runtime/Engine/Public/Streaming/SimpleStreamableAssetManagerHandle.h
+@@ -326,8 +326,8 @@ public:
+ 	}
+ 
+ private:
+-	static constexpr uint32 MaxSlots     = 1u << (20 + WITH_EDITOR);  // 1M handles per table (2M in editor)
+-	static constexpr uint32 SlotsPerPage = 4096;					  // 256 pages * 4K slots
++	static constexpr uint32 MaxSlots     = 1u << 20;  // 1M handles per table
++	static constexpr uint32 SlotsPerPage = 4096;      // 256 pages * 4K slots
+ 
+ 	using FStorage = TLockFreeAllocOnceIndexedAllocator<FSSAMSlot, MaxSlots, SlotsPerPage>;
+ 

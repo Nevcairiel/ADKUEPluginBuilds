@@ -1,0 +1,12 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionMakeMaterialAttributes.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionMakeMaterialAttributes.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionMakeMaterialAttributes.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialExpressionMakeMaterialAttributes.h
+@@ -64,6 +64,8 @@ public:
+ 	UPROPERTY()
+ 	FExpressionInput Refraction;
+ 
++	FExpressionInput ToonOutlineWidth; // [ARK]
++
+ 	UPROPERTY()
+ 	FExpressionInput CustomizedUVs[8];
+ 

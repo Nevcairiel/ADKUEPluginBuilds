@@ -61,7 +61,8 @@ Write-Step 'Comparing generated code'
 # contains the source paths
 $pkgHashes = @(Get-ChildItem "$IntDir\Inc", "$probeInt\Inc" -Recurse -Filter *.init.gen.cpp -ErrorAction SilentlyContinue |
     Select-String 'CONSTRUCT_RELOAD_VERSION_INFO\(FPackageReloadVersionInfo, 0x([0-9A-Fa-f]+)' | ForEach-Object { $_.Matches[0].Groups[1].Value })
-$pkgPattern = if ($pkgHashes) { '\b0?(' + ($pkgHashes -join '|') + ')h\b' } else { '(?!)' }
+# dumpbin prints constants without leading zeros, apart from a single one before a letter
+$pkgPattern = if ($pkgHashes) { '\b0?(' + (($pkgHashes | ForEach-Object { $_.TrimStart('0') }) -join '|') + ')h\b' } else { '(?!)' }
 function Get-Code([string] $obj) {
     (& $dumpbin /nologo /disasm $obj) |
         # debug info sizes legitimately differ; instruction bytes are dropped (the disassembly states every operand,

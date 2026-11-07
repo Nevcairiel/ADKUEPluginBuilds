@@ -1,0 +1,25 @@
+diff --git a/Engine/Source/Editor/LevelEditor/Private/ViewportInteractions/LevelViewportClickSelection.h b/Engine/Source/Editor/LevelEditor/Private/ViewportInteractions/LevelViewportClickSelection.h
+--- a/Engine/Source/Editor/LevelEditor/Private/ViewportInteractions/LevelViewportClickSelection.h
++++ b/Engine/Source/Editor/LevelEditor/Private/ViewportInteractions/LevelViewportClickSelection.h
+@@ -3,7 +3,6 @@
+ #pragma once
+ 
+ #include "EditorViewportClient.h"
+-#include "HitProxies.h"
+ #include "BaseBehaviors/MouseHoverBehavior.h"
+ #include "ViewportInteractions/ViewportClickInteraction.h"
+ #include "LevelViewportClickSelection.generated.h"
+@@ -35,12 +34,7 @@ protected:
+ private:
+ 	TOptional<FVector2d> LastPosition;
+ 	TOptional<bool> LastResult;
+-
+-	// Holds no reference to the proxy. A held reference keeps the proxy in the global hit proxy array after the
+-	// viewport's hit proxy map releases it, and code that iterates GetAllHitProxies() then reads a dangling Actor;
+-	// reporting the proxy's objects to GC instead keeps the hovered actor's world from unloading.
+-	// The id can resolve to null, or to a newer proxy that reused the index.
+-	FHitProxyId LastProxyId;
++	TRefCountPtr<HHitProxy> LastProxy;
+ };
+ 
+ /**

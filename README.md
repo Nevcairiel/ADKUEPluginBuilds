@@ -4,7 +4,7 @@ Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
 (Unreal Engine 5.8.3 licensee build, BuildId `2f049af0-6843-4873-a139-8cf09a58e308`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
-ElectronicNodes, ue_mcp_bridge (1.4.11, three modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
+ElectronicNodes, ue_mcp_bridge (1.4.12, three modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,
 NiagaraToolsets, UMGToolSet, SlateInspectorToolset and AnimationAssistantToolset (with JsonUtilitiesEditor, an engine
 module the devkit lacks).
 
@@ -42,6 +42,7 @@ PluginBuild\
     New-EngineModulePlugins.ps1  creates Plugins\<Module> for Config\EngineModulePlugins.txt (called by Build.ps1)
     Apply-ManualArkEdits.sh   hand-recovered edits in headers that the patcher also touches (re-run after PdbLayout patch)
     Test-ArkAbi.ps1, Test-LayoutIndependence.ps1, Test-DllLoad.ps1 (+ LoadTest\)   verification, see below
+    Compare-ShippedPlugin.ps1 compares a build with the one ARK ships: flags, source hashes, functions (EXTENDING.md, 4.4)
     Package-Dist.ps1          zips of the staged plugins in Dist\, see *Distribution*
     PdbLayout\                PDB layout tool: layout / diff / audit / patch / probe (llvm-pdbutil based)
     pdb-type-sizes.sh, compare-type-sizes.sh, filter-audit.sh   quick sizeof comparisons
@@ -76,7 +77,7 @@ tools get the paths from `Common.ps1` through environment variables (`Initialize
 | Vanilla UE 5.8 (source headers + prebuilt UnrealBuildTool, used as reference and for UHT) | `D:\ASA\UE_5.8` | `ARK_UE_ROOT` |
 | ARK Devkit (read only, never modified) | `D:\ASA\ARKDevkitBeta` | `ARK_DEVKIT_ROOT` |
 | Generated SDK / PDB dump cache | `<root>\SDK` / `<root>\Intermediate\PdbCache` | `ARK_SDK_ROOT` / `ARK_PDB_CACHE` |
-| Visual Studio 2022 with the MSVC v143 x64 toolset, Windows 10/11 SDK | auto-detected via `vswhere` | `ARK_MSVC_VERSION`, `ARK_WINSDK_VERSION` |
+| Visual Studio with the devkit's exact compiler: MSVC toolset 14.50.35717 (compiler 19.50.35739, x64) and Windows SDK 10.0.22621.0. Other installed versions are ignored, and the build stops if these are missing | Visual Studio via `vswhere` (newest install), versions pinned in `Common.ps1` | `ARK_MSVC_VERSION`, `ARK_WINSDK_VERSION` |
 | `llvm-pdbutil` (VS component *C++ Clang tools for Windows*) | VS installation, else `PATH` | `ARK_LLVM_PDBUTIL` |
 | Git for Windows (`git apply` for the header patches, bash for some tools) | `git`/`bash` on `PATH`, else `%ProgramFiles%\Git` | `ARK_BASH` |
 | .NET SDK 9 (builds `Tools\PdbLayout` on first use) | on `PATH` | |

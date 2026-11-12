@@ -14,8 +14,8 @@ class ENGINE_API UCameraAnim : public UObject
 {
 	GENERATED_BODY()
 public:
-	// 9 data members at +0x30..+0x9A0 (ARK only, not accessed by plugins)
-	alignas(8) uint8 ArkData_UCameraAnim[0x970];
+	// 9 data members at +0x30..+0x9B0 (ARK only, not accessed by plugins)
+	alignas(8) uint8 ArkData_UCameraAnim[0x980];
 	// overridden virtual functions
 	virtual void PreSave(FObjectPreSaveContext);
 	virtual void PostLoad();

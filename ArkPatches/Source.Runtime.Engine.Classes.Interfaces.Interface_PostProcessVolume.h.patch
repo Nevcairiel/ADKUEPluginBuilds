@@ -1,7 +1,7 @@
 diff --git a/Engine/Source/Runtime/Engine/Classes/Interfaces/Interface_PostProcessVolume.h b/Engine/Source/Runtime/Engine/Classes/Interfaces/Interface_PostProcessVolume.h
 --- a/Engine/Source/Runtime/Engine/Classes/Interfaces/Interface_PostProcessVolume.h
 +++ b/Engine/Source/Runtime/Engine/Classes/Interfaces/Interface_PostProcessVolume.h
-@@ -26,6 +26,11 @@ struct FPostProcessVolumeProperties
+@@ -26,6 +26,12 @@ struct FPostProcessVolumeProperties
  	// by the order in which they were loaded, which can vary between editor and engine, platform, and due to streaming.
  	double Size = DBL_MAX;
  	FGuid VolumeGuid;
@@ -10,10 +10,11 @@ diff --git a/Engine/Source/Runtime/Engine/Classes/Interfaces/Interface_PostProce
 +	bool bAbsoluteVolume; // [ARK]
 +	TArray<UExponentialHeightFogComponent *> DisabledHeigthFogVolumes; // [ARK]
 +	TArray<UExponentialHeightFogComponent *> PrimaryLerpingHeightFogs; // [ARK]
++	bool bIsCave; // [ARK]
  };
  
  /** Interface for general PostProcessVolume access **/
-@@ -42,9 +47,13 @@ class IInterface_PostProcessVolume
+@@ -42,9 +48,13 @@ class IInterface_PostProcessVolume
  	// Returns true if the sphere around Point with radius SphereRadius intersects with the volume
  	// OutDistanceToPoint is set to the distance to the nearest point on the volume,
  	// or may be set to FLT_MAX if Point is outside the blending range of the volume.

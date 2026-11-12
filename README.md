@@ -1,7 +1,7 @@
 # ARK Devkit plugin build system
 
 Builds Unreal Engine editor plugins for the ARK: Survival Ascended Devkit
-(Unreal Engine 5.8.3 licensee build, BuildId `2f049af0-6843-4873-a139-8cf09a58e308`)
+(Unreal Engine 5.8.3 licensee build, BuildId `e04993f3-df95-45c3-a80f-51a8f54516ef`)
 from unmodified plugin sources, with plain MSVC and without the devkit's engine sources. Plugins built with it so far:
 BlueprintAssist, AutoSizeComments, GitSourceControl (Epic's Git plugin, which the devkit ships without binaries),
 ElectronicNodes, ue_mcp_bridge (1.4.12, three modules), and the UE 5.8 engine plugins ToolsetRegistry, EditorToolset,

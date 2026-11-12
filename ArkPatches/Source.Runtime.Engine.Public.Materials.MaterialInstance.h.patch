@@ -29,17 +29,18 @@ diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h b/
  
  	/** Array of enumeration objects for use by scalar parameter enumeration indices. */ 
  	UPROPERTY()
-@@ -895,6 +900,9 @@ private:
+@@ -895,6 +900,10 @@ private:
  	};
  
  	TArray<FTextureParameterOverride> TransientTextureParameterOverrides;
 +public:
 +	TObjectPtr<UMaterialInstance> FarDrawOverride; // [ARK]
++	bool bDisableClampingOfMaxWorldPositionOffsetDisplacement; // [ARK]
 +private:
  
  	// Helper for setting an override texture
  	void OverrideTextureParameterValue(const UTexture* InTextureToOverride, UTexture* OverrideTexture);
-@@ -1309,4 +1317,10 @@ protected:
+@@ -1309,4 +1318,16 @@ protected:
  	/** Class that knows how to update MI's */
  	friend class FMaterialUpdateContext;
  	friend class FMaterialInstanceParameterUpdateContext;
@@ -48,5 +49,11 @@ diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstance.h b/
 +protected:
 +public:
 +	ENGINE_API virtual UMaterialInterface* GetFarDrawOverride() const; // [ARK]
++protected:
++public:
++ENGINE_API virtual float GetMaxWorldPositionOffsetDisplacementRaw() const; // [ARK]
++protected:
++public:
++ENGINE_API virtual bool IsMaxWorldPositionOffsetDisplacementClampingDisabled() const; // [ARK]
 +protected:
  };

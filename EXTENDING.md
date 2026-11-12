@@ -335,7 +335,7 @@ the same instructions from the same source, so a match confirms the wording, not
 tries. `return SomeBaseClass && ...` matched its shape, and removing `UE_ASSUME(ThisClass)` as well removed 94 of the
 remaining differences.
 
-Known differences that remain for BlueprintAssist (33 of 16,329 compared functions, 2026-11-07):
+Known differences that remain for BlueprintAssist (33 of 16,329 compared functions, 2026-11-12):
 * `FBACommandsImpl::RegisterCommands`: ARK edited `BlueprintAssistCommands.cpp`, the only plugin source that differs.
 * `StaticStruct`, `__DefaultConstructor` and `__VTableCtorCaller` of its reflected types are inlined differently.
 * `FArguments` constructors: the documented initializers of members the devkit leaves uninitialized.
@@ -406,6 +406,15 @@ the SDK root for PDBs built by `Build.ps1`.
 * **Patches applied twice:** exporting before a `Repatch-ArkSdk.ps1` run puts the patcher's changes into
   `ArkPatches\`, and the repatch adds them again (redefinition errors). The stamp guard (2.7) now refuses that;
   export only at the end.
+* **`-Patch` on opaque storage:** the patcher does not recognise members the SDK declares as opaque storage. It
+  inserts the devkit's named members next to them: into the generated ARK classes (`ArkData_*`, whenever such a class
+  shows any difference, even a changed non-virtual method), into `SkeletalMeshLODRenderData.h`
+  (`SourceRayTracingGeometry`) and into `LandscapeComponent.h` (`ActiveExcludedBoxesChangedDelegate`). After every
+  `-Patch`, copy `ArkHeaders\` over the SDK again and diff the other touched headers against vanilla + `ArkPatches\`
+  (or export and read `git diff ArkPatches`). Remove the duplicates before building.
+* **`-Patch` on a multi-module plugin:** it patches once per module, each time from a PDB that predates the earlier
+  passes, so a type the modules share would be patched again (not tried; avoided). Patch through a single-module plugin with the multi-module PDB as reference
+  (`Test-ArkAbi.ps1 EditorToolset -Patch -ReferencePdb <bridge>\ShooterGameEditor-UE_MCP_Bridge.pdb`).
 * **Members by value of new types:** an ARK member like `FWorldCachedViewInfo::FinalPostProcessSettings` needs the
   definition of its type. The patcher adds the include of the type's header (`// [ARK] member type`), taken from the
   type's PDB location; `.inl` locations (`FString`) are skipped because they cannot be included on their own.

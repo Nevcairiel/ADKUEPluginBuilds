@@ -56,7 +56,7 @@ diff --git a/Engine/Source/Runtime/Engine/Public/Materials/Material.h b/Engine/S
  	ENGINE_API virtual FMaterialResource* GetMaterialResource(EShaderPlatform InShaderPlatform, EMaterialQualityLevel::Type QualityLevel = EMaterialQualityLevel::Num) override;
  	ENGINE_API virtual const FMaterialResource* GetMaterialResource(EShaderPlatform InShaderPlatform, EMaterialQualityLevel::Type QualityLevel = EMaterialQualityLevel::Num) const override;
  	ENGINE_API virtual bool GetMaterialLayers(FMaterialLayersFunctions& OutLayers, TMicRecursionGuard RecursionGuard = TMicRecursionGuard()) const override;
-@@ -2215,7 +2224,16 @@ private:
+@@ -2215,7 +2224,23 @@ private:
  
  	UPROPERTY()
  	FSubstrateMaterialInput FrontMaterial_DEPRECATED;
@@ -65,10 +65,17 @@ diff --git a/Engine/Source/Runtime/Engine/Public/Materials/Material.h b/Engine/S
 +private:
 +public:
 +	FString CustomMainCode; // [ARK]
++	bool bDisableClampingOfMaxWorldPositionOffsetDisplacement; // [ARK]
 +private:
  #endif // WITH_EDITORONLY_DATA
 +public:
 +ENGINE_API virtual bool IsUsedWithVolumetricCloud() const; // [ARK]
++private:
++public:
++ENGINE_API virtual float GetMaxWorldPositionOffsetDisplacementRaw() const; // [ARK]
++private:
++public:
++ENGINE_API virtual bool IsMaxWorldPositionOffsetDisplacementClampingDisabled() const; // [ARK]
 +private:
  };
  

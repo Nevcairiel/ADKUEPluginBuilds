@@ -10,3 +10,12 @@ diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceBaseP
  
  	/** Indicates that the material should be rendered without backface culling and the normal should be flipped for backfaces. */
  	UPROPERTY(EditAnywhere, Category = Material, meta = (editcondition = "bOverride_TwoSided"))
+@@ -140,6 +142,8 @@ struct FMaterialInstanceBasePropertyOverrides
+ 	/** Bitmask of usage flags. */
+ 	UPROPERTY(EditAnywhere, Category = Material)
+ 	uint32 UsageFlags;
++	uint8 bOverride_bDisableClampingOfMaxWorldPositionOffsetDisplacement : 1; // [ARK]
++	uint8 bDisableClampingOfMaxWorldPositionOffsetDisplacement : 1; // [ARK]
+ 
+ 	ENGINE_API FMaterialInstanceBasePropertyOverrides();
+ 

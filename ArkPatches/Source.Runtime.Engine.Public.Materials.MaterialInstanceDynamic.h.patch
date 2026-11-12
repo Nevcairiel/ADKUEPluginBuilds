@@ -1,0 +1,15 @@
+diff --git a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceDynamic.h b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceDynamic.h
+--- a/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceDynamic.h
++++ b/Engine/Source/Runtime/Engine/Public/Materials/MaterialInstanceDynamic.h
+@@ -246,5 +246,11 @@ private:
+ 	/** Allocates CachedData if needed, populates ParentLayerIndexRemap from the parent's layers,
+ 	 *  and pushes the result to the render proxy. Does NOT touch the texture-sampling cache. */
+ 	void UpdateCachedLayerData();
++public:
++	ENGINE_API virtual float GetMaxWorldPositionOffsetDisplacementRaw() const; // [ARK]
++private:
++public:
++	ENGINE_API virtual bool IsMaxWorldPositionOffsetDisplacementClampingDisabled() const; // [ARK]
++private:
+ };
+ 
